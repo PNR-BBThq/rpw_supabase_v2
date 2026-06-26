@@ -484,96 +484,119 @@
       laksanakanFilterLokal();
     }
 
-  function muatNaikDataIndukSekali() {
-      // 🛰️ MASUKKAN KREDENSIAL SUPABASE KAU SECARA DIRECT DI SINI (Repo Private & Selamat)
-      const SUPABASE_URL = "https://bgpbdhxpstomjqsbsopr.supabase.co"; 
-      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncGJkaHhwc3RvbWpxc2Jzb3ByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MTgzMzAsImV4cCI6MjA5Nzk5NDMzMH0.nc22VSgwl62Y5au-RVi0VU_wGhAjzdrbFKRAJrd6WSg";
+ function muatNaikDataIndukSekali() {
+      var SUPABASE_URL = "https://bgpbdhxpstomjqsbsopr.supabase.co"; 
+      var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncGJkaHhwc3RvbWpxc2Jzb3ByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MTgzMzAsImV4cCI6MjA5Nzk5NDMzMH0.nc22VSgwl62Y5au-RVi0VU_wGhAjzdrbFKRAJrd6WSg";
       
-      const url = `${SUPABASE_URL}/rest/v1/tangkapan_rpw?select=*`;
+      var rowsSemua = [];
+      var saizBatch = 1000; // Supabase mengehadkan 1000 data per panggilan
+      
+      console.log("Supabase Engine: Memulakan sedutan data berantai (Pagination Looping)...");
 
-      console.log("Supabase Engine: Membuka talian terus ke Singapura...");
+      // Fungsi rekursif untuk sedut data batch demi batch sampai habis licin
+      function ambilBatchData(mulaRow) {
+        var akhirRow = mulaRow + saizBatch - 1;
+        var url = SUPABASE_URL + "/rest/v1/tangkapan_rpw?select=*";
 
-      fetch(url, {
-        method: "GET",
-        headers: {
-          "apikey": SUPABASE_ANON_KEY,
-          "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-          "Content-Type": "application/json"
-        }
-      })
-      .then(r => {
-        if (!r.ok) throw new Error("Gagal sedut Supabase: " + r.statusText);
-        return r.json();
-      })
-      .then(rows => {
-        console.log("Supabase Engine: Berjaya sedut " + rows.length + " baris data!");
-
-        // 🧠 TAMPAL MAGIK METAMORFOSIS: Tukar data Postgres Supabase menjadi acuan asal sistem rpw.html
-        let pinsLokal = [];
-        let historyLokal = [];
-
-        rows.forEach(r => {
-          // 1. Proses Penapis Koordinat untuk Map Pins
-          let isGisValid = false;
-          if (r.lat_long && r.lat_long.includes(",") && r.lat_long.length > 5) {
-            isGisValid = true;
+        fetch(url, {
+          method: "GET",
+          headers: {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+            "Content-Type": "application/json",
+            "Range": mulaRow + "-" + akhirRow // 🚀 Mengarah server hantar batch spesifik
           }
+        })
+        .then(function(r) {
+          if (!r.ok) throw new Error("Gagal sedut batch Supabase: " + r.statusText);
+          return r.json();
+        })
+        .then(function(rowsBatch) {
+          console.log("Supabase Engine: Berjaya ambil baris " + mulaRow + " hingga " + akhirRow + " (" + rowsBatch.length + " rekod)");
+          
+          // Gabungkan batch baru ke dalam simpanan utama
+          rowsSemua = rowsSemua.concat(rowsBatch);
 
-          pinsLokal.push({
-            row_id: r.row_id || "",
-            tarikh: formatTarikhTeks(r.tarikh_kutip),
-            negeri: r.negeri ? r.negeri.toUpperCase().trim() : "",
-            daerah: r.daerah ? r.daerah.toUpperCase().trim() : "",
-            lokasi: r.lokasi_pemasangan ? r.lokasi_pemasangan.toUpperCase().trim() : "TIADA LOKASI",
-            tanaman: r.jenis_komoditi || "KELAPA",
-            total_rf: Number(r.total_catch_rf) || 0,
-            total_rv: (Number(r.bil_tangkapan_rv_jantan) || 0) + (Number(r.bil_tangkapan_rv_betina) || 0),
-            rtd_status: r.status_rtd_rf || "RTD=0",
-            is_valid_gis: isGisValid,
-            koordinat: r.lat_long || ""
-          });
+          // 🧠 JIKA DATA YANG DIPULANGKAN CUKUP 1000, MAKSUDNYA ADA LAGI BAKI DATA DI SERVER
+          if (rowsBatch.length === saizBatch) {
+            // Panggil batch seterusnya (Contoh: 1000 -> 2000 -> 3000)
+            ambilBatchData(mulaRow + saizBatch);
+          } else {
+            // 🎉 JIKA KURANG DARI 1000, MAKSUDNYA SEMUA DATA DAH DISEDUT HABIS LICIN!
+            prosesDanLukisDashboard(rowsSemua);
+          }
+        })
+        .catch(function(e) {
+          console.error("Ralat Looping Supabase:", e);
+          // Kalau sangkut tengah jalan, kita tetap lukis apa data yang sempat ada
+          if(rowsSemua.length > 0) prosesDanLukisDashboard(rowsSemua);
+        });
+      }
 
-          // 2. Pecahkan tarikh untuk dapatkan Bulan dan Tahun bagi History Data
-          let tkh = new Date(r.tarikh_kutip);
-          let bulan = isNaN(tkh.getMonth()) ? 1 : (tkh.getMonth() + 1);
-          let tahun = isNaN(tkh.getFullYear()) ? 2026 : tkh.getFullYear();
+      // Mulakan sedutan rantai dari baris ke-0
+      ambilBatchData(0);
+    }
 
-          historyLokal.push({
-            y: tahun,
-            m: bulan,
-            n: r.negeri ? r.negeri.toUpperCase().trim() : "",
-            d: r.daerah ? r.daerah.toUpperCase().trim() : "",
-            rtd: r.status_rtd_rf || "RTD=0",
-            loc: r.lokasi_pemasangan ? r.lokasi_pemasangan.toUpperCase().trim() : "LOKASI TIADA NAMA",
-            rf: Number(r.total_catch_rf) || 0,
-            rv: (Number(r.bil_tangkapan_rv_jantan) || 0) + (Number(r.bil_tangkapan_rv_betina) || 0),
-            serang: Number(r.bil_pokok_diserang) || 0,
-            tebang: Number(r.bil_pokok_ditebang) || 0
-          });
+    // Fungsi asing untuk memproses transformasi data setelah selesai sedut semua batch
+    function prosesDanLukisDashboard(rows) {
+      console.log("Supabase Engine TOTAL: Selesai! Menguruskan " + rows.length + " jumlah baris data keseluruhan.");
+
+      let pinsLokal = [];
+      let historyLokal = [];
+
+      rows.forEach(function(r) {
+        let isGisValid = false;
+        if (r.lat_long && r.lat_long.includes(",") && r.lat_long.length > 5) {
+          isGisValid = true;
+        }
+
+        pinsLokal.push({
+          row_id: r.row_id || "",
+          tarikh: formatTarikhTeks(r.tarikh_kutip),
+          negeri: r.negeri ? r.negeri.toUpperCase().trim() : "",
+          daerah: r.daerah ? r.daerah.toUpperCase().trim() : "",
+          lokasi: r.lokasi_pemasangan ? r.lokasi_pemasangan.toUpperCase().trim() : "TIADA LOKASI",
+          tanaman: r.jenis_komoditi || "KELAPA",
+          total_rf: Number(r.total_catch_rf) || 0,
+          total_rv: (Number(r.bil_tangkapan_rv_jantan) || 0) + (Number(r.bil_tangkapan_rv_betina) || 0),
+          rtd_status: r.status_rtd_rf || "RTD=0",
+          is_valid_gis: isGisValid,
+          koordinat: r.lat_long || ""
         });
 
-        // 3. Sumbat semula ke dalam variable global rpw.html asal
-        MASTER_DATA_KESELURUHAN = {
-          mapPins: pinsLokal,
-          historyData: historyLokal,
-          doaLogo: "https://www.doa.gov.my/wp-content/themes/jpm/images/logo.png"
-        };
+        let tkh = new Date(r.tarikh_kutip);
+        let bulan = isNaN(tkh.getMonth()) ? 1 : (tkh.getMonth() + 1);
+        let tahun = isNaN(tkh.getFullYear()) ? 2026 : tkh.getFullYear();
 
-        // 4. Jalankan semula fungsi asal sistem untuk lukis carta & peta
-        binaKamusDinamik(MASTER_DATA_KESELURUHAN.mapPins, MASTER_DATA_KESELURUHAN.historyData);
-        laksanakanFilterLokal();
-
-        setTimeout(() => {
-          document.getElementById("skeletonLoader").classList.add("hidden");
-          document.getElementById("dashboardContent").classList.remove("hidden");
-          map.invalidateSize();
-          if(markerGroup.getLayers().length > 0) map.fitBounds(markerGroup.getBounds().pad(0.08));
-        }, 300);
-      })
-      .catch(e => { 
-        alert("Gagal menyambung ke database Supabase!"); 
-        console.error(e); 
+        historyLokal.push({
+          y: tahun,
+          m: bulan,
+          n: r.negeri ? r.negeri.toUpperCase().trim() : "",
+          d: r.daerah ? r.daerah.toUpperCase().trim() : "",
+          rtd: r.status_rtd_rf || "RTD=0",
+          loc: r.lokasi_pemasangan ? r.lokasi_pemasangan.toUpperCase().trim() : "LOKASI TIADA NAMA",
+          rf: Number(r.total_catch_rf) || 0,
+          rv: (Number(r.bil_tangkapan_rv_jantan) || 0) + (Number(r.bil_tangkapan_rv_betina) || 0),
+          serang: Number(r.bil_pokok_diserang) || 0,
+          tebang: Number(r.bil_pokok_ditebang) || 0
+        });
       });
+
+      MASTER_DATA_KESELURUHAN = {
+        mapPins: pinsLokal,
+        historyData: historyLokal,
+        doaLogo: "https://www.doa.gov.my/wp-content/themes/jpm/images/logo.png"
+      };
+
+      binaKamusDinamik(MASTER_DATA_KESELURUHAN.mapPins, MASTER_DATA_KESELURUHAN.historyData);
+      laksanakanFilterLokal();
+
+      setTimeout(function() {
+        document.getElementById("skeletonLoader").classList.add("hidden");
+        document.getElementById("dashboardContent").classList.remove("hidden");
+        map.invalidateSize();
+        if(markerGroup.getLayers().length > 0) map.fitBounds(markerGroup.getBounds().pad(0.08));
+      }, 300);
     }
 
     // Fungsi tambahan untuk mencantikkan tarikh paparan dalam jadual
