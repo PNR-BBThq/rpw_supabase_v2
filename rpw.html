@@ -484,34 +484,83 @@
       laksanakanFilterLokal();
     }
 
-    function muatNaikDataIndukSekali() {
-      let fetchUrl = typeof CONFIG !== 'undefined' ? CONFIG.API_URL : "https://script.google.com/macros/s/AKfycbyKB5-TBuZ8JXs1pz9s7LBCT5stsFaNP8fMzw8UvbPYbKCWuus8mSuDdaLFaK1PNDG8/exec";
-      fetch(`${fetchUrl}?action=getRPWAnalytics`, {
-        method: "POST", headers: { "Content-Type": "text/plain" }, 
-        body: JSON.stringify({ 
-  action: "getRPWAnalytics", 
-  token: "BYPASS_TESTING", // 🔓 Pintas semakan token server
-  u: "ADMIN_TEST", 
-  negeri: "ALL", // 🔓 Paksa tarik semua negeri untuk testing layout
-  daerah: "ALL", 
-  statusRTD: "ALL" 
-})
-      })
-      .then(r => r.json())
-      .then(res => {
-        if(!res.success) { alert(res.message); return; }
+  function muatNaikDataIndukSekali() {
+      // 🛰️ MASUKKAN KREDENSIAL SUPABASE KAU SECARA DIRECT DI SINI (Repo Private & Selamat)
+      const SUPABASE_URL = "MASUKKAN_URL_SUPABASE_KAU"; 
+      const SUPABASE_ANON_KEY = "MASUKKAN_ANON_KEY_KAU";
+      
+      const url = `${SUPABASE_URL}/rest/v1/tangkapan_rpw?select=*`;
 
-        MASTER_DATA_KESELURUHAN = res;
-        if (res.mapPins) binaKamusDinamik(res.mapPins, res.historyData);
+      console.log("Supabase Engine: Membuka talian terus ke Singapura...");
 
-        if(res.doaLogo) document.getElementById("doaLogo").src = res.doaLogo;
-        else document.getElementById("doaLogo").src = "https://www.doa.gov.my/wp-content/themes/jpm/images/logo.png";
-
-        if(USER_STATE && USER_STATE !== "ALL" && USER_STATE !== "SEMUA") {
-          const el = document.getElementById("filterNegeri");
-          if(el) { el.value = USER_STATE.toUpperCase(); el.disabled = true; TapisDataDaerah(); }
+      fetch(url, {
+        method: "GET",
+        headers: {
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+          "Content-Type": "application/json"
         }
+      })
+      .then(r => {
+        if (!r.ok) throw new Error("Gagal sedut Supabase: " + r.statusText);
+        return r.json();
+      })
+      .then(rows => {
+        console.log("Supabase Engine: Berjaya sedut " + rows.length + " baris data!");
 
+        // 🧠 TAMPAL MAGIK METAMORFOSIS: Tukar data Postgres Supabase menjadi acuan asal sistem rpw.html
+        let pinsLokal = [];
+        let historyLokal = [];
+
+        rows.forEach(r => {
+          // 1. Proses Penapis Koordinat untuk Map Pins
+          let isGisValid = false;
+          if (r.lat_long && r.lat_long.includes(",") && r.lat_long.length > 5) {
+            isGisValid = true;
+          }
+
+          pinsLokal.push({
+            row_id: r.row_id || "",
+            tarikh: formatTarikhTeks(r.tarikh_kutip),
+            negeri: r.negeri ? r.negeri.toUpperCase().trim() : "",
+            daerah: r.daerah ? r.daerah.toUpperCase().trim() : "",
+            lokasi: r.lokasi_pemasangan ? r.lokasi_pemasangan.toUpperCase().trim() : "TIADA LOKASI",
+            tanaman: r.jenis_komoditi || "KELAPA",
+            total_rf: Number(r.total_catch_rf) || 0,
+            total_rv: (Number(r.bil_tangkapan_rv_jantan) || 0) + (Number(r.bil_tangkapan_rv_betina) || 0),
+            rtd_status: r.status_rtd_rf || "RTD=0",
+            is_valid_gis: isGisValid,
+            koordinat: r.lat_long || ""
+          });
+
+          // 2. Pecahkan tarikh untuk dapatkan Bulan dan Tahun bagi History Data
+          let tkh = new Date(r.tarikh_kutip);
+          let bulan = isNaN(tkh.getMonth()) ? 1 : (tkh.getMonth() + 1);
+          let tahun = isNaN(tkh.getFullYear()) ? 2026 : tkh.getFullYear();
+
+          historyLokal.push({
+            y: tahun,
+            m: bulan,
+            n: r.negeri ? r.negeri.toUpperCase().trim() : "",
+            d: r.daerah ? r.daerah.toUpperCase().trim() : "",
+            rtd: r.status_rtd_rf || "RTD=0",
+            loc: r.lokasi_pemasangan ? r.lokasi_pemasangan.toUpperCase().trim() : "LOKASI TIADA NAMA",
+            rf: Number(r.total_catch_rf) || 0,
+            rv: (Number(r.bil_tangkapan_rv_jantan) || 0) + (Number(r.bil_tangkapan_rv_betina) || 0),
+            serang: Number(r.bil_pokok_diserang) || 0,
+            tebang: Number(r.bil_pokok_ditebang) || 0
+          });
+        });
+
+        // 3. Sumbat semula ke dalam variable global rpw.html asal
+        MASTER_DATA_KESELURUHAN = {
+          mapPins: pinsLokal,
+          historyData: historyLokal,
+          doaLogo: "https://www.doa.gov.my/wp-content/themes/jpm/images/logo.png"
+        };
+
+        // 4. Jalankan semula fungsi asal sistem untuk lukis carta & peta
+        binaKamusDinamik(MASTER_DATA_KESELURUHAN.mapPins, MASTER_DATA_KESELURUHAN.historyData);
         laksanakanFilterLokal();
 
         setTimeout(() => {
@@ -521,7 +570,21 @@
           if(markerGroup.getLayers().length > 0) map.fitBounds(markerGroup.getBounds().pad(0.08));
         }, 300);
       })
-      .catch(e => { alert("Gagal menyambung ke pangkalan data."); console.error(e); });
+      .catch(e => { 
+        alert("Gagal menyambung ke database Supabase!"); 
+        console.error(e); 
+      });
+    }
+
+    // Fungsi tambahan untuk mencantikkan tarikh paparan dalam jadual
+    function formatTarikhTeks(tarikhMentah) {
+      if(!tarikhMentah) return "-";
+      let date = new Date(tarikhMentah);
+      if(isNaN(date.getTime())) return tarikhMentah;
+      let day = String(date.getDate()).padStart(2, '0');
+      let month = String(date.getMonth() + 1).padStart(2, '0');
+      let year = date.getFullYear();
+      return `${day}/${month}/${year}`;
     }
 
     // 🎯 SOKONGAN TAHUN DINAMIK PADA LOKAL FILTER
