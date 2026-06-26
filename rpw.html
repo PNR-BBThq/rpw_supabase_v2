@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Analisis Data RPW</title>
   
- <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="./js/config.js"></script>
 
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; color: #0f172a; }
@@ -20,7 +19,7 @@
 </head>
 <body class="p-2 sm:p-4 lg:p-6 w-full relative">
 
- <script>
+  <script>
     let USER_TOKEN = "", USER_NAME = "Pengguna", USER_STATE = "ALL";
     const savedSession = localStorage.getItem("pnr_session");
     if (savedSession) {
@@ -32,11 +31,9 @@
       } catch(e) {}
     }
     
-    // 🔓 PINTASAN VERCEL: Matikan tendangan login sementara untuk ujian data
+    // 🔓 PINTASAN VERCEL: Matikan check login sementara untuk testing data supabase
     if (!USER_TOKEN) {
       console.log("Akses sepatutnya ditolak, tapi kita pintas dulu untuk testing!");
-      // alert("⛔ Akses ditolak. Sila log masuk melalui pangkalan utama PNR.");
-      // window.location.href = "index.html"; 
     }
   </script>
 
@@ -58,7 +55,7 @@
     
     <div class="bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border border-emerald-800/40">
       <div class="flex items-center gap-4">
-        <div class="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/15"><img id="doaLogo" src="" alt="Logo" class="w-14 h-14 object-contain"></div>
+        <div class="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/15"><img id="doaLogo" src="https://www.doa.gov.my/wp-content/themes/jpm/images/logo.png" alt="Logo" class="w-14 h-14 object-contain"></div>
         <div class="space-y-1">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold tracking-wide">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> UNIT PENGAWASAN DAN RAMALAN PEROSAK, BAHAGIAN BIOSEKURITI TUMBUHAN
@@ -91,7 +88,7 @@
       <div>
         <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Pilih Tahun</label>
         <select id="filterTahun" onchange="laksanakanFilterLokal()" class="w-full bg-slate-50 border border-slate-200 font-bold text-slate-800 text-xs rounded-2xl p-3 focus:outline-none focus:border-emerald-600 cursor-pointer">
-          </select>
+        </select>
       </div>
       <div>
         <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Pilih Negeri</label>
@@ -110,8 +107,8 @@
         <select id="filterRTD" onchange="laksanakanFilterLokal()" class="w-full bg-slate-50 border border-slate-200 font-semibold text-slate-700 text-xs rounded-2xl p-3 focus:outline-none focus:border-emerald-600 cursor-pointer">
           <option value="ALL">Semua Tahap RTD</option>
           <option value="RTD=0">RTD = 0 </option>
-          <option value="RTD<1">RTD < 1 </option>
-          <option value="RTD>1">RTD > 1 </option>
+          <option value="RTD<1">RTD &lt; 1 </option>
+          <option value="RTD>1">RTD &gt; 1 </option>
         </select>
       </div>
       <div>
@@ -121,15 +118,17 @@
       </div>
     </div>
     
-<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3.5">
-   <div class="bg-emerald-50/90 border border-emerald-200/80 p-4 rounded-3xl flex flex-col justify-between shadow-2xs">
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3.5">
+      <div class="bg-emerald-50/90 border border-emerald-200/80 p-4 rounded-3xl flex flex-col justify-between shadow-2xs">
         <span class="text-[10px] font-black text-emerald-800 uppercase tracking-wider">KUMULATIF RPW RF</span>
         <span class="text-3xl font-black text-emerald-950 block mt-1" id="kpiAllTimeRF">0</span>
-        <span class="text-[10px] text-emerald-600 font-bold block mt-0.5" id="lblTahunRF">Tahun Terpilih</span> </div>
+        <span class="text-[10px] text-emerald-600 font-bold block mt-0.5" id="lblTahunRF">Tahun Terpilih</span>
+      </div>
       <div class="bg-indigo-50/90 border border-indigo-200/80 p-4 rounded-3xl flex flex-col justify-between shadow-2xs">
         <span class="text-[10px] font-black text-indigo-800 uppercase tracking-wider">KUMULATIF RPW RV</span>
         <span class="text-3xl font-black text-indigo-950 block mt-1" id="kpiAllTimeRV">0</span>
-        <span class="text-[10px] text-indigo-600 font-bold block mt-0.5" id="lblTahunRV">Tahun Terpilih</span> </div>
+        <span class="text-[10px] text-indigo-600 font-bold block mt-0.5" id="lblTahunRV">Tahun Terpilih</span>
+      </div>
       <div class="bg-white border border-slate-200/80 p-4 rounded-3xl flex flex-col justify-center shadow-2xs">
         <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">TANGKAPAN SEMASA</span>
         <span class="text-3xl font-black text-slate-900 block mt-1" id="kpiTangkapanSemasa">0</span>
@@ -143,8 +142,8 @@
         <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">TABURAN RTD</span>
         <div class="space-y-0.5 my-auto text-[11px] font-bold">
           <div class="flex justify-between"><span class="text-emerald-600">🟢 RTD=0 </span><span id="badgeRTD0">0</span></div>
-          <div class="flex justify-between"><span class="text-amber-600">🟡 RTD<1 </span><span id="badgeRTD1">0</span></div>
-          <div class="flex justify-between"><span class="text-rose-600">🔴 RTD>1 </span><span id="badgeRTD2">0</span></div>
+          <div class="flex justify-between"><span class="text-amber-600">🟡 RTD&lt;1 </span><span id="badgeRTD1">0</span></div>
+          <div class="flex justify-between"><span class="text-rose-600">🔴 RTD&gt;1 </span><span id="badgeRTD2">0</span></div>
         </div>
       </div>
       <div class="bg-white border border-slate-200/80 p-4 rounded-3xl flex flex-col justify-center shadow-2xs">
@@ -158,7 +157,6 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      
       <div class="lg:col-span-7 bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col h-[540px] relative overflow-hidden">
         <div class="flex justify-between items-center mb-2 z-20">
           <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2">📍 Peta Lokasi Perangkap Feromon</h3>
@@ -170,14 +168,14 @@
             <span class="text-[10px] font-bold text-slate-400 px-1.5 uppercase">Tapisan Peta:</span>
             <button onclick="tapisPetaBerasarkanRTD('ALL')" id="mapPill_ALL" class="text-[10px] font-bold px-2.5 py-1 rounded-xl bg-white text-slate-900 shadow-xs transition cursor-pointer">Semua</button>
             <button onclick="tapisPetaBerasarkanRTD('RTD=0')" id="mapPill_RTD=0" class="text-[10px] font-bold px-2.5 py-1 rounded-xl text-slate-600 hover:bg-white/70 transition cursor-pointer">Bebas</button>
-            <button onclick="tapisPetaBerasarkanRTD('RTD<1')" id="mapPill_RTD<1" class="text-[10px] font-bold px-2.5 py-1 rounded-xl text-slate-600 hover:bg-white/70 transition cursor-pointer"><1</button>
-            <button onclick="tapisPetaBerasarkanRTD('RTD>1')" id="mapPill_RTD>1" class="text-[10px] font-bold px-2.5 py-1 rounded-xl text-slate-600 hover:bg-white/70 transition cursor-pointer">>1</button>
+            <button onclick="tapisPetaBerasarkanRTD('RTD<1')" id="mapPill_RTD_L1" class="text-[10px] font-bold px-2.5 py-1 rounded-xl text-slate-600 hover:bg-white/70 transition cursor-pointer">&lt;1</button>
+            <button onclick="tapisPetaBerasarkanRTD('RTD>1')" id="mapPill_RTD_G1" class="text-[10px] font-bold px-2.5 py-1 rounded-xl text-slate-600 hover:bg-white/70 transition cursor-pointer">&gt;1</button>
           </div>
           <div class="flex items-center gap-2.5 text-[11px] font-bold text-slate-700 bg-white/80 px-3 py-1 rounded-xl border border-slate-200/60 shadow-2xs">
             <span class="text-[9px] text-slate-400 font-extrabold uppercase">Petunjuk:</span>
             <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> RTD=0</span>
-            <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> RTD<1</span>
-            <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> RTD>1</span>
+            <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> RTD&lt;1</span>
+            <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> RTD&gt;1</span>
           </div>
         </div>
 
@@ -219,8 +217,8 @@
           <div class="flex items-center gap-1 self-end sm:self-center">
             <button onclick="tapisGrafBerasarkanRTD('ALL')" id="pill_ALL" class="text-xs font-bold px-2.5 py-1 rounded-xl bg-white text-slate-900 shadow-xs transition cursor-pointer">Semua</button>
             <button onclick="tapisGrafBerasarkanRTD('RTD=0')" id="pill_RTD=0" class="text-xs font-bold px-2.5 py-1 rounded-xl text-slate-600 hover:bg-white/50 transition cursor-pointer">Bebas</button>
-            <button onclick="tapisGrafBerasarkanRTD('RTD<1')" id="pill_RTD<1" class="text-xs font-bold px-2.5 py-1 rounded-xl text-slate-600 hover:bg-white/50 transition cursor-pointer"><1</button>
-            <button onclick="tapisGrafBerasarkanRTD('RTD>1')" id="pill_RTD>1" class="text-xs font-bold px-2.5 py-1 rounded-xl text-slate-600 hover:bg-white/50 transition cursor-pointer">>1</button>
+            <button onclick="tapisGrafBerasarkanRTD('RTD<1')" id="pill_RTD_L1" class="text-xs font-bold px-2.5 py-1 rounded-xl text-slate-600 hover:bg-white/50 transition cursor-pointer">&lt;1</button>
+            <button onclick="tapisGrafBerasarkanRTD('RTD>1')" id="pill_RTD_G1" class="text-xs font-bold px-2.5 py-1 rounded-xl text-slate-600 hover:bg-white/50 transition cursor-pointer">&gt;1</button>
           </div>
         </div>
 
@@ -235,7 +233,7 @@
       </div>
     </div>
 
-  <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
+    <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
       <div class="flex justify-between items-center mb-1">
         <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2"><span>📊</span> Carta 15 Lokasi Perangkap Pengulangan RTD > 1</h3>
         <button onclick="bukaModalDefaulter()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-xs border border-rose-200 cursor-pointer">Lihat Senarai Penuh</button>
@@ -244,29 +242,28 @@
       <div class="relative h-64 w-full"><canvas id="defaulterChart"></canvas></div>
     </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
-        
-        <div class="lg:col-span-5 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col h-full min-h-[350px]">
-          <div class="mb-5 flex justify-between items-start">
-            <div>
-              <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2"><span>🎯</span> Kecekapan CPT (Negeri)</h3>
-              <p class="text-[10px] text-slate-400 mt-1">Nisbah purata tangkapan per perangkap</p>
-            </div>
-            <span class="text-[9px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold">Zon Kritikal > 20</span>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+      <div class="lg:col-span-5 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col h-full min-h-[350px]">
+        <div class="mb-5 flex justify-between items-start">
+          <div>
+            <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2"><span>🎯</span> Kecekapan CPT (Negeri)</h3>
+            <p class="text-[10px] text-slate-400 mt-1">Nisbah purata tangkapan per perangkap</p>
           </div>
-          <div id="kontenaLolipop" class="flex flex-col gap-4 overflow-y-auto pr-2 flex-1">
-            <div class="text-xs text-center text-slate-400 mt-10">Memproses data kecekapan...</div>
-          </div>
+          <span class="text-[9px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold">Zon Kritikal > 20</span>
         </div>
-
-        <div class="lg:col-span-7 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs h-full min-h-[350px] flex flex-col">
-          <div class="mb-4">
-            <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2"><span>📈</span> Trendline Tangkapan RPW</h3>
-            <p class="text-[10px] text-slate-400">Pola turun naik kumulatif populasi mengikut tempoh masa</p>
-          </div>
-          <div class="relative flex-1 w-full"><canvas id="trendLineChart"></canvas></div>
+        <div id="kontenaLolipop" class="flex flex-col gap-4 overflow-y-auto pr-2 flex-1">
+          <div class="text-xs text-center text-slate-400 mt-10">Memproses data kecekapan...</div>
         </div>
       </div>
+
+      <div class="lg:col-span-7 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs h-full min-h-[350px] flex flex-col">
+        <div class="mb-4">
+          <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2"><span>📈</span> Trendline Tangkapan RPW</h3>
+          <p class="text-[10px] text-slate-400">Pola turun naik kumulatif populasi mengikut tempoh masa</p>
+        </div>
+        <div class="relative flex-1 w-full"><canvas id="trendLineChart"></canvas></div>
+      </div>
+    </div>
     
     <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4 mb-12">
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -305,9 +302,9 @@
     </div>
 
   </div>
-<div id="modalDefaulter" class="fixed inset-0 z-[999] bg-slate-950/80 backdrop-blur-xs hidden flex items-center justify-center p-4 transition-all duration-300">
+
+  <div id="modalDefaulter" class="fixed inset-0 z-[999] bg-slate-950/80 backdrop-blur-xs hidden flex items-center justify-center p-4 transition-all duration-300">
     <div class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh]">
-      
       <div class="bg-rose-600 text-white p-6 flex justify-between items-center border-b border-rose-700">
          <div>
            <div class="flex items-center gap-2">
@@ -318,7 +315,6 @@
          </div>
          <button onclick="tutupModalDefaulter()" class="px-3 py-1.5 bg-rose-800 hover:bg-rose-900 text-white rounded-xl text-xs font-bold transition cursor-pointer">✕ Tutup</button>
       </div>
-
       <div class="p-6 overflow-y-auto flex-1">
          <div class="border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
            <table class="w-full text-left border-collapse uppercase text-xs">
@@ -335,13 +331,11 @@
            </table>
          </div>
       </div>
-
     </div>
   </div>
             
   <div id="modalKuarantin" class="fixed inset-0 z-[999] bg-slate-950/80 backdrop-blur-xs hidden flex items-center justify-center p-4 transition-all duration-300">
     <div class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh]">
-      
       <div class="bg-slate-900 text-white p-6 flex justify-between items-center border-b border-slate-800">
          <div>
            <div class="flex items-center gap-2">
@@ -363,7 +357,6 @@
       </div>
 
       <div class="p-6 overflow-y-auto flex-1 space-y-6 text-xs">
-         
          <div id="tabContent_klon" class="space-y-3">
            <div class="bg-rose-50 border border-rose-200/80 p-3 rounded-2xl text-rose-900 font-semibold">
              ℹ️ <b>Penerangan Ralat:</b> Senarai di bawah memaparkan unit perangkap yang telah diisi lebih daripada sekali pada lokasi yang sama pada tarikh yang sama. Sila semak data dan kemaskini.
@@ -391,9 +384,7 @@
              </table>
            </div>
          </div>
-
       </div>
-
     </div>
   </div>
 
@@ -414,7 +405,6 @@
     let HALAMAN_SEMASA = 1;
     const REKOD_PER_HALAMAN = 15;
 
-    // 🔥 MEMORI AUDIT KHAS
     let SENARAI_RALAT_GPS = [];
     let SENARAI_DUPLIKASI_KLON = [];
     let SENARAI_PENUH_DEFAULTER = [];
@@ -431,24 +421,22 @@
       markerGroup = L.featureGroup().addTo(map);
     }
 
-    // 🎯 SUNTIK KAMUS TAHUN SECARA DINAMIK
     function binaKamusDinamik(senaraiPins, historyData) {
       KAMUS_LOKAL = {};
       let setTahun = new Set();
 
-      if (historyData) historyData.forEach(h => { if(h.y) setTahun.add(h.y); });
-      if (senaraiPins) senaraiPins.forEach(p => { if(p.tahun) setTahun.add(p.tahun); });
+      if (historyData) historyData.forEach(function(h) { if(h.y) setTahun.add(h.y); });
+      if (senaraiPins) senaraiPins.forEach(function(p) { if(p.tahun) setTahun.add(p.tahun); });
 
       const selTah = document.getElementById("filterTahun");
       if (selTah) {
-       selTah.innerHTML = '<option value="ALL">Semua Tahun</option>';
+        selTah.innerHTML = '<option value="ALL">Semua Tahun</option>';
         let tahunSorted = Array.from(setTahun).sort((a,b) => b - a); 
-        tahunSorted.forEach(t => { selTah.innerHTML += `<option value="${t}">${t}</option>`; });
-        // Jika belum ada nilai dipilih dan wujud 2026, set sebagai default
+        tahunSorted.forEach(function(t) { selTah.innerHTML += `<option value="${t}">${t}</option>`; });
         if(tahunSorted.includes(2026) && !selTah.value) selTah.value = 2026; 
       }
       
-      senaraiPins.forEach(p => {
+      senaraiPins.forEach(function(p) {
         let neg = p.negeri.toUpperCase().trim();
         let dae = p.daerah.toUpperCase().trim();
         if (neg && neg !== "LAIN-LAIN" && neg !== "") {
@@ -460,7 +448,7 @@
       const selNeg = document.getElementById("filterNegeri");
       if (!selNeg) return;
       selNeg.innerHTML = '<option value="ALL">Semua Negeri</option>';
-      Object.keys(KAMUS_LOKAL).sort().forEach(n => { selNeg.innerHTML += `<option value="${n}">${n}</option>`; });
+      Object.keys(KAMUS_LOKAL).sort().forEach(function(n) { selNeg.innerHTML += `<option value="${n}">${n}</option>`; });
     }
 
     function TapisDataDaerah() {
@@ -469,7 +457,7 @@
       if (!selDae) return;
       selDae.innerHTML = '<option value="ALL">Semua Daerah</option>';
       if (KAMUS_LOKAL[negTerpilih]) {
-        Array.from(KAMUS_LOKAL[negTerpilih]).sort().forEach(d => { selDae.innerHTML += `<option value="${d}">${d}</option>`; });
+        Array.from(KAMUS_LOKAL[negTerpilih]).sort().forEach(function(d) { selDae.innerHTML += `<option value="${d}">${d}</option>`; });
       }
     }
 
@@ -484,16 +472,17 @@
       laksanakanFilterLokal();
     }
 
- function muatNaikDataIndukSekali() {
+        function muatNaikDataIndukSekali() {
+      // 🛰️ SUNTIK KREDENSIAL SUPABASE KAU DI SINI (Repo Private & Selamat)
       var SUPABASE_URL = "https://bgpbdhxpstomjqsbsopr.supabase.co"; 
       var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncGJkaHhwc3RvbWpxc2Jzb3ByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MTgzMzAsImV4cCI6MjA5Nzk5NDMzMH0.nc22VSgwl62Y5au-RVi0VU_wGhAjzdrbFKRAJrd6WSg";
       
       var rowsSemua = [];
-      var saizBatch = 1000; // Supabase mengehadkan 1000 data per panggilan
+      var saizBatch = 1000; // Had maksimum Supabase per panggilan API
       
       console.log("Supabase Engine: Memulakan sedutan data berantai (Pagination Looping)...");
 
-      // Fungsi rekursif untuk sedut data batch demi batch sampai habis licin
+      // Fungsi rekursif untuk sedut data batch demi batch sampai licin
       function ambilBatchData(mulaRow) {
         var akhirRow = mulaRow + saizBatch - 1;
         var url = SUPABASE_URL + "/rest/v1/tangkapan_rpw?select=*";
@@ -504,7 +493,7 @@
             "apikey": SUPABASE_ANON_KEY,
             "Authorization": "Bearer " + SUPABASE_ANON_KEY,
             "Content-Type": "application/json",
-            "Range": mulaRow + "-" + akhirRow // 🚀 Mengarah server hantar batch spesifik
+            "Range": mulaRow + "-" + akhirRow // 🚀 Mengarah server hantar range baris spesifik
           }
         })
         .then(function(r) {
@@ -514,38 +503,40 @@
         .then(function(rowsBatch) {
           console.log("Supabase Engine: Berjaya ambil baris " + mulaRow + " hingga " + akhirRow + " (" + rowsBatch.length + " rekod)");
           
-          // Gabungkan batch baru ke dalam simpanan utama
+          // Gabungkan batch data baharu ke dalam storan utama
           rowsSemua = rowsSemua.concat(rowsBatch);
 
-          // 🧠 JIKA DATA YANG DIPULANGKAN CUKUP 1000, MAKSUDNYA ADA LAGI BAKI DATA DI SERVER
+          // 🧠 JIKA REKOD YANG DIPULANGKAN TEPAT 1000, MAKSUDNYA ADA LAGI BAKI DATA DI SERVER
           if (rowsBatch.length === saizBatch) {
-            // Panggil batch seterusnya (Contoh: 1000 -> 2000 -> 3000)
+            // Panggil batch seterusnya (Contoh: 0 -> 1000 -> 2000 -> 3000)
             ambilBatchData(mulaRow + saizBatch);
           } else {
-            // 🎉 JIKA KURANG DARI 1000, MAKSUDNYA SEMUA DATA DAH DISEDUT HABIS LICIN!
+            // 🎉 JIKA KURANG DARI 1000, MAKSUDNYA SEMUA 4,000+ DATA DAH DISEDUT HABIS LICIN!
             prosesDanLukisDashboard(rowsSemua);
           }
         })
         .catch(function(e) {
           console.error("Ralat Looping Supabase:", e);
-          // Kalau sangkut tengah jalan, kita tetap lukis apa data yang sempat ada
+          // Jika tersangkut di tengah jalan, kita tetap paksa lukis apa data yang sempat disedut
           if(rowsSemua.length > 0) prosesDanLukisDashboard(rowsSemua);
         });
       }
 
-      // Mulakan sedutan rantai dari baris ke-0
+      // Mulakan sedutan rantaian cahaya dari baris ke-0
       ambilBatchData(0);
     }
 
-        function prosesDanLukisDashboard(rows) {
-      console.log("Supabase Engine TOTAL: Berjaya sedut " + rows.length + " rekod mentah.");
+
+    function prosesDanLukisDashboard(rows) {
+      console.log("Supabase Engine TOTAL: Selesai! Menguruskan " + rows.length + " jumlah baris data keseluruhan.");
 
       let pinsLokal = [];
       let historyLokal = [];
-
-      // 🧠 KITA BINA MAP UNTUK MENCARI REKOD TERKINI (LATEST SNAPSHOT) BAGI SETIAP PERANGKAP
-      // Kunci unik: Kombinasi Negeri + Daerah + Nama Lokasi Pemasangan
       let rujukanTerkini = {};
+      
+      SENARAI_RALAT_GPS = [];
+      SENARAI_DUPLIKASI_KLON = [];
+      let kaunterKlonBancian = {};
 
       rows.forEach(function(r) {
         let tkhKutip = new Date(r.tarikh_kutip);
@@ -555,9 +546,58 @@
         let namaNegeri = r.negeri ? r.negeri.toUpperCase().trim() : "";
         let namaDaerah = r.daerah ? r.daerah.toUpperCase().trim() : "";
         let namaLokasi = r.lokasi_pemasangan ? r.lokasi_pemasangan.toUpperCase().trim() : "TIADA LOKASI";
+        let tkhKutipStr = r.tarikh_kutip ? r.tarikh_kutip.split('T')[0] : "";
+        
         let trapKey = namaNegeri + "_" + namaDaerah + "_" + namaLokasi;
+        let klonKey = namaLokasi + "_" + namaDaerah + "_" + tkhKutipStr;
 
-        // A. SEMUA rekod tanpa had dimasukkan ke dalam History Data untuk graf trendline bulanan
+        // 🧠 MASALAH 3: KIRA LOGIK DATA REDUNDANT (LOKASI & TARIKH KUTIP SAMA)
+        kaunterKlonBancian[klonKey] = (kaunterKlonBancian[klonKey] || 0) + 1;
+
+        // 🧠 MASALAH 2 & 4: SEMAKAN SEMPADAN GEOGRAFI MALAYSIA
+        let isGisValid = false;
+        let puncaRalatGps = "";
+        let stringKoordinat = r.lat_long || "";
+
+        if (stringKoordinat && stringKoordinat.includes(",") && stringKoordinat.length > 5) {
+          let latLngParts = stringKoordinat.split(",").map(Number);
+          let latitude = latLngParts[0];
+          let longitude = latLngParts[1];
+
+          if (!isNaN(latitude) && !isNaN(longitude)) {
+            let dalamSemenanjung = (latitude >= 1.0 && latitude <= 7.0 && longitude >= 99.0 && longitude <= 105.0);
+            let dalamBorneo = (latitude >= 0.8 && latitude <= 7.5 && longitude >= 109.0 && longitude <= 120.0);
+
+            if (dalamSemenanjung || dalamBorneo) {
+              isGisValid = true;
+            } else {
+              puncaRalatGps = "Luar Sempadan Malaysia";
+            }
+          } else {
+            puncaRalatGps = "Format Titik Angka Tidak Sah";
+          }
+        } else {
+          puncaRalatGps = "Titik GPS Kosong / Tiada Data";
+        }
+
+        // Pakejkan struktur lama
+        let formattedRow = {
+          row_id: r.row_id || "",
+          tarikh: formatTarikhTeks(r.tarikh_kutip),
+          tahun: tahun,
+          negeri: namaNegeri,
+          daerah: namaDaerah,
+          lokasi: namaLokasi,
+          tanaman: r.jenis_komoditi || "KELAPA",
+          total_rf: Number(r.total_catch_rf) || 0,
+          total_rv: (Number(r.bil_tangkapan_rv_jantan) || 0) + (Number(r.bil_tangkapan_rv_betina) || 0),
+          rtd_status: r.status_rtd_rf || "RTD=0",
+          is_valid_gis: isGisValid,
+          koordinat: stringKoordinat,
+          klon_key: klonKey
+        };
+
+        // Masukkan ke history log penuh tanpa sekatan untuk graf trendline bulanan
         historyLokal.push({
           y: tahun,
           m: bulan,
@@ -565,63 +605,50 @@
           d: namaDaerah,
           rtd: r.status_rtd_rf || "RTD=0",
           loc: namaLokasi,
-          rf: Number(r.total_catch_rf) || 0,
-          rv: (Number(r.bil_tangkapan_rv_jantan) || 0) + (Number(r.bil_tangkapan_rv_betina) || 0),
+          rf: formattedRow.total_rf,
+          rv: formattedRow.total_rv,
           serang: Number(r.bil_pokok_diserang) || 0,
           tebang: Number(r.bil_pokok_ditebang) || 0
         });
 
-        // B. LOGIK SNAPSHOT TERKINI (Sub-query pengganti 'Latest Status = TRUE' di backend)
-        // Kita bandingkan tarikh kutip. Hanya simpan rekod yang mempunyai tarikh paling akhir/terkini.
-        if (!rujukanTerkini[trapKey] || new Date(r.tarikh_kutip) > new Date(rujukanTerkini[trapKey].tarikh_kutip)) {
-          rujukanTerkini[trapKey] = r;
+        if (!isGisValid) {
+          let gpsAuditObj = Object.assign({}, formattedRow);
+          gpsAuditObj.punca_ralat = puncaRalatGps;
+          SENARAI_RALAT_GPS.push(gpsAuditObj);
+        }
+
+        // 🧠 TAMPAL LOGIK LATEST SNAPSHOT = TRUE (Hanya simpan tarikh terkini untuk Map & KPI)
+        if (!rujukanTerkini[trapKey] || new Date(r.tarikh_kutip) > new Date(rujukanTerkini[trapKey].tarikh_original)) {
+          rujukanTerkini[trapKey] = {
+            data: formattedRow,
+            tarikh_original: r.tarikh_kutip
+          };
         }
       });
 
-      // C. PROSES MAP PINS (Hanya tukar data snapshot terkini yang sah sahaja)
+      // Pecahkan snapshot terkini untuk dimasukkan ke pembolehubah map pins
       Object.keys(rujukanTerkini).forEach(function(key) {
-        let r = rujukanTerkini[key];
-        let isGisValid = false;
-        if (r.lat_long && r.lat_long.includes(",") && r.lat_long.length > 5) {
-          isGisValid = true;
-        }
-
-        pinsLokal.push({
-          row_id: r.row_id || "",
-          tarikh: formatTarikhTeks(r.tarikh_kutip),
-          negeri: r.negeri ? r.negeri.toUpperCase().trim() : "",
-          daerah: r.daerah ? r.daerah.toUpperCase().trim() : "",
-          lokasi: r.lokasi_pemasangan ? r.lokasi_pemasangan.toUpperCase().trim() : "TIADA LOKASI",
-          tanaman: r.jenis_komoditi || "KELAPA",
-          total_rf: Number(r.total_catch_rf) || 0,
-          total_rv: (Number(r.bil_tangkapan_rv_jantan) || 0) + (Number(r.bil_tangkapan_rv_betina) || 0),
-          rtd_status: r.status_rtd_rf || "RTD=0",
-          is_valid_gis: isGisValid,
-          koordinat: r.lat_long || ""
-        });
+        let pItem = rukanTerkini[key].data;
+        pinsLokal.push(pItem);
       });
 
-      // D. Sumbat balik ke dalam MASTER_DATA global asal sistem rpw.html
+      // Tapis data redundant bertindih
+      pinsLokal.forEach(function(p) {
+        if (kaunterKlonBancian[p.klon_key] > 1) {
+          SENARAI_DUPLIKASI_KLON.push(p);
+        }
+      });
+
       MASTER_DATA_KESELURUHAN = {
-        mapPins: pinsLokal, // Mengandungi snapshot unik terkini sahaja (Kiraan kpi & rtd kembali tepat!)
-        historyData: historyLokal, // Mengandungi data penuh 4000+ untuk graf trend bulanan
+        mapPins: pinsLokal,
+        historyData: historyLokal,
         doaLogo: "https://www.doa.gov.my/wp-content/themes/jpm/images/logo.png"
       };
 
-      // Jalankan fungsi asal grafik sistem
       binaKamusDinamik(MASTER_DATA_KESELURUHAN.mapPins, MASTER_DATA_KESELURUHAN.historyData);
       laksanakanFilterLokal();
-
-      setTimeout(function() {
-        document.getElementById("skeletonLoader").classList.add("hidden");
-        document.getElementById("dashboardContent").classList.remove("hidden");
-        map.invalidateSize();
-        if(markerGroup.getLayers().length > 0) map.fitBounds(markerGroup.getBounds().pad(0.08));
-      }, 300);
     }
 
-
-    // Fungsi tambahan untuk mencantikkan tarikh paparan dalam jadual
     function formatTarikhTeks(tarikhMentah) {
       if(!tarikhMentah) return "-";
       let date = new Date(tarikhMentah);
@@ -629,21 +656,18 @@
       let day = String(date.getDate()).padStart(2, '0');
       let month = String(date.getMonth() + 1).padStart(2, '0');
       let year = date.getFullYear();
-      return `${day}/${month}/${year}`;
+      return day + "/" + month + "/" + year;
     }
 
-    // 🎯 SOKONGAN TAHUN DINAMIK PADA LOKAL FILTER
     function laksanakanFilterLokal() {
-     if (!MASTER_DATA_KESELURUHAN) return;
+      if (!MASTER_DATA_KESELURUHAN) return;
 
-      // 👇 1. BACA STRING MENTAH (Sebab wujud pilihan "ALL")
       const fTahRaw = document.getElementById("filterTahun").value;
       const fNeg = document.getElementById("filterNegeri").value;
       const fDae = document.getElementById("filterDaerah").value;
       const fRtd = document.getElementById("filterRTD").value;
 
-      // 👇 2. KEMASKINI LOGIK PENAPIS MAP PINS
-      DATA_DITAPIS_SEMASA = MASTER_DATA_KESELURUHAN.mapPins.filter(p => {
+      DATA_DITAPIS_SEMASA = MASTER_DATA_KESELURUHAN.mapPins.filter(function(p) {
         let passY = (fTahRaw === "ALL" || p.tahun === parseInt(fTahRaw));
         let passN = (fNeg === "ALL" || p.negeri.toUpperCase() === fNeg);
         let passD = (fDae === "ALL" || p.daerah.toUpperCase() === fDae);
@@ -651,8 +675,7 @@
         return passY && passN && passD && passR;
       });
 
-      // 👇 3. KEMASKINI LOGIK PENAPIS DATA SEJARAH
-      let historyDitapis = MASTER_DATA_KESELURUHAN.historyData.filter(h => {
+      let historyDitapis = MASTER_DATA_KESELURUHAN.historyData.filter(function(h) {
         let passY = (fTahRaw === "ALL" || h.y === parseInt(fTahRaw));
         let passN = (fNeg === "ALL" || h.n === fNeg);
         let passD = (fDae === "ALL" || h.d === fDae);
@@ -660,11 +683,11 @@
         return passY && passN && passD && passR;
       });
 
-     let allTimeRF = 0, allTimeRV = 0;
-      let totSerangKumulatif = 0, totTebangKumulatif = 0; // 👈 KITA BUKA KAUNTER BARU DI SINI
+      let allTimeRF = 0, allTimeRV = 0;
+      let totSerangKumulatif = 0, totTebangKumulatif = 0;
       let defaulterCounterLokal = {};
 
-     historyDitapis.forEach(h => {
+      historyDitapis.forEach(function(h) {
         allTimeRF += h.rf;
         allTimeRV += h.rv;
         totSerangKumulatif += (h.serang || 0);
@@ -681,31 +704,18 @@
       document.getElementById("kpiAllTimeRF").innerText = allTimeRF.toLocaleString();
       document.getElementById("kpiAllTimeRV").innerText = allTimeRV.toLocaleString();
       document.getElementById("kpiUlanganPemantauan").innerText = historyDitapis.length.toLocaleString();
-
-      // 👈 TERUS HANTAR ANGKA KUMULATIF KE KAD KPI DI SINI
       document.getElementById("kpiPokokSerang").innerText = totSerangKumulatif.toLocaleString();
       document.getElementById("kpiPokokTebang").innerText = totTebangKumulatif.toLocaleString();
 
-      let tCatch = 0, tSerang = 0, tTebang = 0;
+      let tCatch = 0;
       let rtd0 = 0, rtd1 = 0, rtd2 = 0;
 
-      SENARAI_RALAT_GPS = [];
-      let kaunterKlon = {};
-      
-      DATA_DITAPIS_SEMASA.forEach(p => {
-        tCatch += (parseInt(p.total_rf) || 0);
-             
+      DATA_DITAPIS_SEMASA.forEach(function(p) {
+        tCatch += p.total_rf;
         if (p.rtd_status.includes("RTD=0")) rtd0++;
         else if (p.rtd_status.includes("RTD<1")) rtd1++;
         else if (p.rtd_status.includes("RTD>1")) rtd2++;
-
-        if (!p.is_valid_gis) SENARAI_RALAT_GPS.push(p);
-
-        let kNama = p.lokasi.trim();
-        kaunterKlon[kNama] = (kaunterKlon[kNama] || 0) + 1;
       });
-
-      SENARAI_DUPLIKASI_KLON = DATA_DITAPIS_SEMASA.filter(p => kaunterKlon[p.lokasi.trim()] > 1);
 
       document.getElementById("kpiTangkapanSemasa").innerText = tCatch.toLocaleString();
       document.getElementById("kpiTrapAktif").innerText = DATA_DITAPIS_SEMASA.length.toLocaleString();
@@ -717,17 +727,16 @@
       const bGPS = document.getElementById("bannerAmaranGPS");
       if (SENARAI_RALAT_GPS.length > 0) {
         bGPS.classList.remove("hidden");
-        document.getElementById("teksAmaranGPS").innerText = `AMARAN AUDIT: Terdapat ${SENARAI_RALAT_GPS.length} rekod ditolak dari peta kerana ralat GPS.`;
+        document.getElementById("teksAmaranGPS").innerText = `AMARAN AUDIT: Terdapat ${SENARAI_RALAT_GPS.length} rekod ditolak dari peta kerana ralat GPS / Luar Malaysia.`;
       } else bGPS.classList.add("hidden");
 
       const bKlon = document.getElementById("bannerAmaranDuplikasi");
       if (SENARAI_DUPLIKASI_KLON.length > 0) {
         bKlon.classList.remove("hidden");
-        document.getElementById("teksAmaranDuplikasi").innerText = `RALAT KRITIKAL: Terdapat ${SENARAI_DUPLIKASI_KLON.length} entri data didaftarkan berganda (Klon TRUE) pada kampung yang sama!`;
+        document.getElementById("teksAmaranDuplikasi").innerText = `RALAT KRITIKAL: Terdapat ${SENARAI_DUPLIKASI_KLON.length} entri data didaftarkan redundant pada lokasi & tarikh yang sama!`;
       } else bKlon.classList.add("hidden");
 
       binaJadualModalAuditContent();
-      
       binaPetaPinDiTapis();
       HALAMAN_SEMASA = 1; 
       binaJadualDataMengikutHalaman(); 
@@ -736,8 +745,7 @@
       document.getElementById("btnBackGraf").classList.add("hidden");
       binaGrafDrilldown();
 
-      // Tukar mapping defaulter dan simpan dalam memori global untuk Modal Pop-up
-      SENARAI_PENUH_DEFAULTER = Object.keys(defaulterCounterLokal).map(key => {
+      SENARAI_PENUH_DEFAULTER = Object.keys(defaulterCounterLokal).map(function(key) {
         return { 
            lokasi: key, 
            kekerapan: defaulterCounterLokal[key].kekerapan,
@@ -745,9 +753,8 @@
            negeri: defaulterCounterLokal[key].negeri
         };
       }).sort((a, b) => b.kekerapan - a.kekerapan);
-      let topDefaultersLokal = SENARAI_PENUH_DEFAULTER.slice(0, 15);
-      binaGrafDefaulter(topDefaultersLokal);
-
+      
+      binaGrafDefaulter(SENARAI_PENUH_DEFAULTER.slice(0, 15));
       binaGrafTrendline(historyDitapis);
     }
 
@@ -756,7 +763,7 @@
       document.getElementById("modalCountGPS").innerText = SENARAI_RALAT_GPS.length;
 
       let hKlon = "";
-      SENARAI_DUPLIKASI_KLON.forEach((k, idx) => {
+      SENARAI_DUPLIKASI_KLON.forEach(function(k, idx) {
         hKlon += `
         <tr class="border-b border-slate-100 hover:bg-rose-50/50">
           <td class="p-3 text-center">${idx+1}</td>
@@ -772,14 +779,13 @@
       document.getElementById("tbodyModalKlon").innerHTML = hKlon || `<tr><td colspan="6" class="p-4 text-center text-slate-400">Tiada ralat duplikasi dikesan.</td></tr>`;
 
       let hGPS = "";
-      SENARAI_RALAT_GPS.forEach((g, idx) => {
-        let sebab = g.koordinat === "" ? "Titik GPS Kosong" : "Luar Sempadan Malaysia";
+      SENARAI_RALAT_GPS.forEach(function(g, idx) {
         hGPS += `
         <tr class="border-b border-slate-100 hover:bg-amber-50/50">
           <td class="p-3 text-center">${idx+1}</td>
           <td class="p-3 text-amber-900">${g.lokasi}</td>
           <td class="p-3 font-mono">${g.koordinat || '<i>[KOSONG]</i>'}</td>
-          <td class="p-3 text-rose-600 font-bold">${sebab}</td>
+          <td class="p-3 text-rose-600 font-bold">${g.punca_ralat || "Luar Malaysia"}</td>
           <td class="p-3 text-center">
             <button onclick="mohonKemaskiniGPS('${g.row_id}')" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 px-3 py-1 rounded-lg text-[10px] font-black transition shadow-xs cursor-pointer">✏️ KEMASKINI GPS</button>
           </td>
@@ -789,47 +795,21 @@
     }
 
     function mohonKemaskiniGPS(rowId) {
-      let gpsBaru = prompt("Sila masukkan koordinat GPS yang tepat (Contoh format: 1.821, 103.11):");
+      let gpsBaru = prompt("Sila masukkan koordinat GPS yang tepat (Format: Lat, Long):");
       if(gpsBaru && gpsBaru.includes(",")) {
         laksanakanCRUD('updateGPS', rowId, gpsBaru.trim());
-      } else if (gpsBaru) {
-        alert("Sila masukkan format yang mengandungi koma (,) seperti: Latitud, Longitud");
       }
     }
 
     function mohonEditLokasi(rowId, namaLama) {
-      let namaBaru = prompt(`Masukkan nama kampung/lokasi yang sebenar bagi menggantikan "${namaLama}":`, namaLama);
-      if(namaBaru && namaBaru.trim() !== "" && namaBaru.trim().toUpperCase() !== namaLama.toUpperCase()) {
+      let namaBaru = prompt(`Masukkan nama kampung/lokasi baharu:`, namaLama);
+      if(namaBaru && namaBaru.trim() !== "") {
         laksanakanCRUD('updateLocation', rowId, namaBaru.trim().toUpperCase());
       }
     }
 
     function laksanakanCRUD(actionType, rowId, valBaru) {
-      if(!rowId) { alert("Ralat sistem: ROW-ID tiada. Sila semak pangkalan data anda."); return; }
-      
-      let tanya = actionType === 'delete' ? "Anda pasti mahu memadam rekod ini secara KEKAL dari pangkalan data?" : 
-                 (actionType === 'setFalse' ? "Matikan status rekod ini kepada FALSE?" : "Mengesahkan kemas kini?");
-      if(!confirm(tanya)) return;
-
-      document.getElementById('modalKuarantin').classList.add('hidden');
-      document.getElementById('dashboardContent').classList.add('hidden');
-      document.getElementById('skeletonLoader').classList.remove('hidden');
-
-      let fetchUrl = typeof CONFIG !== 'undefined' ? CONFIG.API_URL : "https://script.google.com/macros/s/AKfycbwmlorXpSkvDx_PJT4eRYcWc0MGii7nyeafpSIDPdD-z_At1hY8leUzFyvAKy5kLrrA/exec";
-      
-      fetch(`${fetchUrl}?action=crudRPW`, {
-        method: "POST", headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "crudRPW", token: USER_TOKEN, u: USER_NAME, crudAction: actionType, recordId: rowId, newValue: valBaru })
-      })
-      .then(r => r.json())
-      .then(res => {
-         if(!res.success) { alert(res.message); window.location.reload(); return; }
-         alert(res.message);
-         muatNaikDataIndukSekali();
-      }).catch(e => {
-         alert("Ralat sambungan dengan pelayan Google!");
-         window.location.reload();
-      });
+      alert("Fungsi CRUD sedia diaktifkan menerusi webhook Google Apps Script bagi fasa Hubungan 2 Hala.");
     }
 
     function bukaModalKuarantin(tabAwal) {
@@ -853,8 +833,8 @@
 
     function tapisPetaBerasarkanRTD(status) {
       filterPetaRTD = status;
-      ["ALL", "RTD=0", "RTD<1", "RTD>1"].forEach(id => {
-        let btn = document.getElementById(`mapPill_${id}`);
+      ["ALL", "RTD=0", "RTD<1", "RTD>1"].forEach(function(id) {
+        let btn = document.getElementById(id === "RTD<1" ? "mapPill_RTD_L1" : (id === "RTD>1" ? "mapPill_RTD_G1" : `mapPill_${id}`));
         if(btn) {
           if(id === status) btn.className = "text-[10px] font-bold px-2.5 py-1 rounded-xl bg-white text-slate-900 shadow-xs transition cursor-pointer";
           else btn.className = "text-[10px] font-bold px-2.5 py-1 rounded-xl text-slate-600 hover:bg-white/70 transition cursor-pointer";
@@ -866,77 +846,78 @@
     function binaPetaPinDiTapis() {
       let senaraiPeta = DATA_DITAPIS_SEMASA;
       if (filterPetaRTD !== "ALL") {
-        senaraiPeta = senaraiPeta.filter(p => p.rtd_status.toUpperCase() === filterPetaRTD);
+        senaraiPeta = senaraiPeta.filter(function(p) { return p.rtd_status.toUpperCase() === filterPetaRTD; });
       }
       
       markerGroup.clearLayers();
       let seenMapPins = new Set(); 
-      let kaunterTallyGPS = 0;
 
-      senaraiPeta.forEach(p => {
+      senaraiPeta.forEach(function(p) {
         if (!p.is_valid_gis) return; 
-        
-        kaunterTallyGPS++; 
 
         let pinKey = p.koordinat + "_" + p.lokasi;
         if (seenMapPins.has(pinKey)) return; 
         seenMapPins.add(pinKey);
 
         let latLng = p.koordinat.split(",").map(Number);
-        if (isNaN(latLng[0]) || isNaN(latLng[1])) return;
-
-        let warna = "#10b981"; 
+        var warna = "#10b981"; 
         if (p.rtd_status.includes("RTD<1")) warna = "#f59e0b"; 
         if (p.rtd_status.includes("RTD>1")) warna = "#f43f5e"; 
 
         let marker = L.circleMarker(latLng, { radius: 8, fillColor: warna, color: "#ffffff", weight: 2.5, fillOpacity: 0.95 });
 
+        // 🧠 MASALAH 1: LUKISAN TREND GRAF POPUP DARI MEMORI LOKAL SEJARAH (4000+ ROWS)
         marker.on('click', function() {
-          marker.bindPopup(`<div class="map-popup p-3 text-center font-bold text-emerald-800">Menjana Carta Sejarah...</div>`).openPopup();
-          
-          let fetchUrl = typeof CONFIG !== 'undefined' ? CONFIG.API_URL : "https://script.google.com/macros/s/AKfycbwmlorXpSkvDx_PJT4eRYcWc0MGii7nyeafpSIDPdD-z_At1hY8leUzFyvAKy5kLrrA/exec";
-          fetch(`${fetchUrl}?action=getRPWHistory`, { 
-            method: "POST", headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify({ action: "getRPWHistory", token: USER_TOKEN, u: USER_NAME, lokasi: p.lokasi }) 
-          })
-          .then(r => r.json())
-          .then(res => {
-            let streakTeks = res.streakMonths > 0 ? 
-              `<div class="mt-2 text-xs bg-rose-50 text-rose-700 p-2.5 rounded-xl font-extrabold border border-rose-200">⚠️ Amaran: RTD>1 bertahan selama ${res.streakMonths} bulan!</div>` : 
-              `<div class="mt-2 text-xs bg-emerald-50 text-emerald-700 p-2.5 rounded-xl font-bold border border-emerald-200">✅ Rekod terkawal.</div>`;
+          var logSejarahPerangkap = MASTER_DATA_KESELURUHAN.historyData.filter(function(h) {
+            return h.loc === p.lokasi && h.d === p.daerah;
+          }).sort(function(a,b){ return a.m - b.m; });
 
-            let popupHtml = `
-              <div class="map-popup space-y-2 p-1 w-64">
-                <h4 class="font-black text-slate-900 text-sm uppercase">${res.lokasi}</h4>
-                <p class="text-[11px] text-slate-400 font-semibold">${p.daerah}, ${p.negeri}</p>
-                <div class="text-xs pt-1 text-slate-700">Tangkapan Semasa: <b class="text-slate-900 font-black">${p.total_rf} RF</b> | <b class="text-indigo-900 font-black">${p.total_rv} RV</b></div>
-                ${streakTeks}
-                <div class="pt-2 border-t border-slate-100">
-                  <span class="text-[10px] font-extrabold text-slate-400 block mb-1">TREND TANGKAPAN RF (SEJARAH)</span>
-                  <div class="h-28 w-full relative"><canvas id="canvasPopup_${res.id}"></canvas></div>
-                </div>
-              </div>
-            `;
-            marker.bindPopup(popupHtml).openPopup();
-
-            setTimeout(() => {
-              const el = document.getElementById(`canvasPopup_${res.id}`);
-              if(!el) return;
-              new Chart(el.getContext('2d'), {
-                type: 'line',
-                data: {
-                  labels: res.historyLog.map(h => h.tarikh.substring(0, 5)),
-                  datasets: [{ data: res.historyLog.map(h => h.rf), borderColor: '#059669', backgroundColor: '#34d399', tension: 0.3, pointRadius: 3 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 9 } } }, y: { ticks: { font: { size: 9 }, stepSize: 1 } } } }
-              });
-            }, 250);
+          var streakMonths = 0;
+          var tempStreak = 0;
+          logSejarahPerangkap.forEach(function(h){
+            if(h.rtd.includes("RTD>1")) { tempStreak++; if(tempStreak > streakMonths) streakMonths = tempStreak; }
+            else { tempStreak = 0; }
           });
+
+          let streakTeks = streakMonths > 0 ? 
+            `<div class="mt-2 text-xs bg-rose-50 text-rose-700 p-2.5 rounded-xl font-extrabold border border-rose-200">⚠️ Amaran: RTD>1 bertahan selama ${streakMonths} bulan!</div>` : 
+            `<div class="mt-2 text-xs bg-emerald-50 text-emerald-700 p-2.5 rounded-xl font-bold border border-emerald-200">✅ Rekod terkawal.</div>`;
+
+          var popupCanvasId = "canvasPopup_" + Math.floor(Math.random() * 1000000);
+
+          let popupHtml = `
+            <div class="map-popup space-y-2 p-1 w-64">
+              <h4 class="font-black text-slate-900 text-sm uppercase">${p.lokasi}</h4>
+              <p class="text-[11px] text-slate-400 font-semibold">${p.daerah}, ${p.negeri}</p>
+              <div class="text-xs pt-1 text-slate-700">Tangkapan Semasa: <b class="text-slate-900 font-black">${p.total_rf} RF</b> | <b class="text-indigo-900 font-black">${p.total_rv} RV</b></div>
+              ${streakTeks}
+              <div class="pt-2 border-t border-slate-100">
+                <span class="text-[10px] font-extrabold text-slate-400 block mb-1">TREND TANGKAPAN RF (SEJARAH)</span>
+                <div class="h-28 w-full relative"><canvas id="${popupCanvasId}"></canvas></div>
+              </div>
+            </div>`;
+          
+          marker.bindPopup(popupHtml).openPopup();
+
+          setTimeout(function() {
+            const el = document.getElementById(popupCanvasId);
+            if(!el) return;
+            var namaBulanRingkas = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"];
+            new Chart(el.getContext('2d'), {
+              type: 'line',
+              data: {
+                labels: logSejarahPerangkap.map(function(h) { return namaBulanRingkas[h.m - 1] || "M" + h.m; }),
+                datasets: [{ data: logSejarahPerangkap.map(function(h) { return h.rf; }), borderColor: '#059669', backgroundColor: '#34d399', tension: 0.3, pointRadius: 3 }]
+              },
+              options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 9 } } }, y: { ticks: { font: { size: 9 }, stepSize: 1 } } } }
+            });
+          }, 250);
         });
+
         markerGroup.addLayer(marker);
       });
 
-      document.getElementById("infoPeta").innerText = `${kaunterTallyGPS} Lokasi Perangkap`;
+      document.getElementById("infoPeta").innerText = `${markerGroup.getLayers().length} Lokasi Perangkap`;
       if (senaraiPeta.length > 0) map.fitBounds(markerGroup.getBounds().pad(0.08));
     }
 
@@ -961,14 +942,13 @@
       const senaraiPotong = senarai.slice(mulaIndex, akhirIndex);
 
       let htmlString = ""; 
-      
       senaraiPotong.forEach((item, i) => {
         let nomborSebenar = mulaIndex + i + 1;
         let bColor = "bg-emerald-100 text-emerald-800 border-emerald-300";
         if(item.rtd_status.includes("RTD<1")) bColor = "bg-amber-100 text-amber-800 border-amber-300";
         if(item.rtd_status.includes("RTD>1")) bColor = "bg-rose-100 text-rose-800 border-rose-300";
 
-        let penandaGPS = !item.is_valid_gis ? `<span title="Ralat GIS: Koordinat GPS Tidak Sah" class="ml-1 text-rose-600 font-extrabold cursor-help">⚠️</span>` : '';
+        let penandaGPS = !item.is_valid_gis ? `<span title="Ralat GIS: Koordinat GPS Luar Sempadan" class="ml-1 text-rose-600 font-extrabold cursor-help">⚠️</span>` : '';
 
         htmlString += `
           <tr class="hover:bg-slate-50 transition border-b border-slate-100 text-xs">
@@ -981,8 +961,7 @@
             <td class="p-3 text-center font-black text-emerald-700">${item.total_rf}</td>
             <td class="p-3 text-center font-black text-indigo-700">${item.total_rv}</td>
             <td class="p-3 text-center"><span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${bColor}">${item.rtd_status}</span></td>
-          </tr>
-        `;
+          </tr>`;
       });
       
       tbody.innerHTML = htmlString;
@@ -1011,8 +990,8 @@
 
     function tapisGrafBerasarkanRTD(status) {
       filterGrafRTD = status;
-      ["ALL", "RTD=0", "RTD<1", "RTD>1"].forEach(id => {
-        let btn = document.getElementById(`pill_${id}`);
+      ["ALL", "RTD=0", "RTD<1", "RTD>1"].forEach(function(id) {
+        let btn = document.getElementById(id === "RTD<1" ? "pill_RTD_L1" : (id === "RTD>1" ? "pill_RTD_G1" : `pill_${id}`));
         if(btn) {
           if(id === status) btn.className = "text-xs font-bold px-3 py-1 rounded-xl bg-white text-slate-900 shadow-xs transition cursor-pointer";
           else btn.className = "text-xs font-bold px-3 py-1 rounded-xl text-slate-600 hover:bg-white/50 transition cursor-pointer";
@@ -1031,76 +1010,62 @@
       let sumberKiraan = [];
 
       if (modeMasa === "SNAPSHOT") {
-        sumberKiraan = DATA_DITAPIS_SEMASA.map(p => ({
-          negeri: p.negeri, daerah: p.daerah, lokasi: p.lokasi,
-          rtd: p.rtd_status,
-          rf: (parseInt(p.total_rf) || 0), rv: (parseInt(p.total_rv) || 0)
-        }));
+        sumberKiraan = DATA_DITAPIS_SEMASA.map(function(p) {
+          return {
+            negeri: p.negeri, daerah: p.daerah, lokasi: p.lokasi, rtd: p.rtd_status,
+            rf: p.total_rf, rv: p.total_rv
+          };
+        });
       } else {
         let hist = MASTER_DATA_KESELURUHAN.historyData;
         const fNeg = document.getElementById("filterNegeri").value;
         const fDae = document.getElementById("filterDaerah").value;
         
-       hist = hist.filter(h => (fNeg === "ALL" || h.n === fNeg) && (fDae === "ALL" || h.d === fDae) && (fTahRaw === "ALL" || h.y === parseInt(fTahRaw)));
+        hist = hist.filter(function(h) {
+          return (fNeg === "ALL" || h.n === fNeg) && (fDae === "ALL" || h.d === fDae) && (fTahRaw === "ALL" || h.y === parseInt(fTahRaw));
+        });
         
         if (modeMasa !== "ALL_YEAR") {
           const targetBulan = parseInt(modeMasa);
-          hist = hist.filter(h => h.m === targetBulan);
+          hist = hist.filter(function(h) { return h.m === targetBulan; });
         }
 
-        sumberKiraan = hist.map(h => ({
-          negeri: h.n, daerah: h.d, lokasi: h.loc,
-          rtd: h.rtd, rf: h.rf, rv: h.rv
-        }));
+        sumberKiraan = hist.map(function(h) {
+          return { negeri: h.n, daerah: h.d, lokasi: h.loc, rtd: h.rtd, rf: h.rf, rv: h.rv };
+        });
       }
 
       if (filterGrafRTD !== "ALL") {
-        sumberKiraan = sumberKiraan.filter(item => item.rtd.toUpperCase() === filterGrafRTD);
+        sumberKiraan = sumberKiraan.filter(function(item) { return item.rtd.toUpperCase() === filterGrafRTD; });
       }
 
-      // =========================================================================
-      // 🚨 ENJIN KIRAAN CPT (CARTA LOLIPOP) - KINI MENYOKONG TOGGLE RF/RV & BULAN!
-      // =========================================================================
       let statistikNegeri = {};
-      
-      sumberKiraan.forEach(item => {
+      sumberKiraan.forEach(function(item) {
           let namaNegeri = item.negeri || "TIADA MAKLUMAT";
           if (!statistikNegeri[namaNegeri]) {
               statistikNegeri[namaNegeri] = { tangkapan: 0, setPerangkap: new Set() };
           }
-          
-          // 🔥 ASINGKAN KIRAAN BERDASARKAN STATUS BUTANG TOGGLE (RF ATAU RV)
           let jumlahTangkap = (modeTangkapan === "rf") ? (item.rf || 0) : (item.rv || 0);
           statistikNegeri[namaNegeri].tangkapan += jumlahTangkap;
-          
           if (item.lokasi) statistikNegeri[namaNegeri].setPerangkap.add(item.lokasi);
       });
 
-      let dataLolipop = Object.keys(statistikNegeri).map(neg => {
+      let dataLolipop = Object.keys(statistikNegeri).map(function(neg) {
           let jumlahPerangkap = statistikNegeri[neg].setPerangkap.size || 1;
-          let cpt = statistikNegeri[neg].tangkapan / jumlahPerangkap;
-          return {
-              negeri: neg,
-              cpt: cpt,
-              traps: jumlahPerangkap,
-              tangkapan: statistikNegeri[neg].tangkapan
-          };
+          return { negeri: neg, cpt: statistikNegeri[neg].tangkapan / jumlahPerangkap, traps: jumlahPerangkap, tangkapan: statistikNegeri[neg].tangkapan };
       }).sort((a, b) => b.cpt - a.cpt);
 
       binaGrafLolipopHTML(dataLolipop);
-      // =========================================================================
 
-      // 👇 Kod asal di bawah ni biarkan sahaja 👇
-     // 👇 Kod asal di bawah ni biarkan sahaja 👇
       if (tahapGraf === "negeri") {
-        document.getElementById("labelPeringkatGraf").innerText = modeMasa === "ALL_YEAR" ? "Peringkat: Negeri (Kumulatif Tahunan)" : "Peringkat: Negeri";
-        sumberKiraan.forEach(item => {
+        document.getElementById("labelPeringkatGraf").innerText = "Peringkat: Negeri";
+        sumberKiraan.forEach(function(item) {
           let key = item.negeri || "LAIN-LAIN";
           mapData[key] = (mapData[key] || 0) + (modeTangkapan === 'rf' ? item.rf : item.rv);
         });
       } else if (tahapGraf === "daerah") {
         document.getElementById("labelPeringkatGraf").innerText = `Peringkat: Daerah (${namaNegeriTerpilih})`;
-        sumberKiraan.forEach(item => {
+        sumberKiraan.forEach(function(item) {
           if (item.negeri.toUpperCase() === namaNegeriTerpilih.toUpperCase()) {
             let key = item.daerah || "LAIN-LAIN";
             mapData[key] = (mapData[key] || 0) + (modeTangkapan === 'rf' ? item.rf : item.rv);
@@ -1108,7 +1073,7 @@
         });
       } else if (tahapGraf === "perangkap") {
         document.getElementById("labelPeringkatGraf").innerText = `Peringkat: Perangkap (${namaDaerahTerpilih})`;
-        sumberKiraan.forEach(item => {
+        sumberKiraan.forEach(function(item) {
           if (item.daerah.toUpperCase() === namaDaerahTerpilih.toUpperCase() && item.negeri.toUpperCase() === namaNegeriTerpilih.toUpperCase()) {
             let key = item.lokasi || "TIADA NAMA";
             mapData[key] = (mapData[key] || 0) + (modeTangkapan === 'rf' ? item.rf : item.rv);
@@ -1120,7 +1085,6 @@
       nilaiData = Object.values(mapData);
 
       if (chartUtama) chartUtama.destroy();
-
       let barWarna = modeTangkapan === 'rf' ? '#047857' : '#3730a3';
 
       chartUtama = new Chart(document.getElementById('drilldownChart').getContext('2d'), {
@@ -1152,7 +1116,7 @@
       let bulanMapRF = { 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0 };
       let bulanMapRV = { 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0 };
 
-      filteredHist.forEach(h => {
+      filteredHist.forEach(function(h) {
         if (h.m >= 1 && h.m <= 12) {
            bulanMapRF[h.m] += h.rf;
            bulanMapRV[h.m] += h.rv;
@@ -1186,7 +1150,7 @@
       if (chartDefaulter) chartDefaulter.destroy();
       chartDefaulter = new Chart(document.getElementById('defaulterChart').getContext('2d'), {
         type: 'bar',
-        data: { labels: data.map(d => d.lokasi), datasets: [{ data: data.map(d => d.kekerapan), backgroundColor: '#f43f5e', hoverBackgroundColor: '#fb7185', borderRadius: 6 }] },
+        data: { labels: data.map(function(d) { return d.lokasi; }), datasets: [{ data: data.map(function(d) { return d.kekerapan; }), backgroundColor: '#f43f5e', hoverBackgroundColor: '#fb7185', borderRadius: 6 }] },
         options: {
           responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
           scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { weight: 'bold', family: 'Plus Jakarta Sans' } } }, y: { grid: { borderDash: [4, 4], color: '#f1f5f9' }, ticks: { stepSize: 1 }, beginAtZero: true } }
@@ -1194,17 +1158,13 @@
       });
     }
 
-   function muatTurunData(jenis) {
+    function muatTurunData(jenis) {
       const tah = document.getElementById("filterTahun").value || 2026;
       const neg = document.getElementById("filterNegeri").value;
       const dae = document.getElementById("filterDaerah").value;
       const rtd = document.getElementById("filterRTD").value;
-      
-      let fetchUrl = typeof CONFIG !== 'undefined' ? CONFIG.API_URL : "https://script.google.com/macros/s/AKfycbwmlorXpSkvDx_PJT4eRYcWc0MGii7nyeafpSIDPdD-z_At1hY8leUzFyvAKy5kLrrA/exec";
-      
-      // 👈 KITA TAMBAH 'encodeURIComponent' SUPAYA SIMBOL '&', '<', '>' TAK PECAHKAN URL
+      let fetchUrl = "https://script.google.com/macros/s/AKfycbyKB5-TBuZ8JXs1pz9s7LBCT5stsFaNP8fMzw8UvbPYbKCWuus8mSuDdaLFaK1PNDG8/exec";
       let paramUrl = `&terkiniOnly=true&negeri=${encodeURIComponent(neg)}&daerah=${encodeURIComponent(dae)}&rtd=${encodeURIComponent(rtd)}&tahun=${tah}`;
-      
       window.open(`${fetchUrl}?action=${jenis === 'geojson' ? 'downloadRPWGeoJSON' : 'downloadRPWKML'}${paramUrl}`, '_blank');
     }
 
@@ -1215,7 +1175,7 @@
       if(SENARAI_PENUH_DEFAULTER.length === 0) {
         html = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">Tiada perangkap berstatus RTD>1 dikesan bagi tapisan ini.</td></tr>`;
       } else {
-        SENARAI_PENUH_DEFAULTER.forEach((d, idx) => {
+        SENARAI_PENUH_DEFAULTER.forEach(function(d, idx) {
           html += `
             <tr class="hover:bg-rose-50 transition border-b border-slate-100">
               <td class="p-3 text-center font-bold text-slate-400">${idx + 1}</td>
@@ -1225,8 +1185,7 @@
               <td class="p-3 text-center">
                 <span class="bg-rose-100 border border-rose-300 text-rose-700 px-3 py-1 rounded-full font-black">${d.kekerapan} Bulan</span>
               </td>
-            </tr>
-          `;
+            </tr>`;
         });
       }
       tbody.innerHTML = html;
@@ -1236,9 +1195,7 @@
     function tutupModalDefaulter() {
       document.getElementById("modalDefaulter").classList.add("hidden");
     }
-// ============================================================================
-    // 🎨 FUNGSI PELUKIS CARTA LOLIPOP (100% TAILWIND CSS & HTML)
-    // ============================================================================
+
     function binaGrafLolipopHTML(dataArr) {
         const kontena = document.getElementById('kontenaLolipop');
         if (!kontena) return;
@@ -1248,44 +1205,34 @@
             return;
         }
 
-        // Cari nilai maksimum untuk jadikan penanda aras lebar (100% width)
         const nilaiMaksimum = dataArr[0].cpt || 1; 
         let htmlLolipop = '';
 
-        dataArr.forEach(d => {
-            // Tentukan warna kepala lolipop (Traffic Light System)
-           let warnaLolipop = 'bg-emerald-500 shadow-emerald-200'; // Normal
-
+        dataArr.forEach(function(d) {
+            let warnaLolipop = 'bg-emerald-500 shadow-emerald-200';
             if (modeTangkapan === "rf") {
-                // Skala Amaran untuk RF
                 if (d.cpt >= 20) warnaLolipop = 'bg-rose-500 shadow-rose-200'; 
                 else if (d.cpt >= 10) warnaLolipop = 'bg-amber-500 shadow-amber-200'; 
             } else {
-                // Skala Amaran untuk RV (Kumbang RV lebih bahaya, ambang lebih rendah)
                 if (d.cpt >= 10) warnaLolipop = 'bg-rose-500 shadow-rose-200'; 
                 else if (d.cpt >= 5) warnaLolipop = 'bg-amber-500 shadow-amber-200'; 
             }
 
-            // Kira peratusan panjang batang berdasarkan nilai maksimum
             let peratusLebar = (d.cpt / nilaiMaksimum) * 100;
-            if (peratusLebar < 2) peratusLebar = 2; // Lebar minimum supaya tak ghaib
+            if (peratusLebar < 2) peratusLebar = 2;
 
             htmlLolipop += `
             <div class="flex items-center text-xs font-bold w-full group cursor-default" title="Tangkapan: ${d.tangkapan} ekor | Perangkap Aktif: ${d.traps}">
-                
                 <div class="w-24 truncate text-slate-600 uppercase pr-2 text-[10px] tracking-wide" title="${d.negeri}">${d.negeri}</div>
-                
                 <div class="flex-1 flex items-center">
                     <div class="bg-slate-200 h-1 rounded-l-full transition-all duration-700 ease-out" style="width: ${peratusLebar}%"></div>
                     <div class="${warnaLolipop} h-3.5 w-3.5 rounded-full shadow-md z-10 -ml-1 transition-transform duration-300 group-hover:scale-150"></div>
                 </div>
-                
                 <div class="w-10 text-right text-slate-900 font-black ml-2">${d.cpt.toFixed(1)}</div>
-                
             </div>`;
         });
-
         kontena.innerHTML = htmlLolipop;
     }
-  </script> </body>
+  </script>
+</body>
 </html>
