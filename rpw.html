@@ -537,14 +537,50 @@
       ambilBatchData(0);
     }
 
-    // Fungsi asing untuk memproses transformasi data setelah selesai sedut semua batch
-    function prosesDanLukisDashboard(rows) {
-      console.log("Supabase Engine TOTAL: Selesai! Menguruskan " + rows.length + " jumlah baris data keseluruhan.");
+        function prosesDanLukisDashboard(rows) {
+      console.log("Supabase Engine TOTAL: Berjaya sedut " + rows.length + " rekod mentah.");
 
       let pinsLokal = [];
       let historyLokal = [];
 
+      // 🧠 KITA BINA MAP UNTUK MENCARI REKOD TERKINI (LATEST SNAPSHOT) BAGI SETIAP PERANGKAP
+      // Kunci unik: Kombinasi Negeri + Daerah + Nama Lokasi Pemasangan
+      let rujukanTerkini = {};
+
       rows.forEach(function(r) {
+        let tkhKutip = new Date(r.tarikh_kutip);
+        let bulan = isNaN(tkhKutip.getMonth()) ? 1 : (tkhKutip.getMonth() + 1);
+        let tahun = isNaN(tkhKutip.getFullYear()) ? 2026 : tkhKutip.getFullYear();
+        
+        let namaNegeri = r.negeri ? r.negeri.toUpperCase().trim() : "";
+        let namaDaerah = r.daerah ? r.daerah.toUpperCase().trim() : "";
+        let namaLokasi = r.lokasi_pemasangan ? r.lokasi_pemasangan.toUpperCase().trim() : "TIADA LOKASI";
+        let trapKey = namaNegeri + "_" + namaDaerah + "_" + namaLokasi;
+
+        // A. SEMUA rekod tanpa had dimasukkan ke dalam History Data untuk graf trendline bulanan
+        historyLokal.push({
+          y: tahun,
+          m: bulan,
+          n: namaNegeri,
+          d: namaDaerah,
+          rtd: r.status_rtd_rf || "RTD=0",
+          loc: namaLokasi,
+          rf: Number(r.total_catch_rf) || 0,
+          rv: (Number(r.bil_tangkapan_rv_jantan) || 0) + (Number(r.bil_tangkapan_rv_betina) || 0),
+          serang: Number(r.bil_pokok_diserang) || 0,
+          tebang: Number(r.bil_pokok_ditebang) || 0
+        });
+
+        // B. LOGIK SNAPSHOT TERKINI (Sub-query pengganti 'Latest Status = TRUE' di backend)
+        // Kita bandingkan tarikh kutip. Hanya simpan rekod yang mempunyai tarikh paling akhir/terkini.
+        if (!rujukanTerkini[trapKey] || new Date(r.tarikh_kutip) > new Date(rujukanTerkini[trapKey].tarikh_kutip)) {
+          rujukanTerkini[trapKey] = r;
+        }
+      });
+
+      // C. PROSES MAP PINS (Hanya tukar data snapshot terkini yang sah sahaja)
+      Object.keys(rujukanTerkini).forEach(function(key) {
+        let r = rujukanTerkini[key];
         let isGisValid = false;
         if (r.lat_long && r.lat_long.includes(",") && r.lat_long.length > 5) {
           isGisValid = true;
@@ -563,31 +599,16 @@
           is_valid_gis: isGisValid,
           koordinat: r.lat_long || ""
         });
-
-        let tkh = new Date(r.tarikh_kutip);
-        let bulan = isNaN(tkh.getMonth()) ? 1 : (tkh.getMonth() + 1);
-        let tahun = isNaN(tkh.getFullYear()) ? 2026 : tkh.getFullYear();
-
-        historyLokal.push({
-          y: tahun,
-          m: bulan,
-          n: r.negeri ? r.negeri.toUpperCase().trim() : "",
-          d: r.daerah ? r.daerah.toUpperCase().trim() : "",
-          rtd: r.status_rtd_rf || "RTD=0",
-          loc: r.lokasi_pemasangan ? r.lokasi_pemasangan.toUpperCase().trim() : "LOKASI TIADA NAMA",
-          rf: Number(r.total_catch_rf) || 0,
-          rv: (Number(r.bil_tangkapan_rv_jantan) || 0) + (Number(r.bil_tangkapan_rv_betina) || 0),
-          serang: Number(r.bil_pokok_diserang) || 0,
-          tebang: Number(r.bil_pokok_ditebang) || 0
-        });
       });
 
+      // D. Sumbat balik ke dalam MASTER_DATA global asal sistem rpw.html
       MASTER_DATA_KESELURUHAN = {
-        mapPins: pinsLokal,
-        historyData: historyLokal,
+        mapPins: pinsLokal, // Mengandungi snapshot unik terkini sahaja (Kiraan kpi & rtd kembali tepat!)
+        historyData: historyLokal, // Mengandungi data penuh 4000+ untuk graf trend bulanan
         doaLogo: "https://www.doa.gov.my/wp-content/themes/jpm/images/logo.png"
       };
 
+      // Jalankan fungsi asal grafik sistem
       binaKamusDinamik(MASTER_DATA_KESELURUHAN.mapPins, MASTER_DATA_KESELURUHAN.historyData);
       laksanakanFilterLokal();
 
@@ -598,6 +619,7 @@
         if(markerGroup.getLayers().length > 0) map.fitBounds(markerGroup.getBounds().pad(0.08));
       }, 300);
     }
+
 
     // Fungsi tambahan untuk mencantikkan tarikh paparan dalam jadual
     function formatTarikhTeks(tarikhMentah) {
