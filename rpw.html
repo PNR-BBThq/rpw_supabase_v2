@@ -472,17 +472,15 @@
       laksanakanFilterLokal();
     }
 
-        function muatNaikDataIndukSekali() {
-      // 🛰️ SUNTIK KREDENSIAL SUPABASE KAU DI SINI (Repo Private & Selamat)
+    function muatNaikDataIndukSekali() {
       var SUPABASE_URL = "https://bgpbdhxpstomjqsbsopr.supabase.co"; 
       var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncGJkaHhwc3RvbWpxc2Jzb3ByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MTgzMzAsImV4cCI6MjA5Nzk5NDMzMH0.nc22VSgwl62Y5au-RVi0VU_wGhAjzdrbFKRAJrd6WSg";
       
       var rowsSemua = [];
-      var saizBatch = 1000; // Had maksimum Supabase per panggilan API
+      var saizBatch = 1000;
       
       console.log("Supabase Engine: Memulakan sedutan data berantai (Pagination Looping)...");
 
-      // Fungsi rekursif untuk sedut data batch demi batch sampai licin
       function ambilBatchData(mulaRow) {
         var akhirRow = mulaRow + saizBatch - 1;
         var url = SUPABASE_URL + "/rest/v1/tangkapan_rpw?select=*";
@@ -493,7 +491,7 @@
             "apikey": SUPABASE_ANON_KEY,
             "Authorization": "Bearer " + SUPABASE_ANON_KEY,
             "Content-Type": "application/json",
-            "Range": mulaRow + "-" + akhirRow // 🚀 Mengarah server hantar range baris spesifik
+            "Range": mulaRow + "-" + akhirRow
           }
         })
         .then(function(r) {
@@ -503,29 +501,22 @@
         .then(function(rowsBatch) {
           console.log("Supabase Engine: Berjaya ambil baris " + mulaRow + " hingga " + akhirRow + " (" + rowsBatch.length + " rekod)");
           
-          // Gabungkan batch data baharu ke dalam storan utama
           rowsSemua = rowsSemua.concat(rowsBatch);
 
-          // 🧠 JIKA REKOD YANG DIPULANGKAN TEPAT 1000, MAKSUDNYA ADA LAGI BAKI DATA DI SERVER
           if (rowsBatch.length === saizBatch) {
-            // Panggil batch seterusnya (Contoh: 0 -> 1000 -> 2000 -> 3000)
             ambilBatchData(mulaRow + saizBatch);
           } else {
-            // 🎉 JIKA KURANG DARI 1000, MAKSUDNYA SEMUA 4,000+ DATA DAH DISEDUT HABIS LICIN!
             prosesDanLukisDashboard(rowsSemua);
           }
         })
         .catch(function(e) {
           console.error("Ralat Looping Supabase:", e);
-          // Jika tersangkut di tengah jalan, kita tetap paksa lukis apa data yang sempat disedut
           if(rowsSemua.length > 0) prosesDanLukisDashboard(rowsSemua);
         });
       }
 
-      // Mulakan sedutan rantaian cahaya dari baris ke-0
       ambilBatchData(0);
     }
-
 
     function prosesDanLukisDashboard(rows) {
       console.log("Supabase Engine TOTAL: Selesai! Menguruskan " + rows.length + " jumlah baris data keseluruhan.");
@@ -551,10 +542,8 @@
         let trapKey = namaNegeri + "_" + namaDaerah + "_" + namaLokasi;
         let klonKey = namaLokasi + "_" + namaDaerah + "_" + tkhKutipStr;
 
-        // 🧠 MASALAH 3: KIRA LOGIK DATA REDUNDANT (LOKASI & TARIKH KUTIP SAMA)
         kaunterKlonBancian[klonKey] = (kaunterKlonBancian[klonKey] || 0) + 1;
 
-        // 🧠 MASALAH 2 & 4: SEMAKAN SEMPADAN GEOGRAFI MALAYSIA
         let isGisValid = false;
         let puncaRalatGps = "";
         let stringKoordinat = r.lat_long || "";
@@ -580,7 +569,6 @@
           puncaRalatGps = "Titik GPS Kosong / Tiada Data";
         }
 
-        // Pakejkan struktur lama
         let formattedRow = {
           row_id: r.row_id || "",
           tarikh: formatTarikhTeks(r.tarikh_kutip),
@@ -597,7 +585,6 @@
           klon_key: klonKey
         };
 
-        // Masukkan ke history log penuh tanpa sekatan untuk graf trendline bulanan
         historyLokal.push({
           y: tahun,
           m: bulan,
@@ -617,7 +604,6 @@
           SENARAI_RALAT_GPS.push(gpsAuditObj);
         }
 
-        // 🧠 TAMPAL LOGIK LATEST SNAPSHOT = TRUE (Hanya simpan tarikh terkini untuk Map & KPI)
         if (!rujukanTerkini[trapKey] || new Date(r.tarikh_kutip) > new Date(rujukanTerkini[trapKey].tarikh_original)) {
           rujukanTerkini[trapKey] = {
             data: formattedRow,
@@ -626,13 +612,11 @@
         }
       });
 
-      // Pecahkan snapshot terkini untuk dimasukkan ke pembolehubah map pins
       Object.keys(rujukanTerkini).forEach(function(key) {
         let pItem = rujukanTerkini[key].data;
         pinsLokal.push(pItem);
       });
 
-      // Tapis data redundant bertindih
       pinsLokal.forEach(function(p) {
         if (kaunterKlonBancian[p.klon_key] > 1) {
           SENARAI_DUPLIKASI_KLON.push(p);
@@ -647,6 +631,18 @@
 
       binaKamusDinamik(MASTER_DATA_KESELURUHAN.mapPins, MASTER_DATA_KESELURUHAN.historyData);
       laksanakanFilterLokal();
+
+      // 🚀 INI BLOK YANG TERTINGGAL TADI: Tutup Skeleton Loader & Buka Skrin Dashboard!
+      setTimeout(function() {
+        document.getElementById("skeletonLoader").classList.add("hidden");
+        document.getElementById("dashboardContent").classList.remove("hidden");
+        if (map) {
+          map.invalidateSize();
+          if (markerGroup && markerGroup.getLayers().length > 0) {
+            map.fitBounds(markerGroup.getBounds().pad(0.08));
+          }
+        }
+      }, 300);
     }
 
     function formatTarikhTeks(tarikhMentah) {
