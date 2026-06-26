@@ -20,7 +20,7 @@
 </head>
 <body class="p-2 sm:p-4 lg:p-6 w-full relative">
 
-  <script>
+ <script>
     let USER_TOKEN = "", USER_NAME = "Pengguna", USER_STATE = "ALL";
     const savedSession = localStorage.getItem("pnr_session");
     if (savedSession) {
@@ -31,9 +31,12 @@
         USER_STATE = (sData.uProf && sData.uProf.state) ? sData.uProf.state : "ALL";
       } catch(e) {}
     }
+    
+    // 🔓 PINTASAN VERCEL: Matikan tendangan login sementara untuk ujian data
     if (!USER_TOKEN) {
-      alert("⛔ Akses ditolak. Sila log masuk melalui pangkalan utama PNR.");
-      window.location.href = "index.html"; 
+      console.log("Akses sepatutnya ditolak, tapi kita pintas dulu untuk testing!");
+      // alert("⛔ Akses ditolak. Sila log masuk melalui pangkalan utama PNR.");
+      // window.location.href = "index.html"; 
     }
   </script>
 
