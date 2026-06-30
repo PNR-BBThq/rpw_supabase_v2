@@ -53,16 +53,16 @@
 
   <div id="dashboardContent" class="w-full mx-auto space-y-6 hidden transition-all duration-500">
     
-  <div class="bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl text-white flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border border-emerald-800/40">
+ <div class="bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl text-white flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 border border-emerald-800/40">
       
-      <div class="flex items-center gap-5">
+      <div class="flex items-center gap-4 sm:gap-5">
         
-        <div class="flex items-center justify-center p-2.5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/15 w-20 h-20 shrink-0 shadow-inner">
-          <img id="doaLogo" src="./logo_doa.jpg" alt="Logo" class="w-full h-full object-contain rounded-xl">
+        <div class="p-2.5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/15 shrink-0 shadow-inner flex items-center justify-center">
+          <img id="doaLogo" src="./logo_doa.jpg" alt="Logo" class="h-14 sm:h-16 w-auto object-contain rounded-md">
         </div>
         
         <div class="space-y-1.5">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold tracking-wide border border-emerald-500/30">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold tracking-wide border border-emerald-500/30">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> UNIT PENGAWASAN DAN RAMALAN PEROSAK, BAHAGIAN BIOSEKURITI TUMBUHAN
           </div>
           <h1 class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight leading-tight bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">
@@ -75,11 +75,11 @@
         
       </div>
 
-      <div class="flex items-center gap-3 w-full lg:w-auto shrink-0">
-        <button onclick="muatTurunData('geojson')" class="flex-1 lg:flex-initial bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-semibold px-5 py-3.5 rounded-full transition flex items-center justify-center gap-2 cursor-pointer shadow-xs">
+      <div class="flex items-center gap-3 w-full xl:w-auto shrink-0">
+        <button onclick="muatTurunData('geojson')" class="flex-1 xl:flex-initial bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-semibold px-5 py-3.5 rounded-full transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
           <span>📥</span> Eksport GeoJSON
         </button>
-        <button onclick="muatTurunData('kml')" class="flex-1 lg:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-5 py-3.5 rounded-full transition flex items-center justify-center gap-2 shadow-lg cursor-pointer">
+        <button onclick="muatTurunData('kml')" class="flex-1 xl:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-5 py-3.5 rounded-full transition flex items-center justify-center gap-2 shadow-lg cursor-pointer">
           <span>🌍</span> Eksport KML
         </button>
       </div>
