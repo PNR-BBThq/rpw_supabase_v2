@@ -468,6 +468,16 @@
       if (!selNeg) return;
       selNeg.innerHTML = '<option value="ALL">Semua Negeri</option>';
       Object.keys(KAMUS_LOKAL).sort().forEach(function(n) { selNeg.innerHTML += `<option value="${n}">${n}</option>`; });
+
+      // 🛡️ MAGIK 2 (RBAC): Kunci kotak pilihan negeri jika dia Pegawai Negeri (Bukan Admin)
+      if (USER_STATE && USER_STATE !== "ALL" && USER_STATE !== "SEMUA") {
+        selNeg.value = USER_STATE.toUpperCase().trim();
+        selNeg.disabled = true; // Kunci dari ditekan
+        // Tukar warna bagi nampak kelabu & tak boleh diklik
+        selNeg.classList.replace("bg-slate-50", "bg-slate-200");
+        selNeg.classList.remove("cursor-pointer");
+        selNeg.classList.add("cursor-not-allowed", "opacity-70");
+      }
     }
 
     function TapisDataDaerah() {
@@ -540,7 +550,17 @@
     }
 
     function prosesDanLukisDashboard(rows) {
+      
+      if (USER_STATE && USER_STATE !== "ALL" && USER_STATE !== "SEMUA") {
+        rows = rows.filter(function(r) {
+           return r.negeri && r.negeri.toUpperCase().trim() === USER_STATE.toUpperCase().trim();
+        });
+      }
+
       console.log("Supabase Engine TOTAL: Selesai! Menguruskan " + rows.length + " jumlah baris data keseluruhan.");
+
+      let pinsLokal = [];
+      let historyLokal = [];
 
       let pinsLokal = [];
       let historyLokal = [];
