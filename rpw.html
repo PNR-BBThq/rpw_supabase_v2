@@ -482,14 +482,14 @@
       laksanakanFilterLokal();
     }
 
-    function muatNaikDataIndukSekali() {
+   function muatNaikDataIndukSekali() {
       var SUPABASE_URL = "https://bgpbdhxpstomjqsbsopr.supabase.co"; 
       var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncGJkaHhwc3RvbWpxc2Jzb3ByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MTgzMzAsImV4cCI6MjA5Nzk5NDMzMH0.nc22VSgwl62Y5au-RVi0VU_wGhAjzdrbFKRAJrd6WSg";
       
       var rowsSemua = [];
       var saizBatch = 1000;
       
-      console.log("Supabase Engine: Memulakan sedutan data berantai (Pagination Looping)...");
+      console.log("Supabase Engine: Memulakan sedutan data berantai...");
 
       function ambilBatchData(mulaRow) {
         var akhirRow = mulaRow + saizBatch - 1;
@@ -504,22 +504,16 @@
             "Range": mulaRow + "-" + akhirRow
           }
         })
-        .then(function(r) {
-          if (!r.ok) throw new Error("Gagal sedut batch Supabase: " + r.statusText);
-          return r.json();
-        })
-        .then(function(rowsBatch) {
-          console.log("Supabase Engine: Berjaya ambil baris " + mulaRow + " hingga " + akhirRow + " (" + rowsBatch.length + " rekod)");
-          
+        .then(r => r.json())
+        .then(rowsBatch => {
           rowsSemua = rowsSemua.concat(rowsBatch);
-
           if (rowsBatch.length === saizBatch) {
             ambilBatchData(mulaRow + saizBatch);
           } else {
             prosesDanLukisDashboard(rowsSemua);
           }
         })
-        .catch(function(e) {
+        .catch(e => {
           console.error("Ralat Looping Supabase:", e);
           if(rowsSemua.length > 0) prosesDanLukisDashboard(rowsSemua);
         });
@@ -529,15 +523,10 @@
     }
 
     function prosesDanLukisDashboard(rows) {
-      console.log("Supabase Engine TOTAL: Selesai! Menguruskan " + rows.length + " jumlah baris data keseluruhan.");
+      console.log("Supabase Engine: Menguruskan " + rows.length + " rekod.");
 
-      let pinsLokal = [];
-      let historyLokal = [];
-      let rujukanTerkini = {};
-      
-      SENARAI_RALAT_GPS = [];
-      SENARAI_DUPLIKASI_KLON = [];
-      let kaunterKlonBancian = {};
+      let pinsLokal = []; let historyLokal = []; let rujukanTerkini = {};
+      SENARAI_RALAT_GPS = []; SENARAI_DUPLIKASI_KLON = []; let kaunterKlonBancian = {};
 
       rows.forEach(function(r) {
         let tkhKutip = new Date(r.tarikh_kutip);
@@ -551,107 +540,49 @@
         
         let trapKey = namaNegeri + "_" + namaDaerah + "_" + namaLokasi;
         let klonKey = namaLokasi + "_" + namaDaerah + "_" + tkhKutipStr;
-
         kaunterKlonBancian[klonKey] = (kaunterKlonBancian[klonKey] || 0) + 1;
 
-        let isGisValid = false;
-        let puncaRalatGps = "";
-        let stringKoordinat = r.lat_long || "";
-
+        let isGisValid = false; let puncaRalatGps = ""; let stringKoordinat = r.lat_long || "";
         if (stringKoordinat && stringKoordinat.includes(",") && stringKoordinat.length > 5) {
           let latLngParts = stringKoordinat.split(",").map(Number);
-          let latitude = latLngParts[0];
-          let longitude = latLngParts[1];
-
-          if (!isNaN(latitude) && !isNaN(longitude)) {
-            let dalamSemenanjung = (latitude >= 1.0 && latitude <= 7.0 && longitude >= 99.0 && longitude <= 105.0);
-            let dalamBorneo = (latitude >= 0.8 && latitude <= 7.5 && longitude >= 109.0 && longitude <= 120.0);
-
-            if (dalamSemenanjung || dalamBorneo) {
-              isGisValid = true;
-            } else {
-              puncaRalatGps = "Luar Sempadan Malaysia";
-            }
-          } else {
-            puncaRalatGps = "Format Titik Angka Tidak Sah";
-          }
-        } else {
-          puncaRalatGps = "Titik GPS Kosong / Tiada Data";
+          if (!isNaN(latLngParts[0]) && !isNaN(latLngParts[1])) isGisValid = true;
         }
 
         let formattedRow = {
           row_id: r.row_id || "",
-          tarikh: formatTarikhTeks(r.tarikh_kutip),
-          tahun: tahun,
-          negeri: namaNegeri,
-          daerah: namaDaerah,
-          lokasi: namaLokasi,
+          tarikh: formatTarikhTeks(r.tarikh_kutip), tahun: tahun,
+          negeri: namaNegeri, daerah: namaDaerah, lokasi: namaLokasi,
           tanaman: r.jenis_komoditi || "KELAPA",
           total_rf: Number(r.total_catch_rf) || 0,
           total_rv: (Number(r.bil_tangkapan_rv_jantan) || 0) + (Number(r.bil_tangkapan_rv_betina) || 0),
           rtd_status: r.status_rtd_rf || "RTD=0",
-          is_valid_gis: isGisValid,
-          koordinat: stringKoordinat,
-          klon_key: klonKey
+          is_valid_gis: isGisValid, koordinat: stringKoordinat, klon_key: klonKey
         };
 
         historyLokal.push({
-          y: tahun,
-          m: bulan,
-          n: namaNegeri,
-          d: namaDaerah,
-          rtd: r.status_rtd_rf || "RTD=0",
-          loc: namaLokasi,
-          rf: formattedRow.total_rf,
-          rv: formattedRow.total_rv,
-          serang: Number(r.bil_pokok_diserang) || 0,
-          tebang: Number(r.bil_pokok_ditebang) || 0
+          y: tahun, m: bulan, n: namaNegeri, d: namaDaerah,
+          rtd: formattedRow.rtd_status, loc: namaLokasi,
+          rf: formattedRow.total_rf, rv: formattedRow.total_rv,
+          serang: Number(r.bil_pokok_diserang) || 0, tebang: Number(r.bil_pokok_ditebang) || 0
         });
 
-        if (!isGisValid) {
-          let gpsAuditObj = Object.assign({}, formattedRow);
-          gpsAuditObj.punca_ralat = puncaRalatGps;
-          SENARAI_RALAT_GPS.push(gpsAuditObj);
-        }
-
+        if (!isGisValid) { let gpsAuditObj = Object.assign({}, formattedRow); gpsAuditObj.punca_ralat = "Ralat GPS"; SENARAI_RALAT_GPS.push(gpsAuditObj); }
         if (!rujukanTerkini[trapKey] || new Date(r.tarikh_kutip) > new Date(rujukanTerkini[trapKey].tarikh_original)) {
-          rujukanTerkini[trapKey] = {
-            data: formattedRow,
-            tarikh_original: r.tarikh_kutip
-          };
+          rujukanTerkini[trapKey] = { data: formattedRow, tarikh_original: r.tarikh_kutip };
         }
       });
 
-      Object.keys(rujukanTerkini).forEach(function(key) {
-        let pItem = rujukanTerkini[key].data;
-        pinsLokal.push(pItem);
-      });
+      Object.keys(rujukanTerkini).forEach(key => pinsLokal.push(rujukanTerkini[key].data));
+      pinsLokal.forEach(p => { if (kaunterKlonBancian[p.klon_key] > 1) SENARAI_DUPLIKASI_KLON.push(p); });
 
-      pinsLokal.forEach(function(p) {
-        if (kaunterKlonBancian[p.klon_key] > 1) {
-          SENARAI_DUPLIKASI_KLON.push(p);
-        }
-      });
-
-      MASTER_DATA_KESELURUHAN = {
-        mapPins: pinsLokal,
-        historyData: historyLokal,
-        doaLogo: "https://www.doa.gov.my/wp-content/themes/jpm/images/logo.png"
-      };
-
+      MASTER_DATA_KESELURUHAN = { mapPins: pinsLokal, historyData: historyLokal };
       binaKamusDinamik(MASTER_DATA_KESELURUHAN.mapPins, MASTER_DATA_KESELURUHAN.historyData);
       laksanakanFilterLokal();
 
-      // Tutup Skeleton Loader & Buka Skrin Dashboard
       setTimeout(function() {
         document.getElementById("skeletonLoader").classList.add("hidden");
         document.getElementById("dashboardContent").classList.remove("hidden");
-        if (map) {
-          map.invalidateSize();
-          if (markerGroup && markerGroup.getLayers().length > 0) {
-            map.fitBounds(markerGroup.getBounds().pad(0.08));
-          }
-        }
+        if (map) { map.invalidateSize(); if (markerGroup && markerGroup.getLayers().length > 0) map.fitBounds(markerGroup.getBounds().pad(0.08)); }
       }, 300);
     }
 
@@ -885,47 +816,35 @@
       binaPetaPinDiTapis();
     }
 
-    function binaPetaPinDiTapis() {
+   function binaPetaPinDiTapis() {
       let senaraiPeta = DATA_DITAPIS_SEMASA;
-      if (filterPetaRTD !== "ALL") {
-        senaraiPeta = senaraiPeta.filter(function(p) { return p.rtd_status.toUpperCase() === filterPetaRTD; });
-      }
+      if (filterPetaRTD !== "ALL") senaraiPeta = senaraiPeta.filter(p => p.rtd_status.toUpperCase() === filterPetaRTD);
       
       markerGroup.clearLayers();
       let seenMapPins = new Set(); 
 
-      senaraiPeta.forEach(function(p) {
+      senaraiPeta.forEach(p => {
         if (!p.is_valid_gis) return; 
-
         let pinKey = p.koordinat + "_" + p.lokasi;
         if (seenMapPins.has(pinKey)) return; 
         seenMapPins.add(pinKey);
 
         let latLng = p.koordinat.split(",").map(Number);
-        var warna = "#10b981"; 
-        if (p.rtd_status.includes("RTD<1")) warna = "#f59e0b"; 
-        if (p.rtd_status.includes("RTD>1")) warna = "#f43f5e"; 
+        var warna = p.rtd_status.includes("RTD>1") ? "#f43f5e" : (p.rtd_status.includes("RTD<1") ? "#f59e0b" : "#10b981");
 
         let marker = L.circleMarker(latLng, { radius: 8, fillColor: warna, color: "#ffffff", weight: 2.5, fillOpacity: 0.95 });
 
         marker.on('click', function() {
-          var logSejarahPerangkap = MASTER_DATA_KESELURUHAN.historyData.filter(function(h) {
-            return h.loc === p.lokasi && h.d === p.daerah;
-          }).sort(function(a,b){ return a.m - b.m; });
-
-          var streakMonths = 0;
-          var tempStreak = 0;
-          logSejarahPerangkap.forEach(function(h){
-            if(h.rtd.includes("RTD>1")) { tempStreak++; if(tempStreak > streakMonths) streakMonths = tempStreak; }
-            else { tempStreak = 0; }
-          });
+          // BACA TERUS DARI MEMORI LOKAL SUPABASE! Pantas gila.
+          var logSejarahPerangkap = MASTER_DATA_KESELURUHAN.historyData.filter(h => h.loc === p.lokasi && h.d === p.daerah).sort((a,b) => a.m - b.m);
+          var streakMonths = 0, tempStreak = 0;
+          logSejarahPerangkap.forEach(h => { if(h.rtd.includes("RTD>1")) { tempStreak++; if(tempStreak > streakMonths) streakMonths = tempStreak; } else { tempStreak = 0; } });
 
           let streakTeks = streakMonths > 0 ? 
             `<div class="mt-2 text-xs bg-rose-50 text-rose-700 p-2.5 rounded-xl font-extrabold border border-rose-200">⚠️ Amaran: RTD>1 bertahan selama ${streakMonths} bulan!</div>` : 
             `<div class="mt-2 text-xs bg-emerald-50 text-emerald-700 p-2.5 rounded-xl font-bold border border-emerald-200">✅ Rekod terkawal.</div>`;
 
           var popupCanvasId = "canvasPopup_" + Math.floor(Math.random() * 1000000);
-
           let popupHtml = `
             <div class="map-popup space-y-2 p-1 w-64">
               <h4 class="font-black text-slate-900 text-sm uppercase">${p.lokasi}</h4>
@@ -946,10 +865,7 @@
             var namaBulanRingkas = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"];
             new Chart(el.getContext('2d'), {
               type: 'line',
-              data: {
-                labels: logSejarahPerangkap.map(function(h) { return namaBulanRingkas[h.m - 1] || "M" + h.m; }),
-                datasets: [{ data: logSejarahPerangkap.map(function(h) { return h.rf; }), borderColor: '#059669', backgroundColor: '#34d399', tension: 0.3, pointRadius: 3 }]
-              },
+              data: { labels: logSejarahPerangkap.map(h => namaBulanRingkas[h.m - 1] || "M" + h.m), datasets: [{ data: logSejarahPerangkap.map(h => h.rf), borderColor: '#059669', backgroundColor: '#34d399', tension: 0.3, pointRadius: 3 }] },
               options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 9 } } }, y: { ticks: { font: { size: 9 }, stepSize: 1 } } } }
             });
           }, 250);
