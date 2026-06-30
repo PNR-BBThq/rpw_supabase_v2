@@ -19,28 +19,24 @@
 </head>
 <body class="p-2 sm:p-4 lg:p-6 w-full relative">
 
-  <script>
-    // 1. SUNTIKAN URL MIKROSERVIS GAS BARU KAU
+ <script>
+    // 1. SUNTIKAN URL MIKROSERVIS GAS BARU KAU (Untuk fungsi Edit/Padam)
     const GAS_CRUD_URL = "https://script.google.com/macros/s/AKfycbxNeTOOp1XIJaX1uerttRzCwdSW4N_M4jwdnRdkhT1r-Uh2Li0RjveoGEpOXnIiBElxlA/exec";
     
-    let USER_NAME = "Pengguna", USER_STATE = "ALL", TIKET_SAH = "";
+    let USER_TOKEN = "", USER_NAME = "Pengguna", USER_STATE = "ALL", TIKET_SAH = "";
 
-    // 2. TANGKAP TIKET PASPORT DARI URL (Masa mula-mula buka link)
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('u') && urlParams.get('neg') && urlParams.get('tiket')) {
-        // Simpan tiket dalam memori sementara browser (hilang kalau tutup tab)
-        sessionStorage.setItem("rpw_u", urlParams.get('u'));
-        sessionStorage.setItem("rpw_neg", urlParams.get('neg'));
-        sessionStorage.setItem("rpw_tiket", urlParams.get('tiket'));
-        
-        // Magik: Bersihkan URL supaya tiket rahsia ghaib dari pandangan mata!
-        window.history.replaceState({}, document.title, window.location.pathname);
+    // 2. BACA TERUS DARI MEMORI (Sebab index.html & rpw.html kongsi Vercel yang sama)
+    const savedSession = localStorage.getItem("pnr_session");
+    if (savedSession) {
+      try {
+        const sData = JSON.parse(savedSession);
+        USER_TOKEN = sData.userToken || "";
+        USER_NAME = sData.currentUserID || "Pengguna";
+        USER_STATE = (sData.uProf && sData.uProf.state) ? sData.uProf.state : "ALL";
+        // Kita letak token sebagai tiket sementera
+        TIKET_SAH = "STAGING_MODE"; 
+      } catch(e) {}
     }
-
-    // 3. BACA SEMULA DARI MEMORI
-    USER_NAME = sessionStorage.getItem("rpw_u") || "Pengguna";
-    USER_STATE = sessionStorage.getItem("rpw_neg") || "ALL";
-    TIKET_SAH = sessionStorage.getItem("rpw_tiket") || "";
   </script>
 
   <div id="skeletonLoader" class="w-full mx-auto space-y-6 animate-pulse">
@@ -415,33 +411,17 @@
     let SENARAI_DUPLIKASI_KLON = [];
     let SENARAI_PENUH_DEFAULTER = [];
 
-   window.onload = function() {
-  binaPetaAsas();
-  
-  // Baca terus dari memori lokal (Sebab domain sama!)
-  if (!USER_NAME || USER_NAME === "Pengguna") {
-     document.body.innerHTML = `<h1>⛔ AKSES DITOLAK</h1>`; return;
-  }
-  
-  // Terus panggil Supabase! 0.3 Saat loading!
-  muatNaikDataIndukSekali();
-};
-      // 5. MINTA PENGESAHAN DARI GAS (Adakah tiket ini palsu?)
-      fetch(GAS_CRUD_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "SEMAK_TIKET", u: USER_NAME, neg: USER_STATE, tiket: TIKET_SAH })
-      })
-      .then(res => res.json())
-      .then(res => {
-         if (res.status === "SAH") {
-             // TIKET LULUS! Baru kita benarkan Supabase sedut data
-             muatNaikDataIndukSekali();
-         } else {
-             // TIKET PALSU (Penceroboh dikesan)
-             document.body.innerHTML = `<div class="flex items-center justify-center h-screen bg-slate-900 text-white"><div class="text-center space-y-4"><h1 class="text-6xl">🚨</h1><h2 class="text-3xl font-black text-rose-500">AMARAN KESELAMATAN</h2><p class="text-slate-400">${res.message}</p></div></div>`;
-         }
-      })
-      .catch(err => { alert("Gagal berhubung dengan pelayan pusat Google."); });
+    window.onload = function() {
+      binaPetaAsas();
+      
+      // 3. PAKGUARD RINGKAS: Cek ada tak rekod login dalam memori komputer?
+      if (!USER_TOKEN || USER_NAME === "Pengguna") {
+         document.body.innerHTML = `<div class="flex items-center justify-center h-screen bg-slate-900 text-white"><div class="text-center space-y-4"><h1 class="text-6xl">⛔</h1><h2 class="text-3xl font-black text-rose-500">AKSES DITOLAK</h2><p class="text-slate-400">Sila log masuk melalui pangkalan utama PNR.</p></div></div>`;
+         return;
+      }
+      
+      // 4. TERUS PANGGIL SUPABASE (Tanpa perlu lalui GAS lagi! Loading 0.3 saat kembali!)
+      muatNaikDataIndukSekali();
     };
 
     function binaPetaAsas() {
