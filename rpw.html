@@ -503,51 +503,23 @@
       laksanakanFilterLokal();
     }
 
-    function muatNaikDataIndukSekali() {
-      var SUPABASE_URL = "https://bgpbdhxpstomjqsbsopr.supabase.co"; 
-      var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncGJkaHhwc3RvbWpxc2Jzb3ByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MTgzMzAsImV4cCI6MjA5Nzk5NDMzMH0.nc22VSgwl62Y5au-RVi0VU_wGhAjzdrbFKRAJrd6WSg";
+   function muatNaikDataIndukSekali() {
       
-      var rowsSemua = [];
-      var saizBatch = 1000;
-      
-      console.log("Supabase Engine: Memulakan sedutan data berantai (Pagination Looping)...");
+      console.log("Meminta Vercel API tarik data dari belakang tabir...");
 
-      function ambilBatchData(mulaRow) {
-        var akhirRow = mulaRow + saizBatch - 1;
-        var url = SUPABASE_URL + "/rest/v1/tangkapan_rpw?select=*";
-
-        fetch(url, {
-          method: "GET",
-          headers: {
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-            "Content-Type": "application/json",
-            "Range": mulaRow + "-" + akhirRow
-          }
-        })
+      // Panggil fail API yang kita buat dalam folder 'api' tadi
+      fetch('/api/get-rpw')
         .then(function(r) {
-          if (!r.ok) throw new Error("Gagal sedut batch Supabase: " + r.statusText);
+          if (!r.ok) throw new Error("Gagal berhubung dengan pelayan Vercel");
           return r.json();
         })
-        .then(function(rowsBatch) {
-          console.log("Supabase Engine: Berjaya ambil baris " + mulaRow + " hingga " + akhirRow + " (" + rowsBatch.length + " rekod)");
-          
-          rowsSemua = rowsSemua.concat(rowsBatch);
-
-          if (rowsBatch.length === saizBatch) {
-            ambilBatchData(mulaRow + saizBatch);
-          } else {
-            prosesDanLukisDashboard(rowsSemua);
-          }
+        .then(function(rowsSemua) {
+          console.log("Berjaya tarik " + rowsSemua.length + " rekod!");
+          prosesDanLukisDashboard(rowsSemua);
         })
         .catch(function(e) {
-          console.error("Ralat Looping Supabase:", e);
-          if(rowsSemua.length > 0) prosesDanLukisDashboard(rowsSemua);
+          console.error("Ralat API:", e);
         });
-      }
-
-      ambilBatchData(0);
-    }
 
     function prosesDanLukisDashboard(rows) {
       
