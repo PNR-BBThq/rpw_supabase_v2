@@ -415,15 +415,17 @@
     let SENARAI_DUPLIKASI_KLON = [];
     let SENARAI_PENUH_DEFAULTER = [];
 
-    window.onload = function() {
-      binaPetaAsas();
-      
-      // 4. PAKGUARD PINTU MASUK (Semak kalau orang buka Vercel tanpa tiket)
-      if (!USER_NAME || USER_NAME === "Pengguna" || !TIKET_SAH) {
-          document.body.innerHTML = `<div class="flex items-center justify-center h-screen bg-slate-900 text-white"><div class="text-center space-y-4"><h1 class="text-6xl">⛔</h1><h2 class="text-3xl font-black text-rose-500">AKSES DITOLAK</h2><p class="text-slate-400">Sila buka pangkalan data ini melalui pautan rasmi di Main Dashboard PNR.</p></div></div>`;
-          return;
-      }
-
+   window.onload = function() {
+  binaPetaAsas();
+  
+  // Baca terus dari memori lokal (Sebab domain sama!)
+  if (!USER_NAME || USER_NAME === "Pengguna") {
+     document.body.innerHTML = `<h1>⛔ AKSES DITOLAK</h1>`; return;
+  }
+  
+  // Terus panggil Supabase! 0.3 Saat loading!
+  muatNaikDataIndukSekali();
+};
       // 5. MINTA PENGESAHAN DARI GAS (Adakah tiket ini palsu?)
       fetch(GAS_CRUD_URL, {
         method: "POST",
