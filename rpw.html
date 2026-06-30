@@ -20,21 +20,27 @@
 <body class="p-2 sm:p-4 lg:p-6 w-full relative">
 
   <script>
-    let USER_TOKEN = "", USER_NAME = "Pengguna", USER_STATE = "ALL";
-    const savedSession = localStorage.getItem("pnr_session");
-    if (savedSession) {
-      try {
-        const sData = JSON.parse(savedSession);
-        USER_TOKEN = sData.userToken || "";
-        USER_NAME = sData.currentUserID || "Pengguna";
-        USER_STATE = (sData.uProf && sData.uProf.state) ? sData.uProf.state : "ALL";
-      } catch(e) {}
-    }
+    // 1. SUNTIKAN URL MIKROSERVIS GAS BARU KAU
+    const GAS_CRUD_URL = "https://script.google.com/macros/s/AKfycbxNeTOOp1XIJaX1uerttRzCwdSW4N_M4jwdnRdkhT1r-Uh2Li0RjveoGEpOXnIiBElxlA/exec";
     
-    // 🔓 PINTASAN VERCEL: Matikan check login sementara untuk testing data supabase
-    if (!USER_TOKEN) {
-      console.log("Akses sepatutnya ditolak, tapi kita pintas dulu untuk testing!");
+    let USER_NAME = "Pengguna", USER_STATE = "ALL", TIKET_SAH = "";
+
+    // 2. TANGKAP TIKET PASPORT DARI URL (Masa mula-mula buka link)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('u') && urlParams.get('neg') && urlParams.get('tiket')) {
+        // Simpan tiket dalam memori sementara browser (hilang kalau tutup tab)
+        sessionStorage.setItem("rpw_u", urlParams.get('u'));
+        sessionStorage.setItem("rpw_neg", urlParams.get('neg'));
+        sessionStorage.setItem("rpw_tiket", urlParams.get('tiket'));
+        
+        // Magik: Bersihkan URL supaya tiket rahsia ghaib dari pandangan mata!
+        window.history.replaceState({}, document.title, window.location.pathname);
     }
+
+    // 3. BACA SEMULA DARI MEMORI
+    USER_NAME = sessionStorage.getItem("rpw_u") || "Pengguna";
+    USER_STATE = sessionStorage.getItem("rpw_neg") || "ALL";
+    TIKET_SAH = sessionStorage.getItem("rpw_tiket") || "";
   </script>
 
   <div id="skeletonLoader" class="w-full mx-auto space-y-6 animate-pulse">
@@ -411,7 +417,29 @@
 
     window.onload = function() {
       binaPetaAsas();
-      muatNaikDataIndukSekali();
+      
+      // 4. PAKGUARD PINTU MASUK (Semak kalau orang buka Vercel tanpa tiket)
+      if (!USER_NAME || USER_NAME === "Pengguna" || !TIKET_SAH) {
+          document.body.innerHTML = `<div class="flex items-center justify-center h-screen bg-slate-900 text-white"><div class="text-center space-y-4"><h1 class="text-6xl">⛔</h1><h2 class="text-3xl font-black text-rose-500">AKSES DITOLAK</h2><p class="text-slate-400">Sila buka pangkalan data ini melalui pautan rasmi di Main Dashboard PNR.</p></div></div>`;
+          return;
+      }
+
+      // 5. MINTA PENGESAHAN DARI GAS (Adakah tiket ini palsu?)
+      fetch(GAS_CRUD_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "SEMAK_TIKET", u: USER_NAME, neg: USER_STATE, tiket: TIKET_SAH })
+      })
+      .then(res => res.json())
+      .then(res => {
+         if (res.status === "SAH") {
+             // TIKET LULUS! Baru kita benarkan Supabase sedut data
+             muatNaikDataIndukSekali();
+         } else {
+             // TIKET PALSU (Penceroboh dikesan)
+             document.body.innerHTML = `<div class="flex items-center justify-center h-screen bg-slate-900 text-white"><div class="text-center space-y-4"><h1 class="text-6xl">🚨</h1><h2 class="text-3xl font-black text-rose-500">AMARAN KESELAMATAN</h2><p class="text-slate-400">${res.message}</p></div></div>`;
+         }
+      })
+      .catch(err => { alert("Gagal berhubung dengan pelayan pusat Google."); });
     };
 
     function binaPetaAsas() {
@@ -632,7 +660,7 @@
       binaKamusDinamik(MASTER_DATA_KESELURUHAN.mapPins, MASTER_DATA_KESELURUHAN.historyData);
       laksanakanFilterLokal();
 
-      // 🚀 INI BLOK YANG TERTINGGAL TADI: Tutup Skeleton Loader & Buka Skrin Dashboard!
+      // Tutup Skeleton Loader & Buka Skrin Dashboard
       setTimeout(function() {
         document.getElementById("skeletonLoader").classList.add("hidden");
         document.getElementById("dashboardContent").classList.remove("hidden");
@@ -804,8 +832,44 @@
       }
     }
 
+    // 6. ENJIN CRUD YANG TELAH DIHIDUPKAN UNTUK TEMBAK KE GAS
     function laksanakanCRUD(actionType, rowId, valBaru) {
-      alert("Fungsi CRUD sedia diaktifkan menerusi webhook Google Apps Script bagi fasa Hubungan 2 Hala.");
+      if(!confirm("⚠️ Adakah anda pasti mahu " + actionType.toUpperCase() + " rekod ini? Tindakan ini tidak boleh dipulihkan!")) return;
+
+      document.body.style.cursor = 'wait';
+      
+      let payload = {
+        action: actionType === 'delete' ? 'DELETE' : (actionType === 'updateLocation' ? 'UPDATE_LOCATION' : 'UPDATE_GPS'),
+        row_id: rowId,
+        val_baru: valBaru,
+        u: USER_NAME,
+        neg: USER_STATE,
+        tiket: TIKET_SAH
+      };
+
+      fetch(GAS_CRUD_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(res => {
+        document.body.style.cursor = 'default';
+        if(res.success) {
+          alert("✅ BERJAYA: " + res.message);
+          
+          document.getElementById("modalKuarantin").classList.add("hidden"); 
+          document.getElementById("skeletonLoader").classList.remove("hidden");
+          document.getElementById("dashboardContent").classList.add("hidden");
+          
+          muatNaikDataIndukSekali();
+        } else {
+          alert("❌ GAGAL: " + res.message);
+        }
+      })
+      .catch(err => {
+        document.body.style.cursor = 'default';
+        alert("Ralat pelayan: Gagal berhubung dengan Google Apps Script.");
+      });
     }
 
     function bukaModalKuarantin(tabAwal) {
@@ -862,7 +926,6 @@
 
         let marker = L.circleMarker(latLng, { radius: 8, fillColor: warna, color: "#ffffff", weight: 2.5, fillOpacity: 0.95 });
 
-        // 🧠 MASALAH 1: LUKISAN TREND GRAF POPUP DARI MEMORI LOKAL SEJARAH (4000+ ROWS)
         marker.on('click', function() {
           var logSejarahPerangkap = MASTER_DATA_KESELURUHAN.historyData.filter(function(h) {
             return h.loc === p.lokasi && h.d === p.daerah;
