@@ -783,7 +783,7 @@
       document.getElementById("modalCountKlon").innerText = SENARAI_DUPLIKASI_KLON.length;
       document.getElementById("modalCountGPS").innerText = SENARAI_RALAT_GPS.length;
 
-      let hKlon = "";
+     let hKlon = "";
       SENARAI_DUPLIKASI_KLON.forEach(function(k, idx) {
         hKlon += `
         <tr class="border-b border-slate-100 hover:bg-rose-50/50">
@@ -793,7 +793,9 @@
           <td class="p-3 text-center font-black">${k.total_rf}</td>
           <td class="p-3 text-center flex justify-center gap-1">
             <button onclick="mohonEditLokasi('${k.row_id}', '${k.lokasi}')" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 px-2 py-1 rounded-md text-[10px] font-black transition cursor-pointer">✏️ EDIT</button>
-           onclick="sahkanPadam('${k.row_id}')" class="bg-rose-100 hover:bg-rose-200 text-rose-800 px-2 py-1 rounded-md text-[10px] font-bold transition cursor-pointer">🗑️ PADAM</button>
+            
+            <button onclick="sahkanPadam('${k.row_id}')" class="bg-rose-100 hover:bg-rose-200 text-rose-800 px-2 py-1 rounded-md text-[10px] font-bold transition cursor-pointer">🗑️ PADAM</button>
+          
           </td>
         </tr>`;
       });
