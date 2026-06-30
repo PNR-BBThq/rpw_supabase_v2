@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; color: #0f172a; }
@@ -801,26 +802,72 @@
       document.getElementById("tbodyModalGPS").innerHTML = hGPS || `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tiada ralat GPS dikesan.</td></tr>`;
     }
 
+
     function mohonKemaskiniGPS(rowId) {
-      let gpsBaru = prompt("Sila masukkan koordinat GPS yang tepat (Format: Lat, Long):");
-      if(gpsBaru && gpsBaru.includes(",")) {
-        laksanakanCRUD('updateGPS', rowId, gpsBaru.trim());
-      }
+      Swal.fire({
+        title: 'Kemaskini Koordinat GPS',
+        text: 'Masukkan koordinat baharu (Format: Latitud, Longitud)',
+        input: 'text',
+        inputPlaceholder: 'Contoh: 3.1412, 101.6865',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Kemaskini Data',
+        cancelButtonText: 'Batal',
+        inputValidator: (value) => {
+          if (!value || !value.includes(",")) return 'Sila masukkan format yang sah dengan tanda koma!';
+        }
+      }).then((result) => {
+        if (result.isConfirmed) laksanakanCRUD('updateGPS', rowId, result.value.trim());
+      });
     }
 
     function mohonEditLokasi(rowId, namaLama) {
-      let namaBaru = prompt(`Masukkan nama kampung/lokasi baharu:`, namaLama);
-      if(namaBaru && namaBaru.trim() !== "") {
-        laksanakanCRUD('updateLocation', rowId, namaBaru.trim().toUpperCase());
-      }
+      Swal.fire({
+        title: 'Edit Nama Lokasi',
+        input: 'text',
+        inputValue: namaLama,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#4f46e5',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Simpan Perubahan',
+        cancelButtonText: 'Batal',
+        inputValidator: (value) => {
+          if (!value.trim()) return 'Nama lokasi tidak boleh dibiarkan kosong!';
+        }
+      }).then((result) => {
+        if (result.isConfirmed && result.value !== namaLama) {
+          laksanakanCRUD('updateLocation', rowId, result.value.trim().toUpperCase());
+        }
+      });
     }
 
-    // 6. ENJIN CRUD YANG TELAH DIHIDUPKAN UNTUK TEMBAK KE GAS
-    function laksanakanCRUD(actionType, rowId, valBaru) {
-      if(!confirm("⚠️ Adakah anda pasti mahu " + actionType.toUpperCase() + " rekod ini? Tindakan ini tidak boleh dipulihkan!")) return;
+    function sahkanPadam(rowId) {
+      Swal.fire({
+        title: 'Adakah anda pasti?',
+        text: "Rekod ini akan dipadam secara kekal dari Google Sheets dan Supabase!",
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#e11d48',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Padam!',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) laksanakanCRUD('delete', rowId, '');
+      });
+    }
 
-      document.body.style.cursor = 'wait';
-      
+    function laksanakanCRUD(actionType, rowId, valBaru) {
+      // 1. Tunjuk Skrin Loading
+      Swal.fire({
+        title: 'Sedang Memproses...',
+        text: 'Sistem sedang menghantar data ke pelayan pusat.',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+      });
+
       let payload = {
         action: actionType === 'delete' ? 'DELETE' : (actionType === 'updateLocation' ? 'UPDATE_LOCATION' : 'UPDATE_GPS'),
         row_id: rowId,
@@ -836,22 +883,21 @@
       })
       .then(res => res.json())
       .then(res => {
-        document.body.style.cursor = 'default';
         if(res.success) {
-          alert("✅ BERJAYA: " + res.message);
-          
+          // 2. Berjaya: Tunjuk Notifikasi Manis & Refresh Data
+          Swal.fire({ icon: 'success', title: 'Berjaya!', text: res.message, timer: 2000, showConfirmButton: false });
           document.getElementById("modalKuarantin").classList.add("hidden"); 
           document.getElementById("skeletonLoader").classList.remove("hidden");
           document.getElementById("dashboardContent").classList.add("hidden");
-          
           muatNaikDataIndukSekali();
         } else {
-          alert("❌ GAGAL: " + res.message);
+          // 3. Gagal dari Server
+          Swal.fire({ icon: 'error', title: 'Ralat Operasi', text: res.message });
         }
       })
       .catch(err => {
-        document.body.style.cursor = 'default';
-        alert("Ralat pelayan: Gagal berhubung dengan Google Apps Script.");
+        // 4. Gagal dari Internet / Rangkaian
+        Swal.fire({ icon: 'warning', title: 'Ralat Rangkaian', text: 'Gagal berhubung dengan pelayan pusat Google.' });
       });
     }
 
