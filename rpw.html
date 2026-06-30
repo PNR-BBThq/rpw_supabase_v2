@@ -20,33 +20,32 @@
 </head>
 <body class="p-2 sm:p-4 lg:p-6 w-full relative">
 
-  <script>
+ <script>
     // 1. URL MIKROSERVIS GAS UNTUK HAL-HAL CRUD (EDIT/PADAM SHEET)
     const GAS_CRUD_URL = "https://script.google.com/macros/s/AKfycbxNeTOOp1XIJaX1uerttRzCwdSW4N_M4jwdnRdkhT1r-Uh2Li0RjveoGEpOXnIiBElxlA/exec";
     
     let USER_NAME = "Pengguna", USER_STATE = "ALL", TIKET_SAH = "STAGING_MODE";
 
-    // 2. BACA DATA LOGIN DARIPADA URL (Main DB hantar via Query Parameters)
+    // 2. BACA DATA LOGIN (GABUNGAN URL & LOCAL STORAGE MAIN DB)
     const urlParams = new URLSearchParams(window.location.search);
     
     if (urlParams.has('u') && urlParams.has('token')) {
-      // Sedut maklumat dari Link URL
+      // SITUASI A: Sedut maklumat jika ia dihantar melalui Link URL
       USER_NAME = urlParams.get('u').toUpperCase();
       USER_STATE = urlParams.get('negeri') ? urlParams.get('negeri').toUpperCase() : "ALL";
       TIKET_SAH = urlParams.get('token').toLowerCase();
       
-      // Simpan backup dalam memori (kalau user ter-refresh page, dia tak hilang)
-      localStorage.setItem("pnr_session_rpw", JSON.stringify({ u: USER_NAME, neg: USER_STATE, t: TIKET_SAH }));
-      
     } else {
-      // Kalau URL kosong, cuba baca dari backup memori
-      const backupSession = localStorage.getItem("pnr_session_rpw");
-      if (backupSession) {
+      // SITUASI B: Kalau URL bersih/kosong, sedut terus dari memori Main DB (pnr_session)
+      const savedSession = localStorage.getItem("pnr_session");
+      if (savedSession) {
         try {
-          const sData = JSON.parse(backupSession);
-          USER_NAME = sData.u || "Pengguna";
-          USER_STATE = sData.neg || "ALL";
-          TIKET_SAH = sData.t || "STAGING_MODE";
+          const sData = JSON.parse(savedSession);
+          USER_NAME = sData.currentUserID || "Pengguna";
+          USER_STATE = (sData.uProf && sData.uProf.state) ? sData.uProf.state : "ALL";
+          
+          // 🚨 MAGIK PASPORT: Terus set userToken dari memori sebagai TIKET_SAH
+          TIKET_SAH = sData.userToken || "STAGING_MODE"; 
         } catch(e) {}
       }
     }
