@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // External Links
     const btnOpenRPW = document.getElementById('btnOpenRPW');
-    if (btnOpenRPW) btnOpenRPW.addEventListener('click', () => window.open(CONFIG.RPW_URL, '_blank'));
+    if (btnOpenRPW) btnOpenRPW.addEventListener('click', () =>window.open(CONFIG.RPW_URL + '&v=20260701', '_blank'));
     
     // Filtering (Date Inputs & Reset)
     if (typeof FilterManager !== 'undefined') {
