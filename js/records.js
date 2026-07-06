@@ -619,7 +619,7 @@ const TaskManager = {
         new bootstrap.Modal(document.getElementById('detailModal')).show();
     },
 
-    saveFullEdit: async function() {
+   saveFullEdit: async function() {
         if(!confirm("Hantar kemaskini?")) return;
         
         const btn = event.target || document.querySelector('#fullEditForm button.btn-success'); 
@@ -698,7 +698,6 @@ const TaskManager = {
 
                 luasS[n] = a; 
                 sevS[n] = s; 
-                // 🛠️ TAMPAL BOM 3: Paksa output Number dengan parseFloat supaya tidak sumbang dengan output string ".toFixed(2)"
                 pctS[n] = luasT > 0 ? parseFloat(((a / luasT) * 100).toFixed(2)) : 0; 
                 names.push(n);
             }
@@ -791,10 +790,9 @@ const TaskManager = {
             Swal.close(); alert("❌ Gagal berhubung dengan pelayan.");
             if (btn) { btn.innerHTML = "SIMPAN PERUBAHAN"; btn.disabled = false; }
         }
-    }
-},
+    }, // 👈 KOMA PENYELAMAT NYA ADA DI SINI
 
-/// =======================================================
+    // =======================================================
     // FUNGSI BARU: PADAM DATA SENDIRI (GUNA API.POSTDATA)
     // =======================================================
     deleteMyTask: async function(rowID) {
@@ -823,8 +821,9 @@ const TaskManager = {
             if (btn) { btn.innerHTML='<i class="bi bi-trash-fill"></i>'; btn.disabled=false; }
         }
     }
-};
-// Pasangkan Butang Verify
+}; // 👈 INI PENUTUP SEBENAR TASKMANAGER
+
+// Pasangkan Butang Verify (Duduk kat luar TaskManager)
 document.addEventListener("DOMContentLoaded", () => {
     const btnApproveAll = document.getElementById('btnApproveAll');
     if(btnApproveAll) btnApproveAll.addEventListener('click', () => VerifyManager.approveAll());
