@@ -284,15 +284,26 @@ const TaskManager = {
             const statusRekod = getV('STATUS') || ""; 
             const log = getV('LOG') || "";
             
-            let btnAction = ""; let badgeHtml = ""; let cardBorder = "primary"; let bgHeader = "light";
+           let btnAction = ""; let badgeHtml = ""; let cardBorder = "primary"; let bgHeader = "light";
 
             if (statusRekod.toUpperCase() === 'DRAF') {
                 badgeHtml = `<span class="badge bg-secondary">DRAF</span>`; cardBorder = "secondary";
-                btnAction = `<button class="btn btn-success w-100 fw-bold btn-sm shadow-sm" onclick="TaskManager.openTaskEdit(${r.row})"><i class="bi bi-pencil-square"></i> SAMBUNG ISI / HANTAR</button>`;
+                // KITA TAMBAH BUTANG PADAM DI SINI (DRAF)
+                btnAction = `
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-danger btn-sm" onclick="TaskManager.deleteMyTask('${r.row}')" title="Padam Data Ini"><i class="bi bi-trash-fill"></i></button>
+                    <button class="btn btn-success flex-grow-1 fw-bold btn-sm shadow-sm" onclick="TaskManager.openTaskEdit(${r.row})"><i class="bi bi-pencil-square"></i> SAMBUNG ISI / HANTAR</button>
+                </div>`;
             } else {
                 badgeHtml = `<span class="badge bg-danger">DITOLAK</span>`; cardBorder = "danger"; bgHeader = "danger bg-opacity-10";
                 let reason = log.includes("DITOLAK") ? log.split("Sebab:").pop() : "Sila semak log.";
-                btnAction = `<div class="task-reject-box p-2 mb-2 small"><i class="bi bi-exclamation-triangle-fill"></i> ${reason}</div><button class="btn btn-danger w-100 fw-bold btn-sm" onclick="TaskManager.openTaskEdit(${r.row})">KEMASKINI & HANTAR</button>`;
+                // KITA TAMBAH BUTANG PADAM DI SINI (DITOLAK)
+                btnAction = `
+                <div class="task-reject-box p-2 mb-2 small"><i class="bi bi-exclamation-triangle-fill"></i> ${reason}</div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-danger btn-sm" onclick="TaskManager.deleteMyTask('${r.row}')" title="Padam Data Ini"><i class="bi bi-trash-fill"></i></button>
+                    <button class="btn btn-danger flex-grow-1 fw-bold btn-sm" onclick="TaskManager.openTaskEdit(${r.row})">KEMASKINI & HANTAR</button>
+                </div>`;
             }
 
             container.innerHTML += `
@@ -794,3 +805,33 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnRefreshTasks = document.getElementById('btnRefreshTasks');
     if(btnRefreshTasks) btnRefreshTasks.addEventListener('click', () => TaskManager.loadMyTasks());
 });
+
+/// =======================================================
+    // FUNGSI BARU: PADAM DATA SENDIRI (GUNA API.POSTDATA)
+    // =======================================================
+    deleteMyTask: async function(rowID) {
+        if(!confirm("AMARAN: Anda pasti mahu memadam rekod ini secara kekal?")) return;
+        
+        // Tunjuk skrin tengah loading
+        const btn = event.target.closest('button'); 
+        if (btn) { btn.innerHTML='<span class="spinner-border spinner-border-sm"></span>'; btn.disabled=true; }
+
+        try {
+            // Tembak direct ke Main DB kau guna method asal
+            const r = await API.postData('deleteEntry', {row: rowID}); 
+            
+            if(r.success) {
+                alert("✅ " + r.message);
+                // Kemas kini senarai Tugasan 
+                this.loadMyTasks(); 
+                if(typeof DashboardManager !== 'undefined') DashboardManager.initDash(); 
+                this.checkTaskCount();
+            } else {
+                alert("❌ " + r.message);
+                if (btn) { btn.innerHTML='<i class="bi bi-trash-fill"></i>'; btn.disabled=false; }
+            }
+        } catch(err) {
+            alert("❌ Gagal berhubung dengan pelayan. Sila cuba lagi.");
+            if (btn) { btn.innerHTML='<i class="bi bi-trash-fill"></i>'; btn.disabled=false; }
+        }
+    }
