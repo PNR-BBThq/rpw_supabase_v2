@@ -792,19 +792,7 @@ const TaskManager = {
             if (btn) { btn.innerHTML = "SIMPAN PERUBAHAN"; btn.disabled = false; }
         }
     }
-};
-
-// Pasangkan Butang Verify
-document.addEventListener("DOMContentLoaded", () => {
-    const btnApproveAll = document.getElementById('btnApproveAll');
-    if(btnApproveAll) btnApproveAll.addEventListener('click', () => VerifyManager.approveAll());
-    
-    const btnRefreshVerify = document.getElementById('btnRefreshVerify');
-    if(btnRefreshVerify) btnRefreshVerify.addEventListener('click', () => VerifyManager.loadPend());
-
-    const btnRefreshTasks = document.getElementById('btnRefreshTasks');
-    if(btnRefreshTasks) btnRefreshTasks.addEventListener('click', () => TaskManager.loadMyTasks());
-});
+},
 
 /// =======================================================
     // FUNGSI BARU: PADAM DATA SENDIRI (GUNA API.POSTDATA)
@@ -836,3 +824,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 };
+// Pasangkan Butang Verify
+document.addEventListener("DOMContentLoaded", () => {
+    const btnApproveAll = document.getElementById('btnApproveAll');
+    if(btnApproveAll) btnApproveAll.addEventListener('click', () => VerifyManager.approveAll());
+    
+    const btnRefreshVerify = document.getElementById('btnRefreshVerify');
+    if(btnRefreshVerify) btnRefreshVerify.addEventListener('click', () => VerifyManager.loadPend());
+
+    const btnRefreshTasks = document.getElementById('btnRefreshTasks');
+    if(btnRefreshTasks) btnRefreshTasks.addEventListener('click', () => TaskManager.loadMyTasks());
+});
