@@ -297,21 +297,27 @@
       <button onclick="bukaModalKuarantin('klon')" class="bg-white hover:bg-slate-50 text-rose-700 px-4 sm:px-5 py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-bold shadow-lg border border-rose-200 w-full sm:w-auto">🔍 Semak Rekod Bertindih</button>
     </div>
 
-    <div class="glass p-4 sm:p-5 lg:p-6 rounded-3xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 items-end filter-grid">
+    <div class="glass p-4 sm:p-5 lg:p-6 rounded-3xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 items-end filter-grid">
       <div class="space-y-1.5 sm:space-y-2">
         <label class="block text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Pilih Tahun</label>
         <select id="filterTahun" onchange="laksanakanFilterLokal()" class="w-full glass-input font-bold text-slate-800 text-[11px] sm:text-xs rounded-2xl p-3 sm:p-3.5 focus:outline-none cursor-pointer"></select>
       </div>
       <div class="space-y-1.5 sm:space-y-2">
         <label class="block text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Pilih Negeri</label>
-        <select id="filterNegeri" onchange="TapisDataDaerah(); laksanakanFilterLokal();" class="w-full glass-input font-semibold text-slate-700 text-[11px] sm:text-xs rounded-2xl p-3 sm:p-3.5 focus:outline-none cursor-pointer">
+        <select id="filterNegeri" onchange="TapisDataDaerah(); TapisDataLokasi(); laksanakanFilterLokal();" class="w-full glass-input font-semibold text-slate-700 text-[11px] sm:text-xs rounded-2xl p-3 sm:p-3.5 focus:outline-none cursor-pointer">
           <option value="ALL">Semua Negeri</option>
         </select>
       </div>
       <div class="space-y-1.5 sm:space-y-2">
         <label class="block text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Pilih Daerah</label>
-        <select id="filterDaerah" onchange="laksanakanFilterLokal()" class="w-full glass-input font-semibold text-slate-700 text-[11px] sm:text-xs rounded-2xl p-3 sm:p-3.5 focus:outline-none cursor-pointer">
+        <select id="filterDaerah" onchange="TapisDataLokasi(); laksanakanFilterLokal()" class="w-full glass-input font-semibold text-slate-700 text-[11px] sm:text-xs rounded-2xl p-3 sm:p-3.5 focus:outline-none cursor-pointer">
           <option value="ALL">Semua Daerah</option>
+        </select>
+      </div>
+      <div class="space-y-1.5 sm:space-y-2">
+        <label class="block text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Pilih Lokasi</label>
+        <select id="filterLokasi" onchange="laksanakanFilterLokal()" class="w-full glass-input font-semibold text-slate-700 text-[11px] sm:text-xs rounded-2xl p-3 sm:p-3.5 focus:outline-none cursor-pointer">
+          <option value="ALL">Semua Lokasi</option>
         </select>
       </div>
       <div class="space-y-1.5 sm:space-y-2">
@@ -319,8 +325,8 @@
         <select id="filterRTD" onchange="laksanakanFilterLokal()" class="w-full glass-input font-semibold text-slate-700 text-[11px] sm:text-xs rounded-2xl p-3 sm:p-3.5 focus:outline-none cursor-pointer">
           <option value="ALL">Semua Tahap RTD</option>
           <option value="RTD=0">RTD = 0 </option>
-          <option value="RTD&lt;1">RTD &lt; 1 </option>
-          <option value="RTD&gt;1">RTD &gt; 1 </option>
+          <option value="RTD<1">RTD &lt; 1 </option>
+          <option value="RTD>1">RTD &gt; 1 </option>
         </select>
       </div>
       <div>
@@ -776,6 +782,7 @@
         selNeg.classList.remove("cursor-pointer");
         selNeg.classList.add("cursor-not-allowed", "opacity-70");
       }
+      TapisDataLokasi();
     }
 
     function TapisDataDaerah() {
@@ -788,14 +795,38 @@
       }
     }
 
+    function TapisDataLokasi() {
+      const negTerpilih = document.getElementById("filterNegeri").value;
+      const daeTerpilih = document.getElementById("filterDaerah").value;
+      const selLok = document.getElementById("filterLokasi");
+      if (!selLok) return;
+      
+      selLok.innerHTML = '<option value="ALL">Semua Lokasi</option>';
+      if (!MASTER_DATA_KESELURUHAN) return;
+      
+      let setLokasi = new Set();
+      MASTER_DATA_KESELURUHAN.mapPins.forEach(function(p) {
+        let passN = (negTerpilih === "ALL" || p.negeri.toUpperCase() === negTerpilih);
+        let passD = (daeTerpilih === "ALL" || p.daerah.toUpperCase() === daeTerpilih);
+        if (passN && passD && p.lokasi && p.lokasi !== "TIADA LOKASI") {
+          setLokasi.add(p.lokasi.toUpperCase());
+        }
+      });
+      
+      Array.from(setLokasi).sort().forEach(function(l) { 
+        selLok.innerHTML += `<option value="${l}">${l}</option>`; 
+      });
+    }
+
     function resetTapisan() {
       document.getElementById("filterTahun").value = 2026;
       document.getElementById("filterNegeri").value = (USER_STATE !== "ALL" && USER_STATE !== "SEMUA") ? USER_STATE : "ALL";
       TapisDataDaerah();
       document.getElementById("filterDaerah").value = "ALL";
+      TapisDataLokasi();
+      document.getElementById("filterLokasi").value = "ALL";
       document.getElementById("filterRTD").value = "ALL";
       
-      // INI YANG DIBETULKAN (Tiada lagi 'Bera sarkan')
       tapisGrafBerasarkanRTD('ALL'); 
       tapisPetaBerasarkanRTD('ALL');
       laksanakanFilterLokal();
@@ -970,22 +1001,25 @@
       const fTahRaw = document.getElementById("filterTahun").value;
       const fNeg = document.getElementById("filterNegeri").value;
       const fDae = document.getElementById("filterDaerah").value;
+      const fLok = document.getElementById("filterLokasi") ? document.getElementById("filterLokasi").value : "ALL";
       const fRtd = document.getElementById("filterRTD").value;
 
       DATA_DITAPIS_SEMASA = MASTER_DATA_KESELURUHAN.mapPins.filter(function(p) {
         let passY = (fTahRaw === "ALL" || p.tahun === parseInt(fTahRaw));
         let passN = (fNeg === "ALL" || p.negeri.toUpperCase() === fNeg);
         let passD = (fDae === "ALL" || p.daerah.toUpperCase() === fDae);
+        let passL = (fLok === "ALL" || p.lokasi.toUpperCase() === fLok);
         let passR = (fRtd === "ALL" || p.rtd_status.toUpperCase() === fRtd);
-        return passY && passN && passD && passR;
+        return passY && passN && passD && passL && passR;
       });
 
       let historyDitapis = MASTER_DATA_KESELURUHAN.historyData.filter(function(h) {
         let passY = (fTahRaw === "ALL" || h.y === parseInt(fTahRaw));
         let passN = (fNeg === "ALL" || h.n === fNeg);
         let passD = (fDae === "ALL" || h.d === fDae);
+        let passL = (fLok === "ALL" || (h.loc && h.loc.toUpperCase() === fLok));
         let passR = (fRtd === "ALL" || h.rtd.toUpperCase() === fRtd);
-        return passY && passN && passD && passR;
+        return passY && passN && passD && passL && passR;
       });
 
       let allTimeRF = 0, allTimeRV = 0;
@@ -1365,11 +1399,11 @@
     function toggleModeTangkapan() {
       if (modeTangkapan === "rf") {
         modeTangkapan = "rv";
-        document.getElementById("btnTogglePest").innerHTML = "🔄 Papar RF";
+        document.getElementById("btnTogglePest").innerHTML = "🔄 Papar RV";
         document.getElementById("tajukGrafPecahan").innerText = "Pecahan Tangkapan RPW RV";
       } else {
         modeTangkapan = "rf";
-        document.getElementById("btnTogglePest").innerHTML = "🔄 Papar RV";
+        document.getElementById("btnTogglePest").innerHTML = "🔄 Papar RF";
         document.getElementById("tajukGrafPecahan").innerText = "Pecahan Tangkapan RPW RF";
       }
       binaGrafDrilldown();
