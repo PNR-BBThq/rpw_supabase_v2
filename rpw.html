@@ -201,27 +201,13 @@
 </head>
 <body class="p-2 sm:p-4 lg:p-6 w-full relative">
 
- <script>
+<script>
     const GAS_CRUD_URL = "https://script.google.com/macros/s/AKfycbxNeTOOp1XIJaX1uerttRzCwdSW4N_M4jwdnRdkhT1r-Uh2Li0RjveoGEpOXnIiBElxlA/exec";
+    // 1. Biarkan pembolehubah dideklarasi kosong di luar dahulu
     let USER_NAME = "Pengguna", USER_STATE = "ALL", TIKET_SAH = "STAGING_MODE";
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('u') && urlParams.has('token')) {
-      USER_NAME = urlParams.get('u').toUpperCase();
-      USER_STATE = urlParams.get('negeri') ? urlParams.get('negeri').toUpperCase() : "ALL";
-      TIKET_SAH = urlParams.get('token').toLowerCase();
-    } else {
-      const savedSession = localStorage.getItem("pnr_session");
-      if (savedSession) {
-        try {
-          const sData = JSON.parse(savedSession);
-          USER_NAME = sData.currentUserID || "Pengguna";
-          USER_STATE = (sData.uProf && sData.uProf.state) ? sData.uProf.state : "ALL";
-          TIKET_SAH = sData.userToken || "STAGING_MODE"; 
-        } catch(e) {}
-      }
-    }
   </script>
 
+  
   <div id="skeletonLoader" class="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6 animate-pulse px-1 sm:px-0">
     <div class="glass p-4 sm:p-6 rounded-3xl flex items-center gap-4">
       <div class="w-14 h-14 sm:w-16 sm:h-16 bg-slate-200/60 rounded-2xl shrink-0"></div>
@@ -725,18 +711,51 @@
     let SENARAI_DUPLIKASI_KLON = [];
     let SENARAI_PENUH_DEFAULTER = [];
 
-    window.onload = function() {
+   window.onload = function() {
       binaPetaAsas();
       
-      // 3. PAKGUARD RINGKAS
+      // 2. TANGKAP SESI DARI URL ATAU LOCALSTORAGE (Di dalam onload)
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      // KITA BETULKAN EJAAN MENGIKUT BACKEND ('tiket' & 'neg')
+      if (urlParams.has('u') && urlParams.has('tiket')) {
+        USER_NAME = urlParams.get('u').toUpperCase();
+        USER_STATE = urlParams.get('neg') ? urlParams.get('neg').toUpperCase() : "ALL";
+        TIKET_SAH = urlParams.get('tiket').toLowerCase();
+        
+        // Simpan terus ke localStorage supaya boleh buka direct lepas ni
+        localStorage.setItem("pnr_session", JSON.stringify({
+            currentUserID: USER_NAME,
+            uProf: { state: USER_STATE },
+            userToken: TIKET_SAH
+        }));
+      } else {
+        const savedSession = localStorage.getItem("pnr_session");
+        if (savedSession) {
+          try {
+            const sData = JSON.parse(savedSession);
+            USER_NAME = sData.currentUserID || "Pengguna";
+            USER_STATE = (sData.uProf && sData.uProf.state) ? sData.uProf.state : "ALL";
+            TIKET_SAH = sData.userToken || "STAGING_MODE"; 
+          } catch(e) {}
+        }
+      }
+      
+      // 3. PAKGUARD RINGKAS (Mesej lebih cantik & profesional)
       if (!USER_NAME || USER_NAME === "Pengguna") {
-         document.body.innerHTML = `<h1>⛔ AKSES DITOLAK</h1>`; return;
+         document.body.innerHTML = `
+           <div class="flex flex-col items-center justify-center min-h-screen text-center p-6 bg-slate-50">
+             <div class="p-4 bg-rose-100 rounded-full text-rose-600 mb-4 text-4xl">⛔</div>
+             <h1 class="text-2xl font-black text-slate-800 mb-2">AKSES DITOLAK</h1>
+             <p class="text-xs text-slate-500 mb-6 max-w-md">Sesi log masuk anda tidak dijumpai atau telah tamat tempoh. Sila log masuk semula dari halaman utama.</p>
+             <a href="index.html" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-xs shadow-lg transition">🔑 Log Masuk Semula</a>
+           </div>`; 
+         return;
       }
       
       // 4. TERUS PANGGIL SUPABASE TINGGALKAN SEKATAN LAMA
       muatNaikDataIndukSekali();
     };
-
     function binaPetaAsas() {
       map = L.map('mapRPW', { zoomControl: false, preferCanvas: true }).setView([4.2105, 101.9758], 6); 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
