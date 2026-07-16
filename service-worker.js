@@ -1,4 +1,4 @@
-const CACHE_NAME = "PNR-CACHE-Version-4.2-NewUI"; // ⚡ Tukar versi di sini untuk paksa browser update!
+const CACHE_NAME = "PNR-CACHE-Version-4.3-FixAuth"; // ⚡ Tukar versi di sini untuk paksa browser update!
 const ASSETS = [
   './',
   './index.html',
