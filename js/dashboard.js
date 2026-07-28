@@ -357,15 +357,15 @@ const DashboardManager = {
             const getTimestampVal = (rec) => {
                 const keys = ['Timestamp', 'timestamp', 'tm', 'ts', 'th', 'tk', 'tkh', 'w', 'm', 'h', 'dt', 'time', 'waktu', 'hantar', 'date', 'created_at', 'date_created', 't_hantar', 'tarikh_kutip', 'tarikhHantar', 'tkhHantar', 'tarikh_hantar', 't_stamp', 'tstamp'];
                 for (let k of keys) {
-                    if (rec[k] !== undefined && rec[k] !== null && rec[k] !== "") return Utils.formatDateDisplay(rec[k]);
+                    if (rec[k] !== undefined && rec[k] !== null && rec[k] !== "") return Utils.formatDateTimeDisplay(rec[k]);
                 }
                 const knownFields = ['id', 't', 'n', 'd', 'l', 'c', 'kt', 'tn', 'vr', 'um', 'lt', 'p', 'k', 'pk', 'ls', 'ps', 'pct', 's', 'pg', 'em', 'vb', 'im', 'row', 'idx', '_id', 'status', 'st'];
                 for (let k in rec) {
                     if (!knownFields.includes(k) && rec[k] !== undefined && rec[k] !== null && rec[k] !== "") {
-                        return Utils.formatDateDisplay(rec[k]);
+                        return Utils.formatDateTimeDisplay(rec[k]);
                     }
                 }
-                return rec.t ? Utils.formatDateDisplay(rec.t) : "-";
+                return "-";
             };
             const tarikhHantar = getTimestampVal(d);
 
@@ -522,15 +522,38 @@ const DashboardManager = {
 
 // Utils: Fungsi bantuan (tarikh, dsb) diletakkan di dalam objek Utils
 const Utils = {
+    formatDateTimeDisplay: function(dateStr) {
+        if (!dateStr || dateStr === "-") return "-";
+        let str = String(dateStr).trim();
+        let datePart = str;
+        let timePart = "";
+        if (str.includes('T')) {
+            const splitT = str.split('T');
+            datePart = splitT[0].trim();
+            timePart = splitT[1].split('.')[0].replace('Z', '').trim();
+        } else if (str.includes(' ')) {
+            const splitSpace = str.split(' ');
+            datePart = splitSpace[0].trim();
+            timePart = splitSpace.slice(1).join(' ').trim();
+        }
+        let cleanDate = datePart;
+        if (datePart.includes('-')) {
+            const parts = datePart.split('-');
+            if (parts.length === 3) cleanDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return timePart ? `${cleanDate} (${timePart})` : cleanDate;
+    },
     formatDateDisplay: function(dateStr) {
         if (!dateStr || dateStr === "-") return "-";
         let str = String(dateStr).trim();
+        if (str.includes('T')) str = str.split('T')[0];
+        if (str.includes(' ')) str = str.split(' ')[0];
         if (str.includes('-')) {
-            const parts = str.split('T')[0].split('-'); 
+            const parts = str.split('-'); 
             if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
         }
         if (str.includes('/')) return str; 
-        const d = new Date(dateStr);
+        const d = new Date(str);
         if (isNaN(d)) return str; 
         const day = String(d.getDate()).padStart(2, '0');
         const month = String(d.getMonth() + 1).padStart(2, '0');

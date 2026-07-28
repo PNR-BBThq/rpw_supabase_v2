@@ -324,7 +324,7 @@ const TaskManager = {
             </div>`;
         } 
         else if (type === 'VERIFY') {
-            const tkhHantar = Utils.formatDateDisplay(getV('Timestamp'));
+            const tkhHantar = Utils.formatDateTimeDisplay(getV('Timestamp'));
             const tarikhBancian = Utils.formatDateDisplay(getV('Tarikh Bancian') || getV('Tarikh') || getV('Date'));
             const nama = getV('Nama') || getV('Pegawai');
             const email = getV('Email') || "-";
