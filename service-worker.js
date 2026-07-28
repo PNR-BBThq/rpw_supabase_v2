@@ -1,4 +1,4 @@
-const CACHE_NAME = "PNR-CACHE-Version-4.3-FixAuth"; // ⚡ Tukar versi di sini untuk paksa browser update!
+const CACHE_NAME = "PNR-CACHE-Version-4.4-AutoClaim"; // ⚡ Tukar versi di sini untuk paksa browser update!
 const ASSETS = [
   './',
   './index.html',
@@ -70,6 +70,6 @@ self.addEventListener('activate', (e) => {
           return caches.delete(key);
         }
       }));
-    })
+    }).then(() => self.clients.claim())
   );
 });

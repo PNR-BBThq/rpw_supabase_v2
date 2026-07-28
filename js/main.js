@@ -20,14 +20,14 @@ if ('serviceWorker' in navigator) {
             });
     });
 
-    // ⚡ HERO LOGIK: Apabila Service Worker versi baharu mengambil alih kawalan,
-    // pelayar web peranti user akan automatik dimuat semula (Hard Reload) serta-merta!
-    let statusReload = false;
+    // ⚡ HERO LOGIK: Apabila Service Worker versi baharu mengambil alih kawalan menerusi clients.claim(),
+    // event 'controllerchange' akan tercetus. Kita auto-reload halaman sekali sahaja!
+    let refreshing = false; // Guard flag untuk elak infinite reload loop
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!statusReload) {
-            statusReload = true;
-            window.location.reload();
-        }
+        if (refreshing) return;
+        refreshing = true;
+        console.log('🔄 Versi baharu Service Worker telah mengambil alih kawalan. Melancarkan auto-reload halaman (sekali sahaja)...');
+        window.location.reload();
     });
 }
 
