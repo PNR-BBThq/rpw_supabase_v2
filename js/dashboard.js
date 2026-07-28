@@ -82,7 +82,7 @@ const DashboardManager = {
         if (status === 'ONLINE' || status === true) {
             el.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-cloud-check-fill"></i> Data Terkini: ${timeStr}</span>`;
         } else if (status === 'SYNCING') {
-            el.innerHTML = `<span class="text-primary fw-bold"><i class="bi bi-cloud-download-fill"></i> Menyedot Data Server... (Cache: ${timeStr || "Tiada"})</span>`;
+            el.innerHTML = `<span class="text-primary fw-bold"><i class="bi bi-cloud-download-fill"></i> Memuat Turun Data Server... (Cache: ${timeStr || "Tiada"})</span>`;
         } else if (status === 'ERROR') {
             el.innerHTML = `<span class="text-warning fw-bold text-dark"><i class="bi bi-exclamation-triangle-fill text-danger"></i> Gagal Sambung ke Server/CORS! (Paparan Cache: ${timeStr || "Tiada"})</span>`;
         } else {
