@@ -1,4 +1,4 @@
-const CACHE_NAME = "PNR-CACHE-Version-4.5-FloatingFilter-AutoClaim"; // ⚡ Tukar versi di sini untuk paksa browser update!
+const CACHE_NAME = "PNR-CACHE-Version-4.6-FixCORS"; // ⚡ Tukar versi di sini untuk paksa browser update!
 const ASSETS = [
   './',
   './index.html',
@@ -49,13 +49,40 @@ self.addEventListener('message', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
+  const url = new URL(e.request.url);
+
+  // ⚡ BYPASS 1: Jangan pernah mintas API calls ke Google Apps Script.
+  // Biarkan browser handle sendiri secara langsung tanpa Service Worker campur tangan.
+  // Ini mengelakkan ralat "Failed to convert value to 'Response'" apabila CORS block berlaku.
+  if (url.hostname === 'script.google.com' || url.hostname === 'script.googleusercontent.com') {
+    return; // Jangan panggil e.respondWith() — serahkan sepenuhnya kepada browser
+  }
+
+  // ⚡ BYPASS 2: Jangan cache POST requests (cth: form submissions)
+  if (e.request.method !== 'GET') {
+    return;
+  }
+
+  // Strategi Cache-First untuk aset statik (HTML, CSS, JS, gambar, font, pustaka CDN)
   e.respondWith(
-    caches.match(e.request).then((res) => {
-      // Jika ada dalam cache, guna cache. Jika tiada, ambil dari rangkaian internet.
-      return res || fetch(e.request).catch(() => {
+    caches.match(e.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      // Tiada dalam cache — cuba ambil dari rangkaian
+      return fetch(e.request).then((networkResponse) => {
+        return networkResponse;
+      }).catch(() => {
+        // Rangkaian gagal dan tiada cache — fallback ke index.html untuk navigation requests
         if (e.request.mode === 'navigate') {
-            return caches.match('./index.html');
+          return caches.match('./index.html');
         }
+        // Untuk aset bukan navigasi yang gagal, kembalikan 503 Service Unavailable
+        return new Response('Offline - Sumber tidak tersedia', {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: new Headers({ 'Content-Type': 'text/plain' })
+        });
       });
     })
   );
