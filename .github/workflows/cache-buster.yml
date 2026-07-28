@@ -1,0 +1,91 @@
+# ============================================================
+# 🚀 GitHub Action: Auto Cache Buster
+# Secara automatik update version query string (?v=xxx) pada
+# semua reference JS/CSS tempatan dalam index.html, dan
+# update CACHE_NAME dalam service-worker.js.
+#
+# Dicetuskan setiap kali push ke branch 'main'.
+# Hanya commit semula jika ada perubahan sebenar.
+# ============================================================
+
+name: Auto Cache Buster
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.js'
+      - '**.css'
+      - '**.html'
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate version tag
+        id: version
+        run: |
+          # Guna short commit SHA + timestamp untuk keunikan
+          COMMIT_SHORT=$(echo "${{ github.sha }}" | cut -c1-7)
+          TIMESTAMP=$(date +%Y%m%d%H%M)
+          VERSION="${TIMESTAMP}-${COMMIT_SHORT}"
+          echo "tag=$VERSION" >> $GITHUB_OUTPUT
+          echo "cache_name=PNR-CACHE-v${VERSION}" >> $GITHUB_OUTPUT
+          echo "🏷️ Version tag: $VERSION"
+
+      - name: Update version strings in HTML files
+        run: |
+          VERSION="${{ steps.version.outputs.tag }}"
+
+          # Fail HTML yang perlu diproses
+          HTML_FILES="index.html"
+
+          for FILE in $HTML_FILES; do
+            if [ ! -f "$FILE" ]; then
+              echo "⏭️ SKIP: $FILE tidak dijumpai"
+              continue
+            fi
+
+            # Update local JS references: src="./js/xxx.js" atau src="js/xxx.js"
+            # Tambah atau ganti ?v=xxx
+            sed -i -E "s|(src\s*=\s*\")((\./)?js/[^\"?]+\.js)(\?v=[^\"]*)?(\")|\\1\\2?v=${VERSION}\\5|g" "$FILE"
+
+            # Update local CSS references: href="./css/xxx.css" atau href="css/xxx.css"
+            sed -i -E "s|(href\s*=\s*\")((\./)?css/[^\"?]+\.css)(\?v=[^\"]*)?(\")|\\1\\2?v=${VERSION}\\5|g" "$FILE"
+
+            echo "✅ $FILE dikemaskini dengan v=$VERSION"
+          done
+
+      - name: Update CACHE_NAME in service-worker.js
+        run: |
+          CACHE_NAME="${{ steps.version.outputs.cache_name }}"
+          SW_FILE="service-worker.js"
+
+          if [ -f "$SW_FILE" ]; then
+            sed -i -E "s|(const\s+CACHE_NAME\s*=\s*\")[^\"]*(\")|\1${CACHE_NAME}\2|" "$SW_FILE"
+            echo "✅ CACHE_NAME -> $CACHE_NAME"
+          else
+            echo "⏭️ SKIP: $SW_FILE tidak dijumpai"
+          fi
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Hanya commit jika ada perubahan
+          if git diff --quiet; then
+            echo "ℹ️ Tiada perubahan version — skip commit"
+          else
+            VERSION="${{ steps.version.outputs.tag }}"
+            git add index.html service-worker.js
+            git commit -m "🔄 auto: bump cache v${VERSION} [skip ci]"
+            git push
+            echo "✅ Commit dan push berjaya!"
+          fi
