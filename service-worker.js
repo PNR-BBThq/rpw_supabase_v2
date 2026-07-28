@@ -63,29 +63,65 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Strategi Cache-First untuk aset statik (HTML, CSS, JS, gambar, font, pustaka CDN)
-  e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      // Tiada dalam cache — cuba ambil dari rangkaian
-      return fetch(e.request).then((networkResponse) => {
+  const destination = e.request.destination;
+  const isCoreCritical = (destination === 'document' || destination === 'script' || destination === 'style');
+
+  if (isCoreCritical) {
+    // ⚡ STRATEGI NETWORK-FIRST untuk HTML, JS, CSS
+    // Sentiasa cuba dapatkan versi terkini dari rangkaian dahulu.
+    // Simpan salinan terbaru dalam cache untuk kegunaan offline.
+    e.respondWith(
+      fetch(e.request).then((networkResponse) => {
+        // Hanya cache response yang berjaya dan sah
+        if (networkResponse && networkResponse.ok) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(e.request, responseClone);
+          });
+        }
         return networkResponse;
       }).catch(() => {
-        // Rangkaian gagal dan tiada cache — fallback ke index.html untuk navigation requests
-        if (e.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-        // Untuk aset bukan navigasi yang gagal, kembalikan 503 Service Unavailable
-        return new Response('Offline - Sumber tidak tersedia', {
-          status: 503,
-          statusText: 'Service Unavailable',
-          headers: new Headers({ 'Content-Type': 'text/plain' })
+        // Rangkaian gagal (offline) — fallback ke cache
+        return caches.match(e.request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // Tiada cache langsung — fallback ke index.html untuk navigation requests
+          if (e.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+          return new Response('Offline - Sumber tidak tersedia', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: new Headers({ 'Content-Type': 'text/plain' })
+          });
         });
-      });
-    })
-  );
+      })
+    );
+  } else {
+    // ⚡ STRATEGI CACHE-FIRST untuk aset lain (gambar, font, pustaka CDN, dll.)
+    // Kekalkan offline support supaya borang bancian sentiasa berfungsi.
+    e.respondWith(
+      caches.match(e.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        // Tiada dalam cache — cuba ambil dari rangkaian
+        return fetch(e.request).then((networkResponse) => {
+          return networkResponse;
+        }).catch(() => {
+          if (e.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+          return new Response('Offline - Sumber tidak tersedia', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: new Headers({ 'Content-Type': 'text/plain' })
+          });
+        });
+      })
+    );
+  }
 });
 
 self.addEventListener('activate', (e) => {
