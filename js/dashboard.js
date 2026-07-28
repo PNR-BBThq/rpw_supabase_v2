@@ -26,7 +26,7 @@ const DashboardManager = {
             try {
                 AppState.mData = JSON.parse(cachedRaw);
                 DashboardManager.processDataToUI(AppState.mData);
-                DashboardManager.updateLastUpdateLabel(cachedTime, false);
+                DashboardManager.updateLastUpdateLabel(cachedTime, isOffline ? 'OFFLINE' : 'SYNCING');
             } catch(e) { console.error(e); }
         }
 
@@ -40,12 +40,18 @@ const DashboardManager = {
                     localStorage.setItem('pnr_dashboard_time', now);
                     
                     DashboardManager.processDataToUI(AppState.mData);
-                    DashboardManager.updateLastUpdateLabel(now, true);
+                    DashboardManager.updateLastUpdateLabel(now, 'ONLINE');
                     if (typeof TaskManager !== 'undefined') {
                         TaskManager.checkTaskCount(); 
                     }
+                } else {
+                    // Jika API gagal (cth: masalah CORS atau sesi luput) tatkala online
+                    DashboardManager.updateLastUpdateLabel(cachedTime, 'ERROR');
                 }
-            } catch (e) { console.log("Gagal tarik data server"); }
+            } catch (e) { 
+                console.log("Gagal tarik data server:", e); 
+                DashboardManager.updateLastUpdateLabel(cachedTime, 'ERROR');
+            }
         }
     },
 
@@ -70,10 +76,15 @@ const DashboardManager = {
         FilterManager.runFilter('n');
     },
 
-    updateLastUpdateLabel: function(timeStr, isOnline) {
+    updateLastUpdateLabel: function(timeStr, status) {
         const el = document.getElementById('lastUpdate');
-        if (isOnline) {
-            el.innerHTML = `<span class="text-success"><i class="bi bi-cloud-check-fill"></i> Data Terkini: ${timeStr}</span>`;
+        if (!el) return;
+        if (status === 'ONLINE' || status === true) {
+            el.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-cloud-check-fill"></i> Data Terkini: ${timeStr}</span>`;
+        } else if (status === 'SYNCING') {
+            el.innerHTML = `<span class="text-primary fw-bold"><i class="bi bi-cloud-download-fill"></i> Menyedot Data Server... (Cache: ${timeStr || "Tiada"})</span>`;
+        } else if (status === 'ERROR') {
+            el.innerHTML = `<span class="text-warning fw-bold text-dark"><i class="bi bi-exclamation-triangle-fill text-danger"></i> Gagal Sambung ke Server/CORS! (Paparan Cache: ${timeStr || "Tiada"})</span>`;
         } else {
             el.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-clock-history"></i> Data Offline (${timeStr || "Tiada Tarikh"})</span>`;
         }
