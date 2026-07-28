@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
             el.addEventListener('change', () => FilterManager.runFilter());
         });
         const btnResetFilter = document.getElementById('btnResetFilter');
-        if (btnResetFilter) btnResetFilter.addEventListener('click', FilterManager.resetFilter);
+        if (btnResetFilter) btnResetFilter.addEventListener('click', () => FilterManager.resetFilter());
     }
 }); 
 
