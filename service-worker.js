@@ -1,4 +1,4 @@
-const CACHE_NAME = "PNR-CACHE-Version-4.4 redesign mainDB"; // ⚡ Tukar versi di sini untuk paksa browser update!
+const CACHE_NAME = "PNR-CACHE-Version-4.5-FloatingFilter-AutoClaim"; // ⚡ Tukar versi di sini untuk paksa browser update!
 const ASSETS = [
   './',
   './index.html',

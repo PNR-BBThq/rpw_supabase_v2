@@ -122,69 +122,18 @@
 
             <hr class="my-3" style="border-color: #e2e8f0; opacity: 1;">
 
-            <div class="filter-container-sticky" id="filterSection">
-                <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
-                    <small class="fw-bold text-dark d-flex align-items-center"
-                        style="font-size:0.8rem; letter-spacing: 0.5px; color: #1e293b !important;"><i
-                            class="bi bi-funnel-fill me-2 text-primary"></i> TAPISAN DATA</small>
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill"
-                        style="font-size: 0.65rem;">Interaktif</span>
+            <div class="p-3 rounded-3 border shadow-sm mt-2 bg-white" style="border-color: #cbd5e1 !important;">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="bg-danger text-white rounded p-1 me-2 shadow-sm d-flex align-items-center justify-content-center"
+                        style="width:26px; height:26px;"><i class="bi bi-bug-fill small"></i></div>
+                    <small class="fw-bold text-dark"
+                        style="line-height:1.2; font-size: 0.75rem;">Pemantauan<br>Perangkap RPW</small>
                 </div>
-
-                <div id="filterDropdownsContainer" class="d-flex flex-column gap-2 mb-2"></div>
-
-                <div class="mb-2 pt-2 border-top">
-                    <label class="filter-label text-dark mb-1">Pilihan Tarikh</label>
-                    <div class="btn-group w-100 mb-2 shadow-sm" role="group">
-                        <input type="radio" class="btn-check" name="dateMode" id="modeBulan" value="bulan" checked
-                            autocomplete="off" onchange="FilterManager.toggleDateMode('bulan')">
-                        <label class="btn btn-outline-primary btn-sm py-1 fw-bold" style="font-size: 0.75rem;"
-                            for="modeBulan">Bulan</label>
-
-                        <input type="radio" class="btn-check" name="dateMode" id="modeJulat" value="julat"
-                            autocomplete="off" onchange="FilterManager.toggleDateMode('julat')">
-                        <label class="btn btn-outline-primary btn-sm py-1 fw-bold" style="font-size: 0.75rem;"
-                            for="modeJulat">Julat Tarikh</label>
-                    </div>
-
-                    <div id="dateBulanContainer" class="mb-1">
-                        <select id="selBulan" class="form-select form-select-sm shadow-sm" style="font-size: 0.8rem;"
-                            onchange="FilterManager.runFilter('tarikh')">
-                            <option value="">- Semua Bulan -</option>
-                        </select>
-                    </div>
-
-                    <div id="dateJulatContainer" class="mb-1" style="display: none;">
-                        <div class="row g-1">
-                            <div class="col-6"><input type="date" id="dS"
-                                    class="form-control form-control-sm filter-input shadow-sm"
-                                    style="font-size: 0.75rem;" onchange="FilterManager.runFilter('tarikh')"></div>
-                            <div class="col-6"><input type="date" id="dE"
-                                    class="form-control form-control-sm filter-input shadow-sm"
-                                    style="font-size: 0.75rem;" onchange="FilterManager.runFilter('tarikh')"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <button
-                    class="btn btn-dark btn-sm w-100 fw-bold py-2 mt-2 shadow-sm d-flex align-items-center justify-content-center"
-                    id="btnResetFilter" style="border-radius: 8px;">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Tapisan
+                <p class="text-muted mb-2" style="font-size: 0.7rem;">Akses pantas ke data perangkap kumbang.</p>
+                <button id="btnOpenRPW" class="btn btn-outline-danger btn-sm w-100 fw-bold py-1"
+                    style="font-size: 0.75rem;">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Buka Sistem
                 </button>
-
-                <div class="p-3 rounded-3 border shadow-sm mt-3 bg-white" style="border-color: #cbd5e1 !important;">
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="bg-danger text-white rounded p-1 me-2 shadow-sm d-flex align-items-center justify-content-center"
-                            style="width:26px; height:26px;"><i class="bi bi-bug-fill small"></i></div>
-                        <small class="fw-bold text-dark"
-                            style="line-height:1.2; font-size: 0.75rem;">Pemantauan<br>Perangkap RPW</small>
-                    </div>
-                    <p class="text-muted mb-2" style="font-size: 0.7rem;">Akses pantas ke data perangkap kumbang.</p>
-                    <button id="btnOpenRPW" class="btn btn-outline-danger btn-sm w-100 fw-bold py-1"
-                        style="font-size: 0.75rem;">
-                        <i class="bi bi-box-arrow-up-right me-1"></i> Buka Sistem
-                    </button>
-                </div>
             </div>
         </div>
         <div class="sidebar-footer">
@@ -230,6 +179,48 @@
                         <button class="btn btn-primary btn-sm px-3" id="btnDlKML"><i
                                 class="bi bi-pin-map-fill me-1"></i> KML</button>
                     </div>
+                </div>
+            </div>
+
+            <!-- ⚡ FLOATING COMPACT FILTER BAR IN MAIN VIEW -->
+            <div id="filterSection" class="card shadow-sm border-0 mb-3 p-2 rounded-3"
+                style="position: sticky; top: 10px; z-index: 1030; background: linear-gradient(135deg, rgba(238, 242, 255, 0.96), rgba(241, 245, 249, 0.96)); backdrop-filter: blur(10px); border: 1px solid #cbd5e1 !important;">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <div class="d-flex align-items-center fw-bold me-1 text-primary" style="font-size: 0.8rem;">
+                        <i class="bi bi-funnel-fill me-1"></i> Tapisan Data:
+                    </div>
+
+                    <!-- Cascading Dropdowns Container -->
+                    <div id="filterDropdownsContainer" class="d-flex flex-wrap align-items-center gap-2"></div>
+
+                    <!-- Date Selection Section -->
+                    <div class="d-flex flex-wrap align-items-center gap-1 border-start px-2 my-1" style="border-color: #cbd5e1 !important;">
+                        <span class="text-muted fw-bold me-1" style="font-size: 0.75rem;"><i class="bi bi-calendar-event me-1"></i>Tarikh:</span>
+                        <div class="btn-group shadow-sm me-1" role="group">
+                            <input type="radio" class="btn-check" name="dateMode" id="modeBulan" value="bulan" checked autocomplete="off" onchange="FilterManager.toggleDateMode('bulan')">
+                            <label class="btn btn-outline-primary btn-sm py-0 px-2 fw-bold" style="font-size: 0.75rem; height: 31px; line-height: 29px;" for="modeBulan">Bulan</label>
+
+                            <input type="radio" class="btn-check" name="dateMode" id="modeJulat" value="julat" autocomplete="off" onchange="FilterManager.toggleDateMode('julat')">
+                            <label class="btn btn-outline-primary btn-sm py-0 px-2 fw-bold" style="font-size: 0.75rem; height: 31px; line-height: 29px;" for="modeJulat">Pilih Tarikh</label>
+                        </div>
+
+                        <div id="dateBulanContainer" class="d-inline-block">
+                            <select id="selBulan" class="form-select form-select-sm shadow-sm" style="font-size: 0.78rem; height: 31px; min-width: 140px;" onchange="FilterManager.runFilter('tarikh')">
+                                <option value="">- Semua Bulan -</option>
+                            </select>
+                        </div>
+
+                        <div id="dateJulatContainer" class="d-inline-flex align-items-center gap-1" style="display: none;">
+                            <input type="date" id="dS" class="form-control form-control-sm shadow-sm" style="font-size: 0.75rem; height: 31px; width: 130px;" onchange="FilterManager.runFilter('tarikh')" title="Tarikh Mula">
+                            <span class="text-muted small">-</span>
+                            <input type="date" id="dE" class="form-control form-control-sm shadow-sm" style="font-size: 0.75rem; height: 31px; width: 130px;" onchange="FilterManager.runFilter('tarikh')" title="Tarikh Akhir">
+                        </div>
+                    </div>
+
+                    <!-- Reset Filter Button -->
+                    <button class="btn btn-dark btn-sm fw-bold px-2 py-1 shadow-sm d-flex align-items-center ms-auto" id="btnResetFilter" style="font-size: 0.75rem; border-radius: 6px; height: 31px;">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                    </button>
                 </div>
             </div>
 
