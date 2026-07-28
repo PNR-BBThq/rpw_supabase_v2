@@ -225,7 +225,7 @@ const FilterManager = {
         const bulanCon = document.getElementById('dateBulanContainer');
         const julatCon = document.getElementById('dateJulatContainer');
         if (mode === 'bulan') {
-            if(bulanCon) bulanCon.style.display = 'block';
+            if(bulanCon) bulanCon.style.display = 'inline-block';
             if(julatCon) julatCon.style.display = 'none';
             const dS = document.getElementById('dS');
             const dE = document.getElementById('dE');
@@ -233,7 +233,7 @@ const FilterManager = {
             if(dE) dE.value = "";
         } else {
             if(bulanCon) bulanCon.style.display = 'none';
-            if(julatCon) julatCon.style.display = 'flex';
+            if(julatCon) julatCon.style.display = 'inline-flex';
             const selBulan = document.getElementById('selBulan');
             if(selBulan) selBulan.value = "";
         }
