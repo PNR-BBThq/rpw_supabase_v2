@@ -54,10 +54,9 @@ const MapManager = {
     loadStateBoundaries: async function() {
         // Gunakan fail malaysia.states.geojson menerusi CDN berprestasi tinggi agar setiap negeri terpisah dengan warna low bright
         const geoUrls = [
-            "https://cdn.jsdelivr.net/gh/null2264/malaysia-geojson@master/malaysia.states.geojson",
-            "https://raw.githubusercontent.com/null2264/malaysia-geojson/master/malaysia.states.geojson",
-            "https://cdn.jsdelivr.net/gh/superqom/my-geojson@master/malaysia.states.geojson",
-            "https://raw.githubusercontent.com/superqom/my-geojson/master/malaysia-states.geojson"
+            "https://cdn.jsdelivr.net/gh/nullifye/malaysia.geojson@master/malaysia.state.geojson",
+            "https://raw.githubusercontent.com/nullifye/malaysia.geojson/master/malaysia.state.geojson",
+            "https://raw.githubusercontent.com/wmgeolab/geoBoundaries/9469f09/releaseData/gbOpen/MYS/ADM1/geoBoundaries-MYS-ADM1_simplified.geojson"
         ];
         for (let url of geoUrls) {
             try {
