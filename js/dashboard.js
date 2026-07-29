@@ -456,7 +456,10 @@ const DashboardManager = {
         }).join('') : '<tr><td colspan="7" class="text-center text-muted p-4">Tiada rekod dijumpai.</td></tr>'; 
         
         const totalPgs = Math.ceil(listToRender.length / AppState.pSize) || 1;
-        document.getElementById('pgInfo').innerText = `Muka ${AppState.pg} dari ${totalPgs} (${listToRender.length} rekod)`; 
+        document.getElementById('pgInfo').innerText = `Muka ${AppState.pg} dari ${totalPgs} (${listToRender.length} rekod)`;
+
+        // Render mobile card-list view
+        DashboardManager.renderMobileCards(dt);
     },
     
     movePg: function(v) { 
@@ -528,6 +531,64 @@ const DashboardManager = {
                 iconEl.className = 'bi bi-arrow-down-up small text-muted';
             }
         });
+    },
+
+    // ============================================================
+    // FUNGSI: RENDER MOBILE CARD LIST VIEW (untuk skrin ≤768px)
+    // ============================================================
+    renderMobileCards: function(dt) {
+        const container = document.getElementById('mobileCardList');
+        if (!container) return;
+
+        if (!dt || dt.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-muted p-4">
+                    <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                    <span class="fw-bold">Tiada rekod dijumpai.</span>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = dt.map((d, i) => {
+            const realIndex = AppState.fData.indexOf(d);
+            return `
+            <div class="mobile-record-card">
+                <div class="card-field">
+                    <span class="card-field-label"><i class="bi bi-calendar-event me-1"></i>Tarikh</span>
+                    <span class="card-field-value text-primary fw-bold">${Utils.formatDateDisplay(d.t)}</span>
+                </div>
+                <div class="card-field">
+                    <span class="card-field-label"><i class="bi bi-geo-alt me-1"></i>Negeri</span>
+                    <span class="card-field-value">${d.n || '-'}</span>
+                </div>
+                <div class="card-field">
+                    <span class="card-field-label"><i class="bi bi-pin-map me-1"></i>Lokasi</span>
+                    <span class="card-field-value">${d.l || '-'}${d.d ? '<br><small class="text-muted">' + d.d + '</small>' : ''}</span>
+                </div>
+                <div class="card-field">
+                    <span class="card-field-label"><i class="bi bi-tree me-1"></i>Tanaman</span>
+                    <span class="card-field-value"><span class="badge bg-light text-dark border px-2 py-1">${d.tn || '-'}</span></span>
+                </div>
+                <div class="card-field">
+                    <span class="card-field-label"><i class="bi bi-rulers me-1"></i>Luas Bancian</span>
+                    <span class="card-field-value">${parseFloat(d.lt || 0).toFixed(4)} Ha</span>
+                </div>
+                <div class="card-field">
+                    <span class="card-field-label"><i class="bi bi-bug me-1"></i>Luas Serangan</span>
+                    <span class="card-field-value text-danger">${parseFloat(d.ls || 0).toFixed(4)} Ha</span>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline-secondary btn-sm shadow-sm" onclick="DataManager.viewRec(${realIndex})">
+                        <i class="bi bi-card-list me-1"></i> Butiran
+                    </button>
+                    <button class="btn btn-danger btn-sm shadow-sm" 
+                        data-lokasi="${d.l}" data-pegawai="${d.pg}" data-coord="${d.c}" data-tarikh="${d.t}" 
+                        onclick="ExportManager.klikJanaPDF(this)">
+                        <i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF
+                    </button>
+                </div>
+            </div>`;
+        }).join('');
     }
 };
 
@@ -570,5 +631,46 @@ const Utils = {
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const year = d.getFullYear();
         return `${day}/${month}/${year}`;
+    }
+};
+
+// ==========================================
+// OBJEK: MobileFilter — Urus Filter Bottom Sheet/Drawer
+// ==========================================
+const MobileFilter = {
+    _filterMoved: false,
+
+    open: function() {
+        const sheet = document.getElementById('filterBottomSheet');
+        const overlay = document.getElementById('filterDrawerOverlay');
+        const body = document.getElementById('filterSheetBody');
+        const filterSection = document.getElementById('filterSection');
+
+        if (!sheet || !overlay || !body || !filterSection) return;
+
+        // Pindahkan isi filter ke dalam bottom sheet (sekali sahaja)
+        if (!this._filterMoved) {
+            const filterInner = filterSection.querySelector('.d-flex.flex-wrap.align-items-center.gap-2');
+            if (filterInner) {
+                body.appendChild(filterInner);
+                this._filterMoved = true;
+            }
+        }
+
+        // Tunjukkan overlay dan slide up sheet
+        overlay.classList.add('active');
+        // Force reflow before adding active class for animation
+        sheet.offsetHeight;
+        sheet.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    },
+
+    close: function() {
+        const sheet = document.getElementById('filterBottomSheet');
+        const overlay = document.getElementById('filterDrawerOverlay');
+
+        if (sheet) sheet.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
     }
 };

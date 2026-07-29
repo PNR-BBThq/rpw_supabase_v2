@@ -182,6 +182,11 @@
                 </div>
             </div>
 
+            <!-- 📱 BUTANG FILTER MOBILE (hanya papar pada ≤768px) -->
+            <button class="btn btn-primary btn-sm fw-bold d-md-none mb-3 shadow-sm" id="btnMobileFilterTop" style="display:none;" onclick="MobileFilter.open()">
+                <i class="bi bi-funnel-fill me-1"></i> Tapisan Data
+            </button>
+
             <!-- ⚡ FLOATING COMPACT FILTER BAR IN MAIN VIEW -->
             <div id="filterSection" class="card shadow-sm border-0 mb-3 p-2 rounded-3"
                 style="position: sticky; top: 10px; z-index: 1030; background: linear-gradient(135deg, rgba(238, 242, 255, 0.96), rgba(241, 245, 249, 0.96)); backdrop-filter: blur(10px); border: 1px solid #cbd5e1 !important;">
@@ -356,6 +361,8 @@
                         <tbody id="tBody"></tbody>
                     </table>
                 </div>
+                <!-- 📱 MOBILE CARD LIST VIEW (hanya papar pada ≤768px) -->
+                <div class="mobile-card-list d-none" id="mobileCardList"></div>
                 <div class="d-flex justify-content-end gap-2 mt-2">
                     <button class="btn btn-sm btn-white border shadow-sm px-3" id="btnPrevPg">Prev</button>
                     <button class="btn btn-sm btn-white border shadow-sm px-3" id="btnNextPg">Next</button>
@@ -576,6 +583,24 @@
         <div class="mobile-overlay" id="mobileOverlay"
             onclick="document.getElementById('sidebar').classList.remove('active'); this.classList.remove('active');">
         </div>
+
+        <!-- 📱 FILTER BOTTOM SHEET / DRAWER -->
+        <div class="filter-drawer-overlay" id="filterDrawerOverlay" onclick="MobileFilter.close()"></div>
+        <div class="filter-bottom-sheet" id="filterBottomSheet">
+            <div class="filter-sheet-header">
+                <div class="sheet-handle"></div>
+                <h6 class="fw-bold m-0 text-primary"><i class="bi bi-funnel-fill me-2"></i>Tapisan Data</h6>
+                <button class="btn-close" onclick="MobileFilter.close()"></button>
+            </div>
+            <div class="filter-sheet-body" id="filterSheetBody">
+                <!-- Filter content dipindahkan ke sini oleh JS -->
+            </div>
+            <div class="filter-sheet-footer">
+                <button class="btn btn-primary w-100 fw-bold py-2 shadow-sm" onclick="MobileFilter.close()">
+                    <i class="bi bi-check-lg me-1"></i> Tetapkan
+                </button>
+            </div>
+        </div>
         <div class="mobile-bottom-nav d-md-none">
             <div class="nav-bot-item active" data-view="main">
                 <i class="bi bi-grid-1x2-fill text-primary fs-4"></i>
@@ -595,8 +620,8 @@
             </div>
             <div class="nav-bot-item" id="btnMobileFilter"
                 onclick="document.getElementById('sidebar').classList.toggle('active'); document.getElementById('mobileOverlay').classList.toggle('active');">
-                <i class="bi bi-funnel-fill text-danger fs-4"></i>
-                <span>Tapisan</span>
+                <i class="bi bi-list text-dark fs-4"></i>
+                <span>Menu</span>
             </div>
         </div>
 

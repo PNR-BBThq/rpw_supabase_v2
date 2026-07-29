@@ -76,13 +76,17 @@ self.addEventListener('fetch', (e) => {
         if (networkResponse && networkResponse.ok) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(e.request, responseClone);
+            // ⚡ KRITIKAL: Simpan guna URL TANPA query string (?v=xxx)
+            // supaya cache key sentiasa konsisten walau version berubah.
+            const cleanUrl = e.request.url.split('?')[0];
+            cache.put(new Request(cleanUrl), responseClone);
           });
         }
         return networkResponse;
       }).catch(() => {
         // Rangkaian gagal (offline) — fallback ke cache
-        return caches.match(e.request).then((cachedResponse) => {
+        // ⚡ ignoreSearch:true → padankan URL tanpa kisah ?v=xxx query string
+        return caches.match(e.request, { ignoreSearch: true }).then((cachedResponse) => {
           if (cachedResponse) {
             return cachedResponse;
           }
@@ -101,8 +105,9 @@ self.addEventListener('fetch', (e) => {
   } else {
     // ⚡ STRATEGI CACHE-FIRST untuk aset lain (gambar, font, pustaka CDN, dll.)
     // Kekalkan offline support supaya borang bancian sentiasa berfungsi.
+    // ⚡ ignoreSearch:true → padankan URL tanpa kisah ?v=xxx query string
     e.respondWith(
-      caches.match(e.request).then((cachedResponse) => {
+      caches.match(e.request, { ignoreSearch: true }).then((cachedResponse) => {
         if (cachedResponse) {
           return cachedResponse;
         }

@@ -6,7 +6,7 @@
 // 1. Pendaftaran Service Worker & Pemaksa Hard Refresh Otomatik (Kalis Cache Lama)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
+        navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' })
             .then((reg) => {
                 console.log('✅ Service Worker berjaya didaftarkan. Skop:', reg.scope);
                 
