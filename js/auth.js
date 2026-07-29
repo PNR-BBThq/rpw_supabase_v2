@@ -53,6 +53,8 @@ const AuthManager = {
             document.getElementById('navUsers').style.display = "flex";
             const navEff = document.getElementById('navEfficiency');
             if (navEff) navEff.style.display = "flex";
+            const navRed = document.getElementById('navRedundant');
+            if (navRed) navRed.style.display = "flex";
         }
         
         document.getElementById('navTasks').style.display = "flex";

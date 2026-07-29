@@ -67,8 +67,8 @@ const DataManager = {
         let adminBtns = "";
         if (AppState.uProf.role === "ADMIN") { 
             adminBtns = `<div class="border-top pt-3 mt-3 d-flex justify-content-between gap-2">
-                <button onclick="DataManager.enableEditMode(${d.id})" class="btn btn-outline-primary btn-sm flex-grow-1"><i class="bi bi-pencil-square disguise me-1"></i> KEMASKINI</button>
-                <button onclick="DataManager.doDeleteRec(${d.id})" class="btn btn-outline-danger btn-sm flex-grow-1"><i class="bi bi-trash-fill me-1"></i> PADAM</button>
+                <button onclick="DataManager.enableEditMode('${d.id}')" class="btn btn-outline-primary btn-sm flex-grow-1"><i class="bi bi-pencil-square disguise me-1"></i> KEMASKINI</button>
+                <button onclick="DataManager.doDeleteRec('${d.id}')" class="btn btn-outline-danger btn-sm flex-grow-1"><i class="bi bi-trash-fill me-1"></i> PADAM</button>
             </div>`; 
         }
 
@@ -109,10 +109,15 @@ const DataManager = {
 
     enableEditMode: async function(id) { 
         try {
-            const btn = event.target.closest('button');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> MEMUATKAN...';
-            btn.disabled = true;
+            let btn = null, originalText = "";
+            if (typeof event !== 'undefined' && event.target) {
+                btn = event.target.closest('button');
+                if (btn) {
+                    originalText = btn.innerHTML;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> MEMUATKAN...';
+                    btn.disabled = true;
+                }
+            }
 
             const res = await API.postData('getSingleRecord', { row: id });
             
@@ -133,11 +138,18 @@ const DataManager = {
                 Swal.fire('Ralat', res.message || 'Gagal memuatkan data baris.', 'error');
             }
             
-            btn.innerHTML = originalText;
-            btn.disabled = false;
+            if (btn) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         } catch (e) {
             console.error(e);
             Swal.fire('Ralat', 'Berlaku ralat semasa menarik data.', 'error');
+            // Jika ada masalah dan btn ada, reset
+            if (typeof btn !== 'undefined' && btn) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
     },
     

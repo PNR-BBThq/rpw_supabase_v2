@@ -120,6 +120,12 @@
                 <span><i class="bi bi-people-fill me-2 text-warning"></i> Urus Pengguna</span>
             </div>
 
+            <div class="nav-item shadow-sm mt-2" id="navRedundant" style="display:none; background-color: #e0f2fe; color: #0369a1;"
+                data-view="redundant">
+                <span><i class="bi bi-shield-check me-2" style="color: #0284c7;"></i> Semakan Data Redundant</span>
+                <span class="badge-pending" id="badgeRedundant" style="display:none; background-color: #0284c7; color: white;">0</span>
+            </div>
+
             <div class="nav-item bg-primary text-white shadow-sm mt-2" id="navSKU"
                 onclick="ViewManager.switchTab('sku', this)">
                 <span><i class="bi bi-trophy-fill me-2 text-warning"></i> Pencapaian SKU</span>
@@ -423,6 +429,27 @@
             </div>
         </div>
 
+        <div id="view-redundant" class="app-view" style="display:none; background: #f0f8ff; min-height: 100%;">
+            <div class="p-3 border-bottom bg-white d-flex justify-content-between align-items-center position-sticky top-0 shadow-sm" style="z-index:100;">
+                <h5 class="m-0 fw-bold text-dark"><i class="bi bi-shield-check text-info me-2"></i>Semakan Data Redundant</h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" id="btnRefreshRedundant"><i class="bi bi-arrow-clockwise me-1"></i> Refresh</button>
+                    <button class="btn btn-success btn-sm" id="btnExportRedundant"><i class="bi bi-file-earmark-excel me-1"></i> Eksport Excel</button>
+                </div>
+            </div>
+            <div class="p-3">
+                <div id="redundantFilterBox" class="mb-3 d-flex justify-content-end">
+                    <button class="btn btn-primary btn-sm" id="btnApplyRedundantFilter" style="display:none;"><i class="bi bi-funnel me-1"></i> Tapis & Analisis</button>
+                </div>
+                <div id="redundantContainer" class="bg-white rounded shadow-sm">
+                    <div class="text-center p-5 text-muted">
+                        <div class="spinner-border text-danger mb-2"></div>
+                        <br>Mengesan kluster redundant...
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="view-users" class="app-view" style="display:none">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="fw-bold m-0 text-dark"><i class="bi bi-people-fill me-2"></i>Pengurusan Pengguna</h4>
@@ -677,6 +704,23 @@
             </div>
         </div>
 
+        <!-- Modal Bandingkan Kluster Redundant -->
+        <div class="modal fade" id="compareClusterModal" tabindex="-1" aria-labelledby="compareClusterModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title" id="compareClusterModalLabel"><i class="bi bi-layout-split me-2"></i>Bandingkan Data Redundant</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body bg-light" style="overflow-x: auto;">
+                        <div class="d-flex gap-3 pb-2" id="compareClusterBody" style="min-width: max-content;">
+                            <!-- Data akan dijana di sini -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -696,6 +740,7 @@
         <script src="./js/users.js?v=202607290556-feb2d05"></script>
         <script src="./js/records.js?v=202607290556-feb2d05"></script>
         <script src="./js/dashboard.js?v=202607290556-feb2d05"></script>
+        <script src="./js/redundant.js"></script>
         <script src="./js/kpi.js?v=202607290556-feb2d05"></script>
         <script src="./js/main.js?v=202607290556-feb2d05"></script>
         <script src="./js/nlp-bot.js?v=202607290556-feb2d05"></script>
