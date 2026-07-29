@@ -217,7 +217,7 @@ const EfficiencyManager = {
             
             const boxHTML = `
                 <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-white border-bottom shadow-sm rounded-top">
-                    <h5 class="m-0 fw-bold text-dark"><i class="bi bi-clock-history me-2 text-primary"></i>Prestasi Pengesahan Data</h5>
+                    <h5 class="m-0 fw-bold text-dark"><i class="bi bi-clock-history me-2 text-primary"></i>Prestasi Rekod Pengesahan</h5>
                     ${selectHTML}
                 </div>
                 <div class="table-responsive p-3 bg-white rounded-bottom shadow-sm">
