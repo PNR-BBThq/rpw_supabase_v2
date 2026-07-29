@@ -371,6 +371,33 @@
                 Notification.requestPermission();
             }
 
+            // AUTO-FILL DATA (Pegawai, Tarikh, Emel)
+            try {
+                // 1. Set Tarikh Hari Ini
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('tarikhBancian').value = today;
+
+                // 2. Set Nama Pegawai (Berdasarkan Sesi Login Dashboard)
+                const sessionStr = localStorage.getItem('pnr_session');
+                if (sessionStr) {
+                    const sessionData = JSON.parse(sessionStr);
+                    if (sessionData && sessionData.n) {
+                        const namaEl = document.getElementById('namaPegawai');
+                        namaEl.value = sessionData.n;
+                        namaEl.setAttribute('readonly', true); // Kunci nama supaya tidak diubah
+                        namaEl.classList.add('bg-light');
+                    }
+                }
+
+                // 3. Set Emel (Dari rekod isian terakhir)
+                const lastEmail = localStorage.getItem('pnr_last_email');
+                if (lastEmail) {
+                    document.getElementById('email').value = lastEmail;
+                }
+            } catch(e) {
+                console.error("Ralat Auto-Fill:", e);
+            }
+
             updateQueueBadge();
 
             const form = document.getElementById('monitorForm');
@@ -814,6 +841,11 @@
             var syors = Array.from(document.querySelectorAll('.syor-checkbox:checked')).map(function (c) { return c.value; });
             var extraSyor = document.getElementById('syorTambahan').value;
             if (extraSyor) syors.push(extraSyor);
+
+            // Simpan email yang berjaya dihantar sebagai memori untuk auto-fill di masa hadapan
+            if (fd.get('email')) {
+                localStorage.setItem('pnr_last_email', fd.get('email'));
+            }
 
             var payload = {
                 action: 'submitNew',
