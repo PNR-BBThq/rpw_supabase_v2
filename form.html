@@ -381,9 +381,9 @@
                 const sessionStr = localStorage.getItem('pnr_session');
                 if (sessionStr) {
                     const sessionData = JSON.parse(sessionStr);
-                    if (sessionData && sessionData.n) {
+                    if (sessionData && sessionData.uProf && sessionData.uProf.name) {
                         const namaEl = document.getElementById('namaPegawai');
-                        namaEl.value = sessionData.n;
+                        namaEl.value = sessionData.uProf.name;
                         namaEl.setAttribute('readonly', true); // Kunci nama supaya tidak diubah
                         namaEl.classList.add('bg-light');
                     }
