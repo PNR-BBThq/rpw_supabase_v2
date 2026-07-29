@@ -93,10 +93,7 @@ const DataManager = {
                     <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">UMUR TANAMAN:</div><div class="col-8 text-uppercase">${d.um || "-"}</div></div>
                     <div class="row g-2 mb-3" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">LUAS TANAMAN:</div><div class="col-8 text-dark">${d.lt.toFixed(2)} HA</div></div>
                 </div>
-                <div id="edit_mode_${d.id}" style="display:none;" class="bg-light p-3 rounded border mb-3">
-                    <div class="text-center text-muted">Sila gunakan fungsi 'Tugasan Saya' atau Admin panel.</div>
-                    <button onclick="DataManager.cancelEdit(${d.id})" class="btn btn-secondary btn-sm w-100">Tutup</button>
-                </div>
+
             </div>
             <div class="px-3" id="view_pest_${d.id}">
                 <h6 class="fw-bold text-success mb-2 small text-uppercase"><i class="bi bi-bug-fill me-1"></i> DATA SERANGAN</h6>
@@ -110,16 +107,38 @@ const DataManager = {
         new bootstrap.Modal(document.getElementById('detailModal')).show();
     },
 
-    enableEditMode: function(id) { 
-        document.getElementById(`view_info_${id}`).style.display = 'none'; 
-        document.getElementById(`view_pest_${id}`).style.display = 'none'; 
-        document.getElementById(`edit_mode_${id}`).style.display = 'block'; 
-    },
-    
-    cancelEdit: function(id) { 
-        document.getElementById(`view_info_${id}`).style.display = 'block'; 
-        document.getElementById(`view_pest_${id}`).style.display = 'block'; 
-        document.getElementById(`edit_mode_${id}`).style.display = 'none'; 
+    enableEditMode: async function(id) { 
+        try {
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> MEMUATKAN...';
+            btn.disabled = true;
+
+            const res = await API.postData('getSingleRecord', { row: id });
+            
+            if (res.success && res.rowData) {
+                // Simpan headers jika belum wujud
+                if (!AppState.currentHeaders || AppState.currentHeaders.length === 0) {
+                    AppState.currentHeaders = res.headers;
+                }
+                
+                // Tutup modal Butiran Rekod sedia ada
+                const modalEl = document.getElementById('detailModal');
+                const modalInst = bootstrap.Modal.getInstance(modalEl);
+                if (modalInst) modalInst.hide();
+                
+                // Buka borang edit
+                TaskManager.renderEditForm(id, res.rowData);
+            } else {
+                Swal.fire('Ralat', res.message || 'Gagal memuatkan data baris.', 'error');
+            }
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Ralat', 'Berlaku ralat semasa menarik data.', 'error');
+        }
     },
     
     doDeleteRec: async function(rowID) { 

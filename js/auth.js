@@ -51,6 +51,8 @@ const AuthManager = {
         
         if(role === "ADMIN") {
             document.getElementById('navUsers').style.display = "flex";
+            const navEff = document.getElementById('navEfficiency');
+            if (navEff) navEff.style.display = "flex";
         }
         
         document.getElementById('navTasks').style.display = "flex";

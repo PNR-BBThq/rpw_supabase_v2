@@ -120,7 +120,7 @@ const ViewManager = {
             if(el.classList.contains('nav-bot-item')) el.classList.add('active');
         }
 
-        ['view-main','view-verify','view-tasks','view-form', 'view-users', 'view-sku'].forEach(v => {
+        ['view-main','view-verify','view-tasks','view-form', 'view-users', 'view-sku', 'view-efficiency'].forEach(v => {
             const view = document.getElementById(v);
             if(view) view.style.display = 'none';
         });
@@ -132,6 +132,7 @@ const ViewManager = {
         if(t === 'tasks' && typeof TaskManager !== 'undefined') TaskManager.loadMyTasks();
         if(t === 'users' && typeof UserManager !== 'undefined') UserManager.loadUsers();
         if(t === 'sku' && typeof KPIManager !== 'undefined') KPIManager.init();
+        if(t === 'efficiency' && typeof EfficiencyManager !== 'undefined') EfficiencyManager.init();
         
         if(t === 'main' && typeof MapManager !== 'undefined' && MapManager.map) {
             setTimeout(() => MapManager.map.invalidateSize(), 300);
