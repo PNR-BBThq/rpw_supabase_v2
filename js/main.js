@@ -128,6 +128,50 @@ const ViewManager = {
         const targetView = document.getElementById('view-'+t);
         if(targetView) targetView.style.display = 'block';
 
+        // ⚡ KAWAL KETERLIHATAN FILTER BAR — tunjuk untuk views yang perlu filter
+        const filterViewsWithFilter = ['main', 'sku', 'verify', 'users'];
+        const filterSection = document.getElementById('filterSection');
+        const btnMobileFilter = document.getElementById('btnMobileFilterTop');
+        if (filterSection) {
+            filterSection.style.display = filterViewsWithFilter.includes(t) ? '' : 'none';
+            
+            // Sembunyikan dropdown tertentu jika bukan di view-main
+            const isMain = (t === 'main');
+            const showDate = (t === 'main' || t === 'sku'); // Date perlu untuk SKU & Main
+            
+            ['selDaerah', 'selTanaman', 'selPerosak', 'selKategori'].forEach(id => {
+                const btn = document.getElementById('btn' + id);
+                if (btn) {
+                    const dropdown = btn.closest('.dropdown');
+                    if (dropdown) {
+                        if (isMain) {
+                            dropdown.classList.remove('d-none');
+                            dropdown.classList.add('d-inline-block');
+                        } else {
+                            dropdown.classList.remove('d-inline-block');
+                            dropdown.classList.add('d-none');
+                        }
+                    }
+                }
+            });
+            
+            const dateContainer = filterSection.querySelector('.border-start');
+            if (dateContainer) {
+                if (showDate) {
+                    dateContainer.classList.remove('d-none');
+                    dateContainer.classList.add('d-flex');
+                } else {
+                    dateContainer.classList.remove('d-flex');
+                    dateContainer.classList.add('d-none');
+                }
+            }
+        }
+        if (btnMobileFilter) {
+            // Mobile filter button hanya aktif jika view memerlukan filter (CSS akan override paparan)
+            btnMobileFilter.dataset.filterActive = filterViewsWithFilter.includes(t) ? 'true' : 'false';
+            if (!filterViewsWithFilter.includes(t)) btnMobileFilter.style.display = 'none';
+        }
+
         if(t === 'verify' && typeof VerifyManager !== 'undefined') VerifyManager.loadPend();
         if(t === 'tasks' && typeof TaskManager !== 'undefined') TaskManager.loadMyTasks();
         if(t === 'users' && typeof UserManager !== 'undefined') UserManager.loadUsers();

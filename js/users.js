@@ -13,13 +13,38 @@ const UserManager = {
             const d = await API.postData('getUserList', {});
             if(d.success) {
                 this.allUsersData = d.users || [];
-                this.renderUsers(this.allUsersData);
+                this.applyGlobalFilter();
             } else { 
                 tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">${d.message}</td></tr>`; 
             }
         } catch(e) { 
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Ralat memuatkan senarai pengguna.</td></tr>'; 
         }
+    },
+
+    applyGlobalFilter: function() {
+        if (!this.allUsersData || this.allUsersData.length === 0) return;
+        let filtered = this.allUsersData;
+        
+        if (typeof FilterManager !== 'undefined') {
+            const selN = FilterManager.v('selNegeri');
+            if (selN && selN.length > 0) {
+                filtered = filtered.filter(u => {
+                    const userN = (u.negeri || "").toUpperCase().trim();
+                    let effNegeri = userN;
+                    
+                    if (userN.includes("LABUAN")) effNegeri = "W.P. LABUAN";
+                    else if (userN.includes("KUALA LUMPUR") || userN === "KL") effNegeri = "W.P. KUALA LUMPUR";
+                    else if (userN.includes("PUTRAJAYA")) effNegeri = "W.P. PUTRAJAYA";
+                    else if (userN === "N.SEMBILAN" || userN === "N. SEMBILAN") effNegeri = "NEGERI SEMBILAN";
+                    else if (userN === "P.PINANG" || userN === "P. PINANG" || userN === "PENANG") effNegeri = "PULAU PINANG";
+
+                    return selN.includes(effNegeri) || selN.includes(userN);
+                });
+            }
+        }
+        
+        this.renderUsers(filtered);
     },
 
     renderUsers: function(dataList) {

@@ -186,15 +186,50 @@ const VerifyManager = {
             b.innerText = AppState.currentPendingRows.length; 
             b.style.display = AppState.currentPendingRows.length ? "inline-block" : "none";
 
-            if(!d.rows || !d.rows.length) { 
-                container.innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed"><i class="bi bi-check-circle fs-3 text-success d-block mb-2"></i>Tiada data baru untuk disahkan.</div>'; 
-                return; 
-            } 
-            container.innerHTML = ""; 
-            d.rows.forEach(r => TaskManager.renderCard(r, container, 'VERIFY', d.headers)); 
+            this.renderFilteredPending();
         } catch(e) { 
             console.error(e); container.innerHTML='<div class="col-12 text-center p-5 text-danger">Ralat memuatkan data.</div>'; 
         } 
+    },
+
+    renderFilteredPending: function() {
+        const container = document.getElementById('verifyContainer');
+        if (!container || !AppState.currentPendingRows) return;
+        
+        let filteredRows = AppState.currentPendingRows;
+        
+        // Tapis mengikut filter Negeri (hanya filter Negeri sahaja untuk view ini)
+        if (typeof FilterManager !== 'undefined') {
+            const selN = FilterManager.v('selNegeri');
+            if (selN && selN.length > 0) {
+                // Cari index kolum 'Negeri' dan 'Daerah' secara fleksibel
+                let idxN = AppState.currentHeaders ? AppState.currentHeaders.findIndex(x => String(x).toLowerCase().includes('negeri')) : -1;
+                let idxD = AppState.currentHeaders ? AppState.currentHeaders.findIndex(x => String(x).toLowerCase().includes('daerah')) : -1;
+
+                filteredRows = filteredRows.filter(r => {
+                    let rowN = (idxN > -1 && r.data && r.data[idxN]) ? String(r.data[idxN]).toUpperCase().trim() : "";
+                    let rowD = (idxD > -1 && r.data && r.data[idxD]) ? String(r.data[idxD]).toUpperCase().trim() : "";
+                    
+                    // Sesuaikan nama negeri sekiranya perlu (seperti dalam KPI)
+                    let effNegeri = rowN;
+                    if (rowN === "PAHANG" && rowD.includes("CAMERON")) effNegeri = "CAMERON HIGHLANDS";
+                    else if (rowN.includes("LABUAN")) effNegeri = "W.P. LABUAN";
+                    else if (rowN.includes("KUALA LUMPUR") || rowN === "KL") effNegeri = "W.P. KUALA LUMPUR";
+                    else if (rowN.includes("PUTRAJAYA")) effNegeri = "W.P. PUTRAJAYA";
+                    else if (rowN === "N.SEMBILAN" || rowN === "N. SEMBILAN") effNegeri = "NEGERI SEMBILAN";
+                    else if (rowN === "P.PINANG" || rowN === "P. PINANG" || rowN === "PENANG") effNegeri = "PULAU PINANG";
+
+                    return selN.includes(effNegeri) || selN.includes(rowN);
+                });
+            }
+        }
+
+        if(!filteredRows || !filteredRows.length) { 
+            container.innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed"><i class="bi bi-check-circle fs-3 text-success d-block mb-2"></i>Tiada data baru untuk disahkan / ditepati oleh tapisan.</div>'; 
+            return; 
+        } 
+        container.innerHTML = ""; 
+        filteredRows.forEach(r => TaskManager.renderCard(r, container, 'VERIFY', AppState.currentHeaders)); 
     },
 
     subVer: async function(row, act) { 

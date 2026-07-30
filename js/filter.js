@@ -97,6 +97,18 @@ const FilterManager = {
         if (viewSKU && viewSKU.style.display !== 'none' && typeof KPIManager !== 'undefined') {
             KPIManager.renderDashboard();
         }
+
+        // 5. REFRESH PENGESAHAN (JIKA SEDANG DIBUKA)
+        const viewVerify = document.getElementById('view-verify');
+        if (viewVerify && viewVerify.style.display !== 'none' && typeof VerifyManager !== 'undefined') {
+            VerifyManager.renderFilteredPending();
+        }
+
+        // 6. REFRESH URUS PENGGUNA (JIKA SEDANG DIBUKA)
+        const viewUsers = document.getElementById('view-users');
+        if (viewUsers && viewUsers.style.display !== 'none' && typeof UserManager !== 'undefined') {
+            UserManager.applyGlobalFilter();
+        }
     },
 
     updateDropdown: function(id, list, curValArray, srcCode) { 

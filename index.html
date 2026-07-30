@@ -169,6 +169,53 @@
                     class="bi bi-list fs-5"></i></button>
         </div>
 
+        <!-- 📱 BUTANG FILTER MOBILE (hanya papar pada ≤768px) — DIKONGSI SEMUA VIEW -->
+        <button class="btn btn-primary btn-sm fw-bold d-md-none mb-3 shadow-sm" id="btnMobileFilterTop" style="display:none;" onclick="MobileFilter.open()">
+            <i class="bi bi-funnel-fill me-1"></i> Tapisan Data
+        </button>
+
+        <!-- ⚡ FLOATING COMPACT FILTER BAR — DIKONGSI SEMUA VIEW (main, sku, verify, users) -->
+        <div id="filterSection" class="card shadow-sm border-0 mb-3 p-2 rounded-3"
+            style="position: sticky; top: 10px; z-index: 1030; background: linear-gradient(135deg, rgba(238, 242, 255, 0.96), rgba(241, 245, 249, 0.96)); backdrop-filter: blur(10px); border: 1px solid #cbd5e1 !important;">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <div class="d-flex align-items-center fw-bold me-1 text-primary" style="font-size: 0.8rem;">
+                    <i class="bi bi-funnel-fill me-1"></i> Tapisan Data:
+                </div>
+
+                <!-- Cascading Dropdowns Container -->
+                <div id="filterDropdownsContainer" class="d-flex flex-wrap align-items-center gap-2"></div>
+
+                <!-- Date Selection Section -->
+                <div class="d-flex flex-wrap align-items-center gap-1 border-start px-2 my-1" style="border-color: #cbd5e1 !important;">
+                    <span class="text-muted fw-bold me-1" style="font-size: 0.75rem;"><i class="bi bi-calendar-event me-1"></i>Tarikh:</span>
+                    <div class="btn-group shadow-sm me-1" role="group">
+                        <input type="radio" class="btn-check" name="dateMode" id="modeBulan" value="bulan" checked autocomplete="off" onchange="FilterManager.toggleDateMode('bulan')">
+                        <label class="btn btn-outline-primary btn-sm py-0 px-2 fw-bold" style="font-size: 0.75rem; height: 31px; line-height: 29px;" for="modeBulan">Bulan</label>
+
+                        <input type="radio" class="btn-check" name="dateMode" id="modeJulat" value="julat" autocomplete="off" onchange="FilterManager.toggleDateMode('julat')">
+                        <label class="btn btn-outline-primary btn-sm py-0 px-2 fw-bold" style="font-size: 0.75rem; height: 31px; line-height: 29px;" for="modeJulat">Pilih Tarikh</label>
+                    </div>
+
+                    <div id="dateBulanContainer" class="d-inline-block">
+                        <select id="selBulan" class="form-select form-select-sm shadow-sm" style="font-size: 0.78rem; height: 31px; min-width: 140px;" onchange="FilterManager.runFilter('tarikh')">
+                            <option value="">- Semua Bulan -</option>
+                        </select>
+                    </div>
+
+                    <div id="dateJulatContainer" class="d-inline-flex align-items-center gap-1" style="display: none;">
+                        <input type="date" id="dS" class="form-control form-control-sm shadow-sm" style="font-size: 0.75rem; height: 31px; width: 130px;" onchange="FilterManager.runFilter('tarikh')" title="Tarikh Mula">
+                        <span class="text-muted small">-</span>
+                        <input type="date" id="dE" class="form-control form-control-sm shadow-sm" style="font-size: 0.75rem; height: 31px; width: 130px;" onchange="FilterManager.runFilter('tarikh')" title="Tarikh Akhir">
+                    </div>
+                </div>
+
+                <!-- Reset Filter Button -->
+                <button class="btn btn-dark btn-sm fw-bold px-2 py-1 shadow-sm d-flex align-items-center ms-auto" id="btnResetFilter" style="font-size: 0.75rem; border-radius: 6px; height: 31px;">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                </button>
+            </div>
+        </div>
+
         <div id="view-main" class="app-view">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                 <div>
@@ -190,53 +237,6 @@
                         <button class="btn btn-primary btn-sm px-3" id="btnDlKML"><i
                                 class="bi bi-pin-map-fill me-1"></i> KML</button>
                     </div>
-                </div>
-            </div>
-
-            <!-- 📱 BUTANG FILTER MOBILE (hanya papar pada ≤768px) -->
-            <button class="btn btn-primary btn-sm fw-bold d-md-none mb-3 shadow-sm" id="btnMobileFilterTop" style="display:none;" onclick="MobileFilter.open()">
-                <i class="bi bi-funnel-fill me-1"></i> Tapisan Data
-            </button>
-
-            <!-- ⚡ FLOATING COMPACT FILTER BAR IN MAIN VIEW -->
-            <div id="filterSection" class="card shadow-sm border-0 mb-3 p-2 rounded-3"
-                style="position: sticky; top: 10px; z-index: 1030; background: linear-gradient(135deg, rgba(238, 242, 255, 0.96), rgba(241, 245, 249, 0.96)); backdrop-filter: blur(10px); border: 1px solid #cbd5e1 !important;">
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <div class="d-flex align-items-center fw-bold me-1 text-primary" style="font-size: 0.8rem;">
-                        <i class="bi bi-funnel-fill me-1"></i> Tapisan Data:
-                    </div>
-
-                    <!-- Cascading Dropdowns Container -->
-                    <div id="filterDropdownsContainer" class="d-flex flex-wrap align-items-center gap-2"></div>
-
-                    <!-- Date Selection Section -->
-                    <div class="d-flex flex-wrap align-items-center gap-1 border-start px-2 my-1" style="border-color: #cbd5e1 !important;">
-                        <span class="text-muted fw-bold me-1" style="font-size: 0.75rem;"><i class="bi bi-calendar-event me-1"></i>Tarikh:</span>
-                        <div class="btn-group shadow-sm me-1" role="group">
-                            <input type="radio" class="btn-check" name="dateMode" id="modeBulan" value="bulan" checked autocomplete="off" onchange="FilterManager.toggleDateMode('bulan')">
-                            <label class="btn btn-outline-primary btn-sm py-0 px-2 fw-bold" style="font-size: 0.75rem; height: 31px; line-height: 29px;" for="modeBulan">Bulan</label>
-
-                            <input type="radio" class="btn-check" name="dateMode" id="modeJulat" value="julat" autocomplete="off" onchange="FilterManager.toggleDateMode('julat')">
-                            <label class="btn btn-outline-primary btn-sm py-0 px-2 fw-bold" style="font-size: 0.75rem; height: 31px; line-height: 29px;" for="modeJulat">Pilih Tarikh</label>
-                        </div>
-
-                        <div id="dateBulanContainer" class="d-inline-block">
-                            <select id="selBulan" class="form-select form-select-sm shadow-sm" style="font-size: 0.78rem; height: 31px; min-width: 140px;" onchange="FilterManager.runFilter('tarikh')">
-                                <option value="">- Semua Bulan -</option>
-                            </select>
-                        </div>
-
-                        <div id="dateJulatContainer" class="d-inline-flex align-items-center gap-1" style="display: none;">
-                            <input type="date" id="dS" class="form-control form-control-sm shadow-sm" style="font-size: 0.75rem; height: 31px; width: 130px;" onchange="FilterManager.runFilter('tarikh')" title="Tarikh Mula">
-                            <span class="text-muted small">-</span>
-                            <input type="date" id="dE" class="form-control form-control-sm shadow-sm" style="font-size: 0.75rem; height: 31px; width: 130px;" onchange="FilterManager.runFilter('tarikh')" title="Tarikh Akhir">
-                        </div>
-                    </div>
-
-                    <!-- Reset Filter Button -->
-                    <button class="btn btn-dark btn-sm fw-bold px-2 py-1 shadow-sm d-flex align-items-center ms-auto" id="btnResetFilter" style="font-size: 0.75rem; border-radius: 6px; height: 31px;">
-                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
-                    </button>
                 </div>
             </div>
 
