@@ -232,23 +232,45 @@ const VerifyManager = {
         filteredRows.forEach(r => TaskManager.renderCard(r, container, 'VERIFY', AppState.currentHeaders)); 
     },
 
-    subVer: async function(row, act) { 
+    subVer: async function(row, act, evt) { 
         let re = ""; 
         if(act==='REJECT'){ re=prompt("Sebab:"); if(!re) return; } 
         else if(!confirm("Sahkan?")) return; 
         
-        const r = await API.postData('submitVerify', {row:row, act:act, reason:re, name:AppState.uProf.name}); 
-        alert(r.message); 
-        if(r.success) { this.loadPend(); this.checkPendingCount(); DashboardManager.initDash(); } 
+        let btn = null;
+        let originalText = "";
+        if (evt && evt.target) {
+            btn = evt.target.closest('button');
+            if (btn) {
+                originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> ' + (act === 'APPROVE' ? 'MENGESAHKAN...' : 'MENOLAK...');
+                btn.disabled = true;
+            }
+        }
+        
+        try {
+            const r = await API.postData('submitVerify', {row:row, act:act, reason:re, name:AppState.uProf.name}); 
+            alert(r.message); 
+            if(r.success) { this.loadPend(); this.checkPendingCount(); DashboardManager.initDash(); } 
+        } catch (e) {
+            alert("Ralat berhubung dengan pelayan.");
+        } finally {
+            if (btn) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
     },
 
     approveAll: async function() { 
         if(!confirm("Sahkan SEMUA data yang telah diisi?")) return; 
         
-        const btn = event.target.closest('button');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...';
-        btn.disabled = true;
+        const btn = document.getElementById('btnApproveAll');
+        const originalText = btn ? btn.innerHTML : "Sahkan Semua";
+        if (btn) {
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...';
+            btn.disabled = true;
+        }
 
         const progBox = document.getElementById('bulkProgress');
         const progBar = document.getElementById('progBar');
@@ -260,7 +282,7 @@ const VerifyManager = {
         const d = await API.postData('getPending', {state: AppState.uProf.state}); 
         
         if(!d.rows || !d.rows.length) {
-            btn.innerHTML = originalText; btn.disabled = false;
+            if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
             if(progBox) progBox.style.display = 'none';
             alert("Tiada data untuk disahkan."); return; 
         } 
@@ -277,7 +299,7 @@ const VerifyManager = {
         } 
         
         alert("✅ Selesai! Semua data berjaya disahkan."); 
-        btn.innerHTML = originalText; btn.disabled = false;
+        if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
         if(progBox) progBox.style.display = 'none';
         
         this.loadPend(); DashboardManager.initDash(); this.checkPendingCount();
@@ -358,7 +380,7 @@ const TaskManager = {
                 btnAction = `
                 <div class="d-flex gap-2">
                     <button class="btn btn-outline-danger btn-sm" onclick="TaskManager.deleteMyTask('${r.row}')" title="Padam Data Ini"><i class="bi bi-trash-fill"></i></button>
-                    <button class="btn btn-success flex-grow-1 fw-bold btn-sm shadow-sm" onclick="TaskManager.openTaskEdit(${r.row})"><i class="bi bi-pencil-square"></i> SAMBUNG ISI / HANTAR</button>
+                    <button class="btn btn-success flex-grow-1 fw-bold btn-sm shadow-sm" onclick="TaskManager.openTaskEdit('${r.row}')"><i class="bi bi-pencil-square"></i> SAMBUNG ISI / HANTAR</button>
                 </div>`;
             } else {
                 badgeHtml = `<span class="badge bg-danger">DITOLAK</span>`; cardBorder = "danger"; bgHeader = "danger bg-opacity-10";
@@ -368,7 +390,7 @@ const TaskManager = {
                 <div class="task-reject-box p-2 mb-2 small"><i class="bi bi-exclamation-triangle-fill"></i> ${reason}</div>
                 <div class="d-flex gap-2">
                     <button class="btn btn-outline-danger btn-sm" onclick="TaskManager.deleteMyTask('${r.row}')" title="Padam Data Ini"><i class="bi bi-trash-fill"></i></button>
-                    <button class="btn btn-danger flex-grow-1 fw-bold btn-sm" onclick="TaskManager.openTaskEdit(${r.row})">KEMASKINI & HANTAR</button>
+                    <button class="btn btn-danger flex-grow-1 fw-bold btn-sm" onclick="TaskManager.openTaskEdit('${r.row}')">KEMASKINI & HANTAR</button>
                 </div>`;
             }
 
@@ -476,8 +498,8 @@ const TaskManager = {
                     <div class="p-3 mt-auto border-top">
                         <div class="alert alert-warning border-warning mb-3 py-2 px-3 small d-flex align-items-start"><i class="bi bi-lightbulb-fill text-warning me-2 mt-1"></i> <div><strong class="text-uppercase d-block mb-1">SYOR KAWALAN:</strong><span class="text-dark">${syor}</span></div></div>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-outline-danger flex-grow-1 fw-bold text-uppercase btn-sm py-2" onclick="VerifyManager.subVer(${r.row},'REJECT')"><i class="bi bi-x-lg me-1"></i> TOLAK</button>
-                            <button class="btn btn-success flex-grow-1 fw-bold shadow-sm text-uppercase btn-sm py-2" onclick="VerifyManager.subVer(${r.row},'APPROVE')"><i class="bi bi-check-lg me-1"></i> SAHKAN</button>
+                            <button class="btn btn-outline-danger flex-grow-1 fw-bold text-uppercase btn-sm py-2" onclick="VerifyManager.subVer('${r.row}','REJECT', event)"><i class="bi bi-x-lg me-1"></i> TOLAK</button>
+                            <button class="btn btn-success flex-grow-1 fw-bold shadow-sm text-uppercase btn-sm py-2" onclick="VerifyManager.subVer('${r.row}','APPROVE', event)"><i class="bi bi-check-lg me-1"></i> SAHKAN</button>
                         </div>
                     </div>
                 </div>
