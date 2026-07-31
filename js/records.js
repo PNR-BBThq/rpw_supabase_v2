@@ -630,7 +630,8 @@ const TaskManager = {
         const savedNegeri = getV('NEGERI');
         const savedDaerah = getV('DAERAH');
         const savedKat = getV('KATEGORI');
-        const savedTan = getV('NAMA TANAMAN') || getV('TANAMAN');
+        const tanIdx = AppState.currentHeaders ? AppState.currentHeaders.findIndex(h => h.toUpperCase().includes("NAMA TANAMAN") || (h.toUpperCase().includes("TANAMAN") && !h.toUpperCase().includes("KATEGORI"))) : -1;
+        const savedTan = tanIdx > -1 ? d[tanIdx] : "";
         const savedImg = getV('IMAGE LINKS (COMMA SEPARATED)') || getV('GAMBAR') || getV('IMAGE') || getV('FOTO') || "";
         
         let html = `
