@@ -103,12 +103,16 @@
             /* 3. Ruang bernafas untuk main content (elak tertutup dengan menu bawah) */
             .main-content { padding: 15px; padding-bottom: 90px; margin-left: 0; }
             
-            /* 4. Bar Navigasi Bawah (Macam App Sebenar) */
+            /* 4. Bar Navigasi Bawah (Macam App Sebenar) - Glassmorphism floating */
             .mobile-bottom-nav {
-                display: flex; position: fixed; bottom: 0; left: 0; right: 0;
-                background: #ffffff; box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
-                z-index: 1040; padding: 10px 10px 15px 10px; justify-content: space-between;
-                align-items: flex-end; border-top-left-radius: 20px; border-top-right-radius: 20px;
+                display: flex; position: fixed; bottom: 20px; left: 20px; right: 20px;
+                background: rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+                box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+                border: 1px solid rgba(255, 255, 255, 0.4);
+                z-index: 1040; padding: 10px 15px; justify-content: space-between;
+                align-items: center; border-radius: 30px;
             }
             .nav-bot-item {
                 text-align: center; color: #9ca3af; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
@@ -123,8 +127,8 @@
                 background: linear-gradient(135deg, #10b981, #059669); color: white !important;
                 width: 55px; height: 55px; border-radius: 50%;
                 display: flex; align-items: center; justify-content: center;
-                font-size: 2rem; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
-                transform: translateY(-20px); border: 4px solid #f3f4f6;
+                font-size: 2rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.5);
+                transform: translateY(-15px); border: 4px solid rgba(255, 255, 255, 0.8);
             }
             
             /* 6. Latar Hitam Gelap bila Filter dibuka */
@@ -273,16 +277,54 @@
             }
 
             /* --- KPI Cards: Stack 1 kolum pada mobile --- */
-            #kpiCardsContainer .col-6 {
-                width: 100% !important;
-                flex: 0 0 100% !important;
-                max-width: 100% !important;
-            }
+            /* .col-6 default bootstrap digunakan untuk membenarkan 2x2 grid */
             .kpi-card {
-                padding: 16px;
+                padding: 14px;
             }
             .kpi-value {
-                font-size: 1.5rem;
+                font-size: 1.25rem;
+            }
+            .kpi-title {
+                font-size: 0.75rem;
+            }
+            .kpi-icon-circle {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+            .kpi-card .badge {
+                width: 18px !important;
+                height: 18px !important;
+                font-size: 0.6rem !important;
+            }
+            .kpi-card .d-flex.align-items-center.mt-3.pt-2 span.text-truncate {
+                font-size: 0.65rem;
+                white-space: normal;
+                line-height: 1.1;
+            }
+
+            /* --- Insight Carousel: Susunan lebih kemas di mobile --- */
+            .insight-carousel-card {
+                min-height: auto;
+            }
+            .insight-slide {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 16px;
+            }
+            .insight-badge {
+                width: 42px;
+                height: 42px;
+                font-size: 1.2rem;
+            }
+            .insight-details {
+                width: 100%;
+                padding-bottom: 24px; /* Ruang untuk butang nav */
+            }
+            .insight-nav {
+                right: 16px;
+                bottom: 12px;
             }
 
             /* --- Charts: Stack menegak + kurang height --- */
