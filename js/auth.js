@@ -29,7 +29,7 @@ const AuthManager = {
         }
     },
 
-    applyLogin: function(r, token, uid) {
+    applyLogin: async function(r, token, uid) {
         // Set ke dalam Global State
         AppState.uProf = r; 
         AppState.userToken = token; 
@@ -59,10 +59,11 @@ const AuthManager = {
         
         document.getElementById('navTasks').style.display = "flex";
         
-        // Panggil fungsi-fungsi init dari modul lain (Akan diaktifkan selepas semua fail JS siap)
-        if (typeof DataManager !== 'undefined') DataManager.loadMasterData(); 
-        if (typeof TaskManager !== 'undefined') TaskManager.loadMyTasks();
-        if (typeof DashboardManager !== 'undefined') DashboardManager.initDash();
+        // ⚡ Panggil fungsi-fungsi init dari modul lain SECARA BERGILIR (Sequential)
+        // Ini mengelakkan ralat 404 dari Google Apps Script 'echo' URL kerana rate limit
+        if (typeof DataManager !== 'undefined') await DataManager.loadMasterData(); 
+        if (typeof TaskManager !== 'undefined') await TaskManager.loadMyTasks();
+        if (typeof DashboardManager !== 'undefined') await DashboardManager.initDash();
     },
 
     checkSession: async function() {
