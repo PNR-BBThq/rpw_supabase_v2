@@ -1,0 +1,178 @@
+            <div class="nav-item shadow-sm mt-2" id="navSKU" style="background-color: #e0f2fe; color: #0369a1;"
+                onclick="ViewManager.switchTab('sku', this)">
+                <span><i class="bi bi-trophy-fill me-2" style="color: #0284c7;"></i> Pencapaian SKU</span>
+            </div>
+
+            <div class="nav-item shadow-sm mt-2" id="navTumpuan" style="background-color: #e0f2fe; color: #0369a1;"
+                data-view="tumpuan">
+                <span><i class="bi bi-graph-up-arrow me-2" style="color: #0284c7;"></i> Analisis Tumpuan</span>
+            </div>
+============= 
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW VIEW: TANAMAN TUMPUAN -->
+        <div id="view-tumpuan" class="app-view" style="display:none; background: #f8fafc; min-height: 100%;">
+            <div class="p-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Analisis Tanaman Tumpuan (2019-2025)</h5>
+                    <button class="btn btn-sm btn-outline-primary shadow-sm" onclick="TumpuanManager.loadData()"><i class="bi bi-arrow-clockwise me-1"></i>Segar Semula</button>
+                </div>
+
+                <div class="row g-2 mb-3" id="tumpuan-kpi">
+                    <!-- KPI Cards will be injected here -->
+                </div>
+
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-funnel-fill text-secondary me-2"></i>Saringan Data</h6>
+                        <div class="row g-2">
+                            <div class="col-6 col-md-3">
+                                <label class="small fw-bold text-muted">Tahun</label>
+                                <select class="form-select form-select-sm" id="filter-tumpuan-tahun" onchange="TumpuanManager.applyFilters()">
+                                    <option value="">Semua Tahun</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="small fw-bold text-muted">Negeri</label>
+                                <select class="form-select form-select-sm" id="filter-tumpuan-negeri" onchange="TumpuanManager.applyFilters()">
+                                    <option value="">Semua Negeri</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="small fw-bold text-muted">Kategori</label>
+                                <select class="form-select form-select-sm" id="filter-tumpuan-kategori" onchange="TumpuanManager.applyFilters()">
+                                    <option value="">Semua Kategori</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="small fw-bold text-muted">Tanaman</label>
+                                <select class="form-select form-select-sm" id="filter-tumpuan-tanaman" onchange="TumpuanManager.applyFilters()">
+                                    <option value="">Semua Tanaman</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-sm table-hover table-striped mb-0" id="tumpuan-table" style="font-size: 0.85rem;">
+                                <thead class="table-dark" style="position: sticky; top: 0; z-index: 1;">
+                                    <tr id="tumpuan-thead">
+                                        <!-- Headers will be injected here -->
+                                    </tr>
+                                </thead>
+                                <tbody id="tumpuan-tbody">
+                                    <tr><td colspan="10" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Memuatkan data dari pangkalan...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+============= 
+        <script src="./js/nlp-bot.js?v=202607310842-8f8b959"></script>
+        <script src="./js/tumpuan.js?v=202607310842-8f8b959"></script>
+</body>
+============= 
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-funnel-fill text-secondary me-2"></i>Saringan Data Global</h6>
+                        <div class="row g-2">
+                            <div class="col-6 col-md-2">
+                                <label class="small fw-bold text-muted">Tahun</label>
+                                <select class="form-select form-select-sm" id="filter-tumpuan-tahun" onchange="TumpuanManager.applyFilters()">
+                                    <option value="">Semua</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="small fw-bold text-muted">Bulan</label>
+                                <select class="form-select form-select-sm" id="filter-tumpuan-bulan" onchange="TumpuanManager.applyFilters()">
+                                    <option value="">Semua</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="small fw-bold text-muted">Negeri</label>
+                                <select class="form-select form-select-sm" id="filter-tumpuan-negeri" onchange="TumpuanManager.applyFilters()">
+                                    <option value="">Semua</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="small fw-bold text-muted">Kategori</label>
+                                <select class="form-select form-select-sm" id="filter-tumpuan-kategori" onchange="TumpuanManager.applyFilters()">
+                                    <option value="">Semua</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="small fw-bold text-muted">Tanaman</label>
+                                <select class="form-select form-select-sm" id="filter-tumpuan-tanaman" onchange="TumpuanManager.applyFilters()">
+                                    <option value="">Semua</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="small fw-bold text-muted">Perosak</label>
+                                <select class="form-select form-select-sm" id="filter-tumpuan-perosak" onchange="TumpuanManager.applyFilters()">
+                                    <option value="">Semua</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-lg-8">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold mb-3">Luas Bancian vs Serangan Mengikut Negeri</h6>
+                                <div style="height: 300px;"><canvas id="chart-tumpuan-negeri"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="fw-bold mb-0" id="pieTitle">Luas Bancian Mengikut Tanaman</h6>
+                                    <button class="btn btn-sm btn-outline-secondary d-none" id="btnPieBack" onclick="TumpuanManager.resetPieDrilldown()"><i class="bi bi-arrow-left"></i> Kembali</button>
+                                </div>
+                                <div style="height: 300px; position:relative;"><canvas id="chart-tumpuan-pie"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="fw-bold mb-0" id="trendTitle">Trend Luas Bancian (Tahun)</h6>
+                                    <button class="btn btn-sm btn-outline-secondary d-none" id="btnTrendBack" onclick="TumpuanManager.resetTrendDrilldown()"><i class="bi bi-arrow-left"></i> Papar Semua Tahun</button>
+                                </div>
+                                <div style="height: 250px;"><canvas id="chart-tumpuan-trend"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+============= 
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0">Senarai Terperinci</h6>
+                            <input type="text" id="search-tumpuan-table" class="form-control form-control-sm w-auto" placeholder="Cari dalam jadual..." onkeyup="TumpuanManager.renderTable()">
+                        </div>
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-sm table-hover table-striped mb-0" id="tumpuan-table" style="font-size: 0.85rem; white-space: nowrap;">
+============= 
+        <script src="./js/tumpuan.js?v=20260731_latest"></script>
+============= 
+        <script src="./js/map.js?v=20260731_latest"></script>
+        <script src="./js/kpi.js?v=202607310842-8f8b959"></script>
+        <script src="./js/main.js?v=20260731_latest"></script>
+============= 

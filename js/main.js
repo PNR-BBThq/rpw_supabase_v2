@@ -120,13 +120,23 @@ const ViewManager = {
             if(el.classList.contains('nav-bot-item')) el.classList.add('active');
         }
 
-        ['view-main','view-verify','view-tasks','view-form', 'view-users', 'view-sku', 'view-efficiency', 'view-redundant'].forEach(v => {
+        ['view-main','view-verify','view-tasks','view-form', 'view-users', 'view-sku', 'view-efficiency', 'view-redundant', 'view-tumpuan'].forEach(v => {
             const view = document.getElementById(v);
             if(view) view.style.display = 'none';
         });
         
         const targetView = document.getElementById('view-'+t);
         if(targetView) targetView.style.display = 'block';
+
+        // ⚡ MAP REDRAW: Elak map/heatmap crash apabila view-main dibuka semula
+        if (t === 'main' && typeof MapManager !== 'undefined' && MapManager.map) {
+            setTimeout(() => {
+                MapManager.map.invalidateSize();
+                if (MapManager._lastPoints && DashboardManager && typeof DashboardManager.calcUI === 'function') {
+                    MapManager.updateMap(MapManager._lastPoints);
+                }
+            }, 100);
+        }
 
         // ⚡ KAWAL KETERLIHATAN FILTER BAR — tunjuk untuk views yang perlu filter
         const filterViewsWithFilter = ['main', 'sku', 'verify', 'users'];

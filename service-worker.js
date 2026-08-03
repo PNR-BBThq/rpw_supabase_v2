@@ -1,4 +1,4 @@
-const CACHE_NAME = "PNR-CACHE-v202608010001-010dfcd"; // ⚡ Tukar versi di sini untuk paksa browser update!
+const CACHE_NAME = "PNR-CACHE-v20260803-0001"; // ⚡ Tukar versi di sini untuk paksa browser update!
 const ASSETS = [
   './',
   './index.html',
@@ -20,6 +20,7 @@ const ASSETS = [
   './js/kpi.js',
   './js/main.js',
   './js/nlp-bot.js',
+  './js/tumpuan.js',
   
   // Pustaka CDN Luar yang digunakan sistem
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',

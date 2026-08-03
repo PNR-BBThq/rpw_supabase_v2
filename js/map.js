@@ -88,6 +88,12 @@ const MapManager = {
         if(this.clusterGroup) this.map.removeLayer(this.clusterGroup);
         if(this.heatLayer) this.map.removeLayer(this.heatLayer);
         
+        // Simpan titik terakhir untuk redraw semasa tab bertukar
+        this._lastPoints = pts;
+
+        const mapContainer = this.map.getContainer();
+        const isVisible = mapContainer && mapContainer.clientWidth > 0;
+
         if(pts.length > 0) {
             // 1. Heatmap layer berdasarkan Luas Serangan (ls) dengan gradient kuning-oren-merah
             const heatPoints = pts.map(item => {
@@ -96,13 +102,18 @@ const MapManager = {
                 return [item.coord[0], item.coord[1], intensity];
             });
 
-            if (typeof L.heatLayer !== 'undefined' && heatPoints.length > 0) {
-                this.heatLayer = L.heatLayer(heatPoints, {
-                    radius: 28,
-                    blur: 20,
-                    maxZoom: 14,
-                    gradient: { 0.2: '#fef08a', 0.5: '#f97316', 0.8: '#dc2626', 1.0: '#991b1b' }
-                }).addTo(this.map);
+            // ⚡ ELAK CRASH: Jangan cuba render heatLayer jika view-main tersembunyi (width 0)
+            if (isVisible && typeof L.heatLayer !== 'undefined' && heatPoints.length > 0) {
+                try {
+                    this.heatLayer = L.heatLayer(heatPoints, {
+                        radius: 28,
+                        blur: 20,
+                        maxZoom: 14,
+                        gradient: { 0.2: '#fef08a', 0.5: '#f97316', 0.8: '#dc2626', 1.0: '#991b1b' }
+                    }).addTo(this.map);
+                } catch(e) {
+                    console.warn("Heatmap diskip kerana map container tersembunyi.", e);
+                }
             }
 
             // 2. Marker Clustering & Pin Data
