@@ -2,6 +2,9 @@
 // FAIL: js/api.js
 // FUNGSI: Menguruskan komunikasi dengan Google Apps Script (Backend)
 // ==========================================
+// FAIL: js/api.js
+// FUNGSI: Menguruskan komunikasi dengan Google Apps Script (Backend)
+// ==========================================
 
 let isProcessingQueue = false;
 let requestQueue = [];
@@ -46,28 +49,49 @@ const API = {
             // - JANGAN set Content-Type header → ini mencetuskan preflight OPTIONS request
             //   yang Google Apps Script TIDAK sokong (menyebabkan CORS block).
             // - Gunakan redirect: 'follow' → GAS redirect ke URL exec selepas deployment.
-            const res = await fetch(`${CONFIG.API_URL}?action=${action}`, { 
-                method: "POST", 
-                redirect: "follow",
-                body: JSON.stringify(payload) 
-            });
             
-            const textResponse = await res.text();
+            let res;
+            let textResponse;
+            let retryCount = 0;
+            const maxRetries = 2; // Retry 2 kali jika pelayan GAS error (404/HTML)
             
-            // Semak jika response adalah HTML (berlaku jika ada ralat pada backend GAS atau isu kuki)
+            while (retryCount <= maxRetries) {
+                res = await fetch(`${CONFIG.API_URL}?action=${action}`, { 
+                    method: "POST", 
+                    headers: {
+                        "Content-Type": "text/plain;charset=utf-8"
+                    },
+                    redirect: "follow",
+                    body: JSON.stringify(payload) 
+                });
+                
+                textResponse = await res.text();
+                
+                // Semak jika response adalah HTML (berlaku jika ada ralat pada backend GAS atau isu kuki 404)
+                if (textResponse.trim().startsWith('<')) {
+                    console.warn(`[API] Ralat HTML dikesan untuk aksi '${action}'. Percubaan semula ${retryCount + 1}/${maxRetries}...`);
+                    retryCount++;
+                    if (retryCount <= maxRetries) {
+                        await new Promise(r => setTimeout(r, 1000)); // Tunggu 1 saat sebelum retry
+                        continue;
+                    }
+                } else {
+                    break; // Berjaya dapat JSON
+                }
+            }
+
             if (textResponse.trim().startsWith('<')) {
-                console.error("CRITICAL: Pelayan Google Apps Script memulangkan ralat HTML! Kandungan ralat:", textResponse);
+                console.error("CRITICAL: Pelayan Google Apps Script masih memulangkan ralat HTML selepas cuba semula! Kandungan ralat:", textResponse);
                 return { 
                     success: false, 
-                    message: "Ralat pada pelayan Backend (Sila rujuk Console Log untuk butiran ralat HTML dari Google)." 
+                    message: "⛔ Ralat Sambungan Pelayan (Gagal menyambung ke pangkalan data). Sila muat semula aplikasi." 
                 };
             }
 
             const responseData = JSON.parse(textResponse);
 
             // Tangkap ralat jika sesi tamat (Token Expired)
-            if (!CONFIG.FREE_ROUTES.includes(action) && responseData.success === false && 
-                responseData.message && (responseData.message.includes("sesi") || responseData.message.includes("token"))) {
+            if (!CONFIG.FREE_ROUTES.includes(action) && responseData.success === false && responseData.message && (responseData.message.includes("sesi") || responseData.message.includes("token"))) {
                 alert("⛔ Sesi tamat. Sila log masuk semula."); 
                 AuthManager.doLogout();
                 return { success: false }; 
