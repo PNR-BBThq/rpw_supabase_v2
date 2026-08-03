@@ -1,11 +1,38 @@
-
 // ==========================================
 // FAIL: js/api.js
 // FUNGSI: Menguruskan komunikasi dengan Google Apps Script (Backend)
 // ==========================================
 
+let isProcessingQueue = false;
+let requestQueue = [];
+
 const API = {
-    postData: async function(action, payloadData = {}) {
+    postData: function(action, payloadData = {}) {
+        return new Promise((resolve, reject) => {
+            requestQueue.push({ action, payloadData, resolve, reject });
+            API._processQueue();
+        });
+    },
+    
+    _processQueue: async function() {
+        if (isProcessingQueue || requestQueue.length === 0) return;
+        isProcessingQueue = true;
+        
+        while (requestQueue.length > 0) {
+            const req = requestQueue.shift();
+            try {
+                // Sengaja letak delay 500ms antara setiap panggilan supaya Google Apps Script 'bernafas'
+                await new Promise(r => setTimeout(r, 500));
+                const res = await API._executePostData(req.action, req.payloadData);
+                req.resolve(res);
+            } catch (err) {
+                req.reject(err);
+            }
+        }
+        isProcessingQueue = false;
+    },
+
+    _executePostData: async function(action, payloadData = {}) {
         try {
             let payload = { action: action, ...payloadData };
             
@@ -48,10 +75,9 @@ const API = {
             
             return responseData;
             
-        } catch(e) { 
-            console.error("API Error:", e); 
+        } catch (e) {
+            console.error("Fetch Error:", e);
             return { success: false, message: "Ralat sambungan pelayan. Sila semak internet anda." }; 
         }
     }
 };
-

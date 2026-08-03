@@ -21,7 +21,7 @@ const AuthManager = {
         if(r.success) {
             const sessionData = { uProf: r, userToken: r.token, currentUserID: u };
             localStorage.setItem('pnr_session', JSON.stringify(sessionData));
-            AuthManager.applyLogin(r, r.token, u);
+            await AuthManager.applyLogin(r, r.token, u);
         } else { 
             msg.innerText = r.message; 
             btn.disabled = false; 
@@ -72,7 +72,7 @@ const AuthManager = {
             try {
                 const s = JSON.parse(saved);
                 if (s.uProf && s.userToken) {
-                    AuthManager.applyLogin(s.uProf, s.userToken, s.currentUserID);
+                    await AuthManager.applyLogin(s.uProf, s.userToken, s.currentUserID);
                     
                     // Hantar log ke server jika ada internet
                     if (navigator.onLine) {
