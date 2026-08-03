@@ -16,11 +16,11 @@ const API = {
             }
             
             // ⚡ KRITIKAL: Hantar request ke Google Apps Script
+            // - JANGAN set Content-Type header → ini mencetuskan preflight OPTIONS request
+            //   yang Google Apps Script TIDAK sokong (menyebabkan CORS block).
+            // - Gunakan redirect: 'follow' → GAS redirect ke URL exec selepas deployment.
             const res = await fetch(`${CONFIG.API_URL}?action=${action}`, { 
-                method: "POST",
-                headers: {
-                    "Content-Type": "text/plain"
-                },
+                method: "POST", 
                 redirect: "follow",
                 body: JSON.stringify(payload) 
             });
