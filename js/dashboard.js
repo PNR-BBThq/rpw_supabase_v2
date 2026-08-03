@@ -33,7 +33,8 @@ const DashboardManager = {
         if (!isOffline) {
             try {
                 const d = await API.postData('getAnalytics', {state: AppState.uProf.state});
-                if (d.records) {
+                console.log("DEBUG: Response from getAnalytics:", d);
+                if (d && d.records) {
                     AppState.mData = d.records;
                     localStorage.setItem('pnr_dashboard_data', JSON.stringify(AppState.mData));
                     const now = new Date().toLocaleString('en-MY', { hour12: true });
