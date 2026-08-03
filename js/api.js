@@ -16,42 +16,18 @@ const API = {
             }
             
             // ⚡ KRITIKAL: Hantar request ke Google Apps Script
-            // Kita gunakan JSONP (script injection) untuk 100% memintas isu CORS
-            // dan sekatan Third-Party Cookies (Incognito) di pelayan Google.
-            const payloadString = JSON.stringify(payload);
-            const requestUrl = `${CONFIG.API_URL}?action=${action}&payload=${encodeURIComponent(payloadString)}`;
-            
-            const textResponse = await new Promise((resolve, reject) => {
-                const callbackName = 'jsonp_cb_' + Math.round(1000000 * Math.random());
-                
-                // Fungsi callback yang akan dipanggil oleh GAS
-                window[callbackName] = function(data) {
-                    delete window[callbackName];
-                    document.body.removeChild(script);
-                    resolve(JSON.stringify(data));
-                };
-                
-                const script = document.createElement('script');
-                script.src = requestUrl + '&callback=' + callbackName;
-                script.onerror = function() {
-                    delete window[callbackName];
-                    document.body.removeChild(script);
-                    resolve('<error>Gagal berhubung dengan pelayan</error>');
-                };
-                
-                document.body.appendChild(script);
-                
-                // Timeout 15 saat jika pelayan tersangkut
-                setTimeout(() => {
-                    if (window[callbackName]) {
-                        delete window[callbackName];
-                        if (script.parentNode) document.body.removeChild(script);
-                        resolve('<error>Pelayan tidak memberi respon (Timeout)</error>');
-                    }
-                }, 15000);
+            // - JANGAN set Content-Type header → ini mencetuskan preflight OPTIONS request
+            //   yang Google Apps Script TIDAK sokong (menyebabkan CORS block).
+            // - Gunakan redirect: 'follow' → GAS redirect ke URL exec selepas deployment.
+            const res = await fetch(`${CONFIG.API_URL}?action=${action}`, { 
+                method: "POST", 
+                redirect: "follow",
+                body: JSON.stringify(payload) 
             });
             
-            // Semak jika response adalah HTML atau ralat
+            const textResponse = await res.text();
+            
+            // Semak jika response adalah HTML (berlaku jika ada ralat pada backend GAS atau isu kuki)
             if (textResponse.trim().startsWith('<')) {
                 console.error("CRITICAL: Pelayan Google Apps Script memulangkan ralat HTML! Kandungan ralat:", textResponse);
                 return { 
@@ -78,3 +54,4 @@ const API = {
         }
     }
 };
+
