@@ -42,7 +42,7 @@ const DashboardManager = {
                     DashboardManager.processDataToUI(AppState.mData);
                     DashboardManager.updateLastUpdateLabel(now, 'ONLINE');
                     if (typeof TaskManager !== 'undefined') {
-                        TaskManager.checkTaskCount(); 
+                        await TaskManager.checkTaskCount(); 
                     }
                 } else {
                     // Jika API gagal (cth: masalah CORS atau sesi luput) tatkala online

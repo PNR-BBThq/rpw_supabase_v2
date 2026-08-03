@@ -204,13 +204,13 @@ const ViewManager = {
 // SISTEM NOTIFIKASI LATAR BELAKANG (AUTO-SEMAK)
 // ==========================================
 function startBadgePolling() {
-    const semakBadges = () => {
+    const semakBadges = async () => {
         if (typeof AppState !== 'undefined' && AppState.uProf && AppState.uProf.name) {
             if (typeof VerifyManager !== 'undefined' && VerifyManager.checkPendingCount) {
-                VerifyManager.checkPendingCount();
+                await VerifyManager.checkPendingCount();
             }
             if (typeof TaskManager !== 'undefined' && TaskManager.checkTaskCount) {
-                TaskManager.checkTaskCount();
+                await TaskManager.checkTaskCount();
             }
         }
     };
