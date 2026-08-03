@@ -27,12 +27,12 @@ const API = {
             
             const textResponse = await res.text();
             
-            // Semak jika response adalah HTML (berlaku dalam Incognito sebab 3rd-party cookies disekat oleh Google Apps Script)
+            // Semak jika response adalah HTML (berlaku jika ada ralat pada backend GAS atau isu kuki)
             if (textResponse.trim().startsWith('<')) {
-                console.warn("API memulangkan HTML. Ini biasanya berlaku dalam mod Incognito (Third-Party Cookies disekat).");
+                console.error("CRITICAL: Pelayan Google Apps Script memulangkan ralat HTML! Kandungan ralat:", textResponse);
                 return { 
                     success: false, 
-                    message: "Mod Incognito / Private dikesan. Sila benarkan 'Third-Party Cookies' atau gunakan mod browser biasa untuk sambungan API yang stabil." 
+                    message: "Ralat pada pelayan Backend (Sila rujuk Console Log untuk butiran ralat HTML dari Google)." 
                 };
             }
 
