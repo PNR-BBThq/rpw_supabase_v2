@@ -25,7 +25,18 @@ const API = {
                 body: JSON.stringify(payload) 
             });
             
-            const responseData = JSON.parse(await res.text());
+            const textResponse = await res.text();
+            
+            // Semak jika response adalah HTML (berlaku dalam Incognito sebab 3rd-party cookies disekat oleh Google Apps Script)
+            if (textResponse.trim().startsWith('<')) {
+                console.warn("API memulangkan HTML. Ini biasanya berlaku dalam mod Incognito (Third-Party Cookies disekat).");
+                return { 
+                    success: false, 
+                    message: "Mod Incognito / Private dikesan. Sila benarkan 'Third-Party Cookies' atau gunakan mod browser biasa untuk sambungan API yang stabil." 
+                };
+            }
+
+            const responseData = JSON.parse(textResponse);
 
             // Tangkap ralat jika sesi tamat (Token Expired)
             if (!CONFIG.FREE_ROUTES.includes(action) && responseData.success === false && 
