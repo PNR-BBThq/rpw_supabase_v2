@@ -16,13 +16,12 @@ const API = {
             }
             
             // ⚡ KRITIKAL: Hantar request ke Google Apps Script
-            // - JANGAN set Content-Type header → ini mencetuskan preflight OPTIONS request
-            //   yang Google Apps Script TIDAK sokong (menyebabkan CORS block).
-            // - Gunakan redirect: 'follow' → GAS redirect ke URL exec selepas deployment.
-            const res = await fetch(`${CONFIG.API_URL}?action=${action}`, { 
-                method: "POST", 
-                redirect: "follow",
-                body: JSON.stringify(payload) 
+            // Kita gunakan GET (bukan POST) untuk mengelakkan ralat 404 akibat sekatan 
+            // Third-Party Cookies di pelayan Google Apps Script apabila dalam Mod Incognito.
+            const payloadString = JSON.stringify(payload);
+            const res = await fetch(`${CONFIG.API_URL}?action=${action}&payload=${encodeURIComponent(payloadString)}`, { 
+                method: "GET", 
+                redirect: "follow"
             });
             
             const textResponse = await res.text();
