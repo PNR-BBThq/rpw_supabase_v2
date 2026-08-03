@@ -12,9 +12,9 @@ const TumpuanManager = {
         lokasi: ['LOKASI', 'KEBUN'],
         kategori: ['KATEGORI', 'CATEGORY'],
         tanaman: ['NAMA TANAMAN', 'TANAMAN', 'CROP'],
-        perosak: ['PEROSAK', 'PEST', 'SENARAI PEROSAK'],
-        luasBancian: ['LUAS BANCIAN', 'LUAS BERTANAM', 'AREA', 'HEKTAR'],
-        luasSerangan: ['LUAS SERANGAN'],
+        perosak: ['PEROSAK', 'PEST', 'SENARAI PEROSAK', 'DATA SERANGAN'],
+        luasBancian: ['LUAS BANCIAN', 'LUAS BERTANAM', 'AREA', 'HEKTAR', 'KELUASAN'],
+        luasSerangan: ['LUAS SERANGAN', 'DATA SERANGAN'],
         peratus: ['PERATUS']
     },
 
@@ -59,7 +59,20 @@ const TumpuanManager = {
                 
                 this.renderHeaders();
                 this.populateFilterDropdowns();
-                this.renderDashboard();
+                // Set Default Tahun kepada 2025 sebelum render untuk elak lagging jika row > 7000
+                const tahunDropdown = document.getElementById('filter-tumpuan-tahun');
+                if (tahunDropdown) {
+                    // Semak jika pilihan 2025 wujud
+                    const has2025 = Array.from(tahunDropdown.options).some(opt => opt.value === '2025');
+                    if (has2025) {
+                        tahunDropdown.value = '2025';
+                        this.applyFilters(); // Terus saring data berdasarkan 2025
+                    } else {
+                        this.renderDashboard();
+                    }
+                } else {
+                    this.renderDashboard();
+                }
             } else {
                 let msg = (res && res.message) ? res.message : "Tiada data dijumpai.";
                 document.getElementById('tumpuan-tbody').innerHTML = `<tr><td colspan="15" class="text-center py-4 text-danger"><i class="bi bi-exclamation-circle me-1"></i>${msg}</td></tr>`;
@@ -104,8 +117,18 @@ const TumpuanManager = {
             // Perosak boleh jadi JSON string (dari PWA form) atau plain text
             if (keyPerosak && row[keyPerosak]) {
                 let p = row[keyPerosak];
-                if (typeof p === 'string' && p.startsWith('{')) {
-                    try { Object.keys(JSON.parse(p)).forEach(k => perosakSet.add(k)); } catch(e){}
+                if (typeof p === 'string' && (p.startsWith('{') || p.startsWith('['))) {
+                    try {
+                        let parsed = JSON.parse(p);
+                        if (Array.isArray(parsed)) {
+                            // Cth: [{"perosak":"REPUT BUAH","luas_serangan":0.1}]
+                            parsed.forEach(item => {
+                                if (item.perosak) perosakSet.add(item.perosak);
+                            });
+                        } else {
+                            Object.keys(parsed).forEach(k => perosakSet.add(k));
+                        }
+                    } catch(e){}
                 } else {
                     perosakSet.add(p);
                 }
@@ -156,7 +179,8 @@ const TumpuanManager = {
             
             if (vPerosak && keyPerosak) {
                 let p = row[keyPerosak];
-                if (typeof p === 'string' && p.startsWith('{')) {
+                if (typeof p === 'string' && (p.startsWith('{') || p.startsWith('['))) {
+                    // Cari dalam JSON jika wujud
                     if(!p.includes(vPerosak)) return false;
                 } else if (String(p) !== String(vPerosak)) {
                     return false;
@@ -200,10 +224,14 @@ const TumpuanManager = {
             // Luas serangan boleh jadi JSON (PWA) atau number
             if (keyLuasS) {
                 let s = row[keyLuasS];
-                if (typeof s === 'string' && s.startsWith('{')) {
+                if (typeof s === 'string' && (s.startsWith('{') || s.startsWith('['))) {
                     try {
-                        let obj = JSON.parse(s);
-                        Object.values(obj).forEach(v => { sumLuasS += parseFloat(v)||0; });
+                        let parsed = JSON.parse(s);
+                        if (Array.isArray(parsed)) {
+                            parsed.forEach(item => { sumLuasS += parseFloat(item.luas_serangan) || 0; });
+                        } else {
+                            Object.values(parsed).forEach(v => { sumLuasS += parseFloat(v) || 0; });
+                        }
                     } catch(e){}
                 } else {
                     sumLuasS += parseFloat(s) || 0;
@@ -290,8 +318,15 @@ const TumpuanManager = {
             dataMap[n].b += parseFloat(r[keyLuasB]) || 0;
             
             let s = r[keyLuasS];
-            if (typeof s === 'string' && s.startsWith('{')) {
-                try { Object.values(JSON.parse(s)).forEach(v => { dataMap[n].s += parseFloat(v)||0; }); } catch(e){}
+            if (typeof s === 'string' && (s.startsWith('{') || s.startsWith('['))) {
+                try { 
+                    let parsed = JSON.parse(s);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(item => { dataMap[n].s += parseFloat(item.luas_serangan) || 0; });
+                    } else {
+                        Object.values(parsed).forEach(v => { dataMap[n].s += parseFloat(v) || 0; }); 
+                    }
+                } catch(e){}
             } else {
                 dataMap[n].s += parseFloat(s) || 0;
             }
@@ -355,13 +390,21 @@ const TumpuanManager = {
                 let s = r[keyLuasS];
                 let p = r[keyPerosak];
                 
-                if (typeof s === 'string' && s.startsWith('{') && typeof p === 'string' && p.startsWith('{')) {
+                if (typeof s === 'string' && (s.startsWith('{') || s.startsWith('['))) {
                     try {
-                        let objS = JSON.parse(s);
-                        Object.keys(objS).forEach(k => {
-                            if(!dataMap[k]) dataMap[k] = 0;
-                            dataMap[k] += parseFloat(objS[k])||0;
-                        });
+                        let parsed = JSON.parse(s);
+                        if (Array.isArray(parsed)) {
+                            parsed.forEach(item => {
+                                let k = item.perosak || "Lain-lain";
+                                if(!dataMap[k]) dataMap[k] = 0;
+                                dataMap[k] += parseFloat(item.luas_serangan) || 0;
+                            });
+                        } else {
+                            Object.keys(parsed).forEach(k => {
+                                if(!dataMap[k]) dataMap[k] = 0;
+                                dataMap[k] += parseFloat(parsed[k]) || 0;
+                            });
+                        }
                     } catch(e){}
                 } else {
                     let pName = p || "Tiada Perosak";
