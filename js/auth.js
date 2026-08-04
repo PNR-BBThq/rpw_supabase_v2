@@ -55,6 +55,8 @@ const AuthManager = {
             if (navEff) navEff.style.display = "flex";
             const navRed = document.getElementById('navRedundant');
             if (navRed) navRed.style.display = "flex";
+            const navTum = document.getElementById('navTumpuan');
+            if (navTum) navTum.style.display = "flex";
         }
         
         document.getElementById('navTasks').style.display = "flex";

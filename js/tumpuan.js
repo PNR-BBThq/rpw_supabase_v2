@@ -1,6 +1,8 @@
 const TumpuanManager = {
     rawData: [],
     filteredData: [],
+    otherData: [],
+    filteredOtherData: [],
     headers: [],
     
     // Konfigurasi pemetaan kolum untuk PNR Digital
@@ -12,9 +14,9 @@ const TumpuanManager = {
         lokasi: ['LOKASI', 'KEBUN'],
         kategori: ['KATEGORI', 'CATEGORY'],
         tanaman: ['NAMA TANAMAN', 'TANAMAN', 'CROP'],
-        perosak: ['PEROSAK', 'PEST', 'SENARAI PEROSAK', 'DATA SERANGAN'],
-        luasBancian: ['LUAS BANCIAN', 'LUAS BERTANAM', 'AREA', 'HEKTAR', 'KELUASAN'],
-        luasSerangan: ['LUAS SERANGAN', 'DATA SERANGAN'],
+        perosak: ['DATA SERANGAN (JSON)', 'PEROSAK', 'PEST'],
+        luasBancian: ['KELUASAN BANCIAN (HA)'],
+        luasSerangan: ['DATA SERANGAN (JSON)'],
         peratus: ['PERATUS']
     },
 
@@ -42,8 +44,19 @@ const TumpuanManager = {
             return idx > -1 ? this.headers[idx] : null;
         }
 
-        const match = this.headers.find(h => aliases.some(a => String(h).toUpperCase().includes(a)));
-        return match || null;
+        // Cari padanan TEPAT dahulu mengikut susunan keutamaan alias
+        for (let a of aliases) {
+            let exact = this.headers.find(h => String(h).toUpperCase().trim() === a);
+            if (exact) return exact;
+        }
+        
+        // Jika tiada padanan tepat, cari sebahagian (includes)
+        for (let a of aliases) {
+            let partial = this.headers.find(h => String(h).toUpperCase().includes(a));
+            if (partial) return partial;
+        }
+
+        return null;
     },
 
     loadData: async function() {
@@ -53,9 +66,71 @@ const TumpuanManager = {
             const res = await API.postData('getTanamanTumpuan', {});
             
             if (res && res.success && res.data && res.data.length > 0) {
-                this.rawData = res.data;
-                this.headers = res.headers || Object.keys(res.data[0]);
+                // Buang baris "JUMLAH" atau "TOTAL" yang mungkin dari raw data spreadsheet (mengelakkan double sum)
+                const cleanData = res.data.filter(row => {
+                    return !Object.values(row).some(val => 
+                        val && (String(val).toUpperCase().trim() === 'JUMLAH' || String(val).toUpperCase().trim() === 'TOTAL')
+                    );
+                });
+                
+                this.headers = (res.headers || Object.keys(cleanData.length > 0 ? cleanData[0] : res.data[0])).filter(h => {
+                    let hUp = String(h).toUpperCase().trim();
+                    return hUp !== 'UNIK ID' && hUp !== 'ID';
+                });
+                const keyLuasB = this.getColKey('luasBancian');
+                const keyLuasS = this.getColKey('luasSerangan');
+                
+                this.rawData = [];
+                this.otherData = [];
+
+                cleanData.forEach(row => {
+                    let isOther = false;
+                    
+                    const checkOtherUnit = (val) => {
+                        if (val === null || val === undefined) return false;
+                        let valStr = String(val).trim().toUpperCase();
+                        let words = valStr.match(/[A-Z]+/g) || [];
+                        for (let w of words) {
+                            if (w !== 'HA' && w !== 'HEKTAR' && w !== 'H') {
+                                return true;
+                            }
+                        }
+                        return false;
+                    };
+
+                    if (keyLuasB && checkOtherUnit(row[keyLuasB])) {
+                        isOther = true;
+                    }
+                    
+                    if (!isOther && keyLuasS && row[keyLuasS]) {
+                        let s = row[keyLuasS];
+                        if (typeof s === 'string' && (s.startsWith('{') || s.startsWith('['))) {
+                            try {
+                                let parsed = JSON.parse(s);
+                                if (Array.isArray(parsed)) {
+                                    for (let item of parsed) {
+                                        if (checkOtherUnit(item.luas_serangan)) { isOther = true; break; }
+                                    }
+                                } else {
+                                    for (let v of Object.values(parsed)) {
+                                        if (checkOtherUnit(v)) { isOther = true; break; }
+                                    }
+                                }
+                            } catch(e){}
+                        } else {
+                            if (checkOtherUnit(s)) isOther = true;
+                        }
+                    }
+                    
+                    if (isOther) {
+                        this.otherData.push(row);
+                    } else {
+                        this.rawData.push(row);
+                    }
+                });
+                
                 this.filteredData = [...this.rawData];
+                this.filteredOtherData = [...this.otherData];
                 
                 this.renderHeaders();
                 this.populateFilterDropdowns();
@@ -85,11 +160,13 @@ const TumpuanManager = {
 
     renderHeaders: function() {
         const thead = document.getElementById('tumpuan-thead');
+        const theadOther = document.getElementById('tumpuan-thead-other');
         let html = '';
         this.headers.forEach(h => {
             html += `<th class="p-2">${h}</th>`;
         });
-        thead.innerHTML = html;
+        if(thead) thead.innerHTML = html;
+        if(theadOther) theadOther.innerHTML = html;
     },
 
     populateFilterDropdowns: function() {
@@ -170,7 +247,7 @@ const TumpuanManager = {
         const keyTanaman = this.getColKey('tanaman');
         const keyPerosak = this.getColKey('perosak');
 
-        this.filteredData = this.rawData.filter(row => {
+        const filterRow = row => {
             if (vTahun && keyTahun && String(row[keyTahun]) !== String(vTahun)) return false;
             if (vBulan && keyBulan && String(row[keyBulan]) !== String(vBulan)) return false;
             if (vNegeri && keyNegeri && String(row[keyNegeri]) !== String(vNegeri)) return false;
@@ -187,7 +264,10 @@ const TumpuanManager = {
                 }
             }
             return true;
-        });
+        };
+
+        this.filteredData = this.rawData.filter(filterRow);
+        this.filteredOtherData = this.otherData.filter(filterRow);
         
         // Reset drilldowns apabila saringan global berubah
         this.drilldownState.pieTanaman = null;
@@ -219,7 +299,7 @@ const TumpuanManager = {
         const lokasiSet = new Set();
 
         this.filteredData.forEach(row => {
-            if (keyLuasB) sumLuasB += parseFloat(row[keyLuasB]) || 0;
+            if (keyLuasB) sumLuasB += parseFloat(String(row[keyLuasB] || '0').replace(/,/g, '')) || 0;
             
             // Luas serangan boleh jadi JSON (PWA) atau number
             if (keyLuasS) {
@@ -228,13 +308,13 @@ const TumpuanManager = {
                     try {
                         let parsed = JSON.parse(s);
                         if (Array.isArray(parsed)) {
-                            parsed.forEach(item => { sumLuasS += parseFloat(item.luas_serangan) || 0; });
+                            parsed.forEach(item => { sumLuasS += parseFloat(String(item.luas_serangan || '0').replace(/,/g, '')) || 0; });
                         } else {
-                            Object.values(parsed).forEach(v => { sumLuasS += parseFloat(v) || 0; });
+                            Object.values(parsed).forEach(v => { sumLuasS += parseFloat(String(v || '0').replace(/,/g, '')) || 0; });
                         }
                     } catch(e){}
                 } else {
-                    sumLuasS += parseFloat(s) || 0;
+                    sumLuasS += parseFloat(String(s || '0').replace(/,/g, '')) || 0;
                 }
             }
             if (keyLokasi && row[keyLokasi]) lokasiSet.add(row[keyLokasi]);
@@ -245,7 +325,7 @@ const TumpuanManager = {
         const kpiCards = [
             { title: "Jumlah Luas Bancian (Ha)", value: sumLuasB.toLocaleString('en-MY', { maximumFractionDigits: 2 }), icon: "bi-arrows-fullscreen", color: "primary" },
             { title: "Jumlah Luas Serangan (Ha)", value: sumLuasS.toLocaleString('en-MY', { maximumFractionDigits: 2 }), icon: "bi-bug-fill", color: "danger" },
-            { title: "Bilangan Lokasi / Kebun", value: lokasiSet.size.toLocaleString('en-MY'), icon: "bi-geo-alt-fill", color: "success" },
+            { title: "Bilangan Lokasi / Kebun", value: this.filteredData.length.toLocaleString('en-MY'), icon: "bi-geo-alt-fill", color: "success" },
             { title: "Purata Peratus Serangan", value: pct.toFixed(2) + "%", icon: "bi-percent", color: "warning" }
         ];
 
@@ -270,36 +350,50 @@ const TumpuanManager = {
     },
 
     renderTable: function() {
-        const tbody = document.getElementById('tumpuan-tbody');
         const q = (document.getElementById('search-tumpuan-table')?.value || "").toLowerCase();
         
-        let filtered = this.filteredData;
-        if(q) {
-            filtered = filtered.filter(row => {
-                return this.headers.some(h => String(row[h] || "").toLowerCase().includes(q));
-            });
-        }
+        const buildHtml = (dataList) => {
+            let filtered = dataList;
+            if(q) {
+                filtered = filtered.filter(row => {
+                    return this.headers.some(h => String(row[h] || "").toLowerCase().includes(q));
+                });
+            }
 
-        if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="${this.headers.length}" class="text-center py-4 text-muted">Tiada rekod dijumpai.</td></tr>`;
-            return;
-        }
+            if (filtered.length === 0) {
+                return `<tr><td colspan="${this.headers.length}" class="text-center py-4 text-muted">Tiada rekod dijumpai.</td></tr>`;
+            }
 
-        let html = '';
-        filtered.forEach(row => {
-            html += `<tr>`;
-            this.headers.forEach(h => {
-                let val = row[h];
-                if(val === undefined || val === null) val = "-";
-                // Formatting for numbers
-                if(typeof val === 'number') {
-                    val = val.toLocaleString('en-MY', { maximumFractionDigits: 2 });
-                }
-                html += `<td class="p-2">${val}</td>`;
+            let html = '';
+            filtered.forEach(row => {
+                html += `<tr>`;
+                this.headers.forEach(h => {
+                    let val = row[h];
+                    if(val === undefined || val === null) val = "-";
+                    // Formatting for numbers
+                    if(typeof val === 'number') {
+                        val = val.toLocaleString('en-MY', { maximumFractionDigits: 2 });
+                    }
+                    html += `<td class="p-2">${val}</td>`;
+                });
+                html += `</tr>`;
             });
-            html += `</tr>`;
-        });
-        tbody.innerHTML = html;
+            return html;
+        };
+
+        const tbody = document.getElementById('tumpuan-tbody');
+        if (tbody) tbody.innerHTML = buildHtml(this.filteredData);
+        
+        const tbodyOther = document.getElementById('tumpuan-tbody-other');
+        const cardOther = document.getElementById('card-tumpuan-other');
+        if (tbodyOther && cardOther) {
+            if (this.filteredOtherData && this.filteredOtherData.length > 0) {
+                cardOther.classList.remove('d-none');
+                tbodyOther.innerHTML = buildHtml(this.filteredOtherData);
+            } else {
+                cardOther.classList.add('d-none');
+            }
+        }
     },
 
     renderChartNegeri: function() {
