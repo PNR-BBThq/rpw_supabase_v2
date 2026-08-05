@@ -1,4 +1,4 @@
-const CACHE_NAME = "PNR-CACHE-v202608050337-b78b364"; // ⚡ Tukar versi di sini untuk paksa browser update!
+const CACHE_NAME = "PNR-CACHE-v202608051156"; // ⚡ Tukar versi di sini untuk paksa browser update!
 const ASSETS = [
   './',
   './index.html',
@@ -72,7 +72,7 @@ self.addEventListener('fetch', (e) => {
     // Sentiasa cuba dapatkan versi terkini dari rangkaian dahulu.
     // Simpan salinan terbaru dalam cache untuk kegunaan offline.
     e.respondWith(
-      fetch(e.request).then((networkResponse) => {
+      fetch(e.request, { cache: 'no-store' }).then((networkResponse) => {
         // Hanya cache response yang berjaya dan sah
         if (networkResponse && networkResponse.ok) {
           const responseClone = networkResponse.clone();

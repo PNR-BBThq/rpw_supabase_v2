@@ -10,10 +10,38 @@ if ('serviceWorker' in navigator) {
             .then((reg) => {
                 console.log('✅ Service Worker berjaya didaftarkan. Skop:', reg.scope);
                 
+                // Semak untuk kemas kini baharu setiap kali load
+                reg.update();
+
                 // Jika sistem mengesan ada versi kod baru sedang menunggu, paksa bertukar terus
                 if (reg.waiting) {
                     reg.waiting.postMessage({ type: 'SKIP_WAITING' });
                 }
+
+                // Dengar jika ada pekerja servis baru sedang dipasang
+                reg.onupdatefound = () => {
+                    const installingWorker = reg.installing;
+                    installingWorker.onstatechange = () => {
+                        if (installingWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                // Versi baharu wujud! Beritahu pengguna
+                                Swal.fire({
+                                    title: 'Kemas Kini Tersedia!',
+                                    text: 'Versi terbaharu sistem telah dikesan. Sistem perlu dimuat semula untuk memastikan anda mendapat ciri terkini.',
+                                    icon: 'info',
+                                    confirmButtonText: '<i class="bi bi-arrow-clockwise"></i> Muat Semula Sekarang',
+                                    allowOutsideClick: false,
+                                    allowEscapeKey: false
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        installingWorker.postMessage({ type: 'SKIP_WAITING' });
+                                        window.location.reload(true);
+                                    }
+                                });
+                            }
+                        }
+                    };
+                };
             })
             .catch((err) => {
                 console.error('❌ Pendaftaran Service Worker gagal:', err);

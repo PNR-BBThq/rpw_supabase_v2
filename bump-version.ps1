@@ -18,7 +18,8 @@ $ErrorActionPreference = "Stop"
 
 # Fail-fail HTML yang perlu diproses
 $htmlFiles = @(
-    "index.html"
+    "index.html",
+    "form.html"
 )
 
 # Service Worker fail
