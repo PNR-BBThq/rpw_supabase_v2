@@ -283,6 +283,15 @@
       <button onclick="bukaModalKuarantin('klon')" class="bg-white hover:bg-slate-50 text-rose-700 px-4 sm:px-5 py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-bold shadow-lg border border-rose-200 w-full sm:w-auto">🔍 Semak Rekod Bertindih</button>
     </div>
 
+    <!-- BANNER OVERLAP -->
+    <div id="bannerAmaranOverlap" class="hidden glass bg-purple-500/10 border-purple-500/30 text-purple-900 px-4 sm:px-6 py-3 sm:py-4 rounded-2xl font-bold text-[10px] sm:text-xs flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg backdrop-blur-xl warning-banner mt-3">
+      <span class="flex items-center gap-2 sm:gap-3">
+        <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-purple-500/20 flex items-center justify-center text-base sm:text-lg shrink-0">🛰️</span>
+        <b id="teksAmaranOverlap" class="text-purple-800 text-center sm:text-left"></b>
+      </span>
+      <button onclick="bukaModalKuarantin('overlap')" class="bg-white hover:bg-slate-50 text-purple-700 px-4 sm:px-5 py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-bold shadow-lg border border-purple-200 w-full sm:w-auto">🔍 Lihat Pertindihan</button>
+    </div>
+
     <div class="glass p-4 sm:p-5 lg:p-6 rounded-3xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 items-end filter-grid">
       <div class="space-y-1.5 sm:space-y-2">
         <label class="block text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Pilih Tahun</label>
@@ -648,12 +657,15 @@
          <button onclick="document.getElementById('modalKuarantin').classList.add('hidden')" class="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/80 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition cursor-pointer backdrop-blur-sm border border-white/10 w-full sm:w-auto">✕ Tutup</button>
       </div>
 
-      <div class="flex border-b border-slate-200/50 bg-slate-50/50 px-4 sm:px-6 pt-2 sm:pt-3 gap-1 sm:gap-2 backdrop-blur-sm modal-tabs">
+      <div class="flex border-b border-slate-200/50 bg-slate-50/50 px-4 sm:px-6 pt-2 sm:pt-3 gap-1 sm:gap-2 backdrop-blur-sm modal-tabs overflow-x-auto">
         <button onclick="tukarTabModal('klon')" id="tabBtn_klon" class="px-3 sm:px-5 py-2.5 sm:py-3 text-[10px] sm:text-xs font-black border-b-2 border-rose-600 text-rose-700 flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer transition bg-white/50 rounded-t-xl flex-1 sm:flex-none">
           <span>🚨</span> Klon (<span id="modalCountKlon">0</span>)
         </button>
         <button onclick="tukarTabModal('gps')" id="tabBtn_gps" class="px-3 sm:px-5 py-2.5 sm:py-3 text-[10px] sm:text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600 flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer transition hover:bg-white/30 rounded-t-xl flex-1 sm:flex-none">
           <span>⚠️</span> GPS (<span id="modalCountGPS">0</span>)
+        </button>
+        <button onclick="tukarTabModal('overlap')" id="tabBtn_overlap" class="px-3 sm:px-5 py-2.5 sm:py-3 text-[10px] sm:text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600 flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer transition hover:bg-white/30 rounded-t-xl flex-1 sm:flex-none">
+          <span>🛰️</span> Overlap (<span id="modalCountOverlap">0</span>)
         </button>
       </div>
 
@@ -685,6 +697,21 @@
              </table>
            </div>
          </div>
+
+         <!-- TAB KONTEN OVERLAP -->
+         <div id="tabContent_overlap" class="space-y-3 sm:space-y-4 hidden">
+           <div class="glass bg-purple-50/80 border-purple-200/60 p-3 sm:p-4 rounded-2xl text-purple-950 font-semibold text-[10px] sm:text-xs backdrop-blur-sm">
+             <span class="font-black">ℹ️ Penerangan:</span> Senarai perangkap yang jaraknya kurang daripada 6km (bertindih radius 3km). Pertindihan ini ditandakan dengan bulatan ungu pada peta.
+           </div>
+           <div class="border border-slate-200/50 rounded-2xl overflow-hidden bg-white/50 overflow-x-auto">
+             <table class="w-full text-left border-collapse uppercase min-w-[500px]">
+               <thead class="bg-slate-100/80 text-slate-600 text-[9px] sm:text-[10px] font-black backdrop-blur-sm">
+                 <tr><th class="p-3 sm:p-4 w-10 sm:w-12 text-center">#</th><th class="p-3 sm:p-4">Lokasi 1</th><th class="p-3 sm:p-4">Lokasi 2</th><th class="p-3 sm:p-4 text-center">Jarak (km)</th><th class="p-3 sm:p-4 hidden sm:table-cell">Daerah / Negeri</th></tr>
+               </thead>
+               <tbody id="tbodyModalOverlap" class="divide-y divide-slate-100/60 font-bold text-slate-700"></tbody>
+             </table>
+           </div>
+         </div>
       </div>
     </div>
   </div>
@@ -710,6 +737,7 @@
     let SENARAI_RALAT_GPS = [];
     let SENARAI_DUPLIKASI_KLON = [];
     let SENARAI_PENUH_DEFAULTER = [];
+    let SENARAI_OVERLAP = [];
 
    window.onload = function() {
       binaPetaAsas();
@@ -1014,6 +1042,18 @@
       return day + "/" + month + "/" + year;
     }
 
+    function kiraJarakHaversine(lat1, lon1, lat2, lon2) {
+      const R = 6371; 
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+      return R * c; 
+    }
+
     function laksanakanFilterLokal() {
       if (!MASTER_DATA_KESELURUHAN) return;
 
@@ -1094,6 +1134,43 @@
         document.getElementById("teksAmaranDuplikasi").innerText = `RALAT KRITIKAL: Terdapat ${SENARAI_DUPLIKASI_KLON.length} entri data didaftarkan redundant pada lokasi & tarikh yang sama!`;
       } else bKlon.classList.add("hidden");
 
+      // OVERLAP KIRAAN (Jika filterNegeri bukan ALL)
+      SENARAI_OVERLAP = [];
+      if (fNeg !== "ALL") {
+        let activePins = DATA_DITAPIS_SEMASA.filter(p => p.is_valid_gis && p.koordinat);
+        for (let i = 0; i < activePins.length; i++) {
+          for (let j = i + 1; j < activePins.length; j++) {
+            let p1 = activePins[i];
+            let p2 = activePins[j];
+            if (p1.lokasi === p2.lokasi) continue;
+            let c1 = p1.koordinat.split(",").map(Number);
+            let c2 = p2.koordinat.split(",").map(Number);
+            let jarak = kiraJarakHaversine(c1[0], c1[1], c2[0], c2[1]);
+            
+            if (jarak < 6.0) {
+              SENARAI_OVERLAP.push({
+                lokasi1: p1.lokasi,
+                lokasi2: p2.lokasi,
+                jarak: jarak.toFixed(2),
+                daerah: p1.daerah,
+                negeri: p1.negeri,
+                p1: p1,
+                p2: p2
+              });
+            }
+          }
+        }
+      }
+
+      const bOverlap = document.getElementById("bannerAmaranOverlap");
+      if (SENARAI_OVERLAP.length > 0) {
+        if(bOverlap) bOverlap.classList.remove("hidden");
+        const tOverlap = document.getElementById("teksAmaranOverlap");
+        if(tOverlap) tOverlap.innerText = `AMARAN: Terdapat ${SENARAI_OVERLAP.length} pasangan perangkap bertindih (overlap)!`;
+      } else {
+        if(bOverlap) bOverlap.classList.add("hidden");
+      }
+
       binaJadualModalAuditContent();
       binaPetaPinDiTapis();
       HALAMAN_SEMASA = 1; 
@@ -1119,6 +1196,9 @@
     function binaJadualModalAuditContent() {
       document.getElementById("modalCountKlon").innerText = SENARAI_DUPLIKASI_KLON.length;
       document.getElementById("modalCountGPS").innerText = SENARAI_RALAT_GPS.length;
+      if (document.getElementById("modalCountOverlap")) {
+        document.getElementById("modalCountOverlap").innerText = SENARAI_OVERLAP.length;
+      }
 
      let hKlon = "";
       SENARAI_DUPLIKASI_KLON.forEach(function(k, idx) {
@@ -1152,6 +1232,21 @@
         </tr>`;
       });
       document.getElementById("tbodyModalGPS").innerHTML = hGPS || `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tiada ralat GPS dikesan.</td></tr>`;
+
+      let hOverlap = "";
+      SENARAI_OVERLAP.forEach(function(o, idx) {
+        hOverlap += `
+        <tr class="border-b border-slate-100 hover:bg-purple-50/50">
+          <td class="p-3 text-center">${idx+1}</td>
+          <td class="p-3 text-purple-900 font-bold">${o.lokasi1}</td>
+          <td class="p-3 text-rose-700 font-bold">${o.lokasi2}</td>
+          <td class="p-3 text-center font-black text-slate-800">${o.jarak} km</td>
+          <td class="p-3 hidden sm:table-cell">${o.daerah}, ${o.negeri}</td>
+        </tr>`;
+      });
+      if(document.getElementById("tbodyModalOverlap")) {
+        document.getElementById("tbodyModalOverlap").innerHTML = hOverlap || `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tiada pertindihan perangkap dikesan.</td></tr>`;
+      }
     }
 
 
@@ -1291,6 +1386,25 @@
       }
       
       markerGroup.clearLayers();
+      
+      // Draw 3km overlap radius circles
+      if (typeof SENARAI_OVERLAP !== 'undefined' && SENARAI_OVERLAP.length > 0) {
+        let overlapRendered = new Set();
+        SENARAI_OVERLAP.forEach(function(o) {
+          let latLng1 = o.p1.koordinat.split(",").map(Number);
+          let latLng2 = o.p2.koordinat.split(",").map(Number);
+          
+          if (!overlapRendered.has(o.p1.lokasi)) {
+            L.circle(latLng1, { radius: 3000, color: '#9333ea', fillColor: '#d8b4fe', fillOpacity: 0.25, weight: 2, dashArray: '6, 6' }).bindPopup(`<b>Kawasan Pertindihan</b><br/>Perangkap: ${o.p1.lokasi}`).addTo(markerGroup);
+            overlapRendered.add(o.p1.lokasi);
+          }
+          if (!overlapRendered.has(o.p2.lokasi)) {
+            L.circle(latLng2, { radius: 3000, color: '#9333ea', fillColor: '#d8b4fe', fillOpacity: 0.25, weight: 2, dashArray: '6, 6' }).bindPopup(`<b>Kawasan Pertindihan</b><br/>Perangkap: ${o.p2.lokasi}`).addTo(markerGroup);
+            overlapRendered.add(o.p2.lokasi);
+          }
+        });
+      }
+
       let seenMapPins = new Set(); 
 
       senaraiPeta.forEach(function(p) {
