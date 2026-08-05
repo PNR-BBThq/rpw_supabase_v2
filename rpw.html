@@ -289,7 +289,7 @@
         <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-purple-500/20 flex items-center justify-center text-base sm:text-lg shrink-0">🛰️</span>
         <b id="teksAmaranOverlap" class="text-purple-800 text-center sm:text-left"></b>
       </span>
-      <button onclick="bukaModalKuarantin('overlap')" class="bg-white hover:bg-slate-50 text-purple-700 px-4 sm:px-5 py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-bold shadow-lg border border-purple-200 w-full sm:w-auto">🔍 Lihat Pertindihan</button>
+      <button onclick="bukaModalOverlap()" class="bg-white hover:bg-slate-50 text-purple-700 px-4 sm:px-5 py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-bold shadow-lg border border-purple-200 w-full sm:w-auto">🔍 Lihat Pertindihan</button>
     </div>
 
     <div class="glass p-4 sm:p-5 lg:p-6 rounded-3xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 items-end filter-grid">
@@ -664,9 +664,6 @@
         <button onclick="tukarTabModal('gps')" id="tabBtn_gps" class="px-3 sm:px-5 py-2.5 sm:py-3 text-[10px] sm:text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600 flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer transition hover:bg-white/30 rounded-t-xl flex-1 sm:flex-none">
           <span>⚠️</span> GPS (<span id="modalCountGPS">0</span>)
         </button>
-        <button onclick="tukarTabModal('overlap')" id="tabBtn_overlap" class="px-3 sm:px-5 py-2.5 sm:py-3 text-[10px] sm:text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600 flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer transition hover:bg-white/30 rounded-t-xl flex-1 sm:flex-none">
-          <span>🛰️</span> Overlap (<span id="modalCountOverlap">0</span>)
-        </button>
       </div>
 
       <div class="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 sm:space-y-6 text-xs bg-white/30">
@@ -698,19 +695,33 @@
            </div>
          </div>
 
-         <!-- TAB KONTEN OVERLAP -->
-         <div id="tabContent_overlap" class="space-y-3 sm:space-y-4 hidden">
-           <div class="glass bg-purple-50/80 border-purple-200/60 p-3 sm:p-4 rounded-2xl text-purple-950 font-semibold text-[10px] sm:text-xs backdrop-blur-sm">
-             <span class="font-black">ℹ️ Penerangan:</span> Senarai perangkap yang jaraknya kurang daripada 6km (bertindih radius 3km). Pertindihan ini ditandakan dengan bulatan ungu pada peta.
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL OVERLAP STANDALONE -->
+  <div id="modalOverlap" class="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all duration-300">
+    <div class="modal-glass w-full max-w-4xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-white/40 overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[85vh]">
+      <div class="bg-gradient-to-r from-purple-700 to-purple-800 text-white p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 border-b border-purple-900/50">
+         <div class="flex items-center gap-3 sm:gap-4">
+           <div class="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+             <span class="text-base sm:text-lg">🛰️</span>
            </div>
-           <div class="border border-slate-200/50 rounded-2xl overflow-hidden bg-white/50 overflow-x-auto">
-             <table class="w-full text-left border-collapse uppercase min-w-[500px]">
-               <thead class="bg-slate-100/80 text-slate-600 text-[9px] sm:text-[10px] font-black backdrop-blur-sm">
-                 <tr><th class="p-3 sm:p-4 w-10 sm:w-12 text-center">#</th><th class="p-3 sm:p-4">Lokasi 1</th><th class="p-3 sm:p-4">Lokasi 2</th><th class="p-3 sm:p-4 text-center">Jarak (km)</th><th class="p-3 sm:p-4 hidden sm:table-cell">Daerah / Negeri</th></tr>
-               </thead>
-               <tbody id="tbodyModalOverlap" class="divide-y divide-slate-100/60 font-bold text-slate-700"></tbody>
-             </table>
+           <div>
+             <h3 class="font-black text-base sm:text-lg tracking-tight">Senarai Pertindihan (Overlap)</h3>
+             <p class="text-[10px] sm:text-xs text-purple-200 mt-0.5">Senarai perangkap yang berjarak terlalu dekat (&lt; 300 meter)</p>
            </div>
+         </div>
+         <button onclick="tutupModalOverlap()" class="px-4 py-2 bg-purple-900/50 hover:bg-purple-900/80 text-white rounded-xl text-xs font-bold transition cursor-pointer backdrop-blur-sm border border-white/10 w-full sm:w-auto">✕ Tutup</button>
+      </div>
+      <div class="p-4 sm:p-6 overflow-y-auto flex-1 bg-white/30">
+         <div class="border border-slate-200/50 rounded-2xl overflow-hidden bg-white/50 overflow-x-auto">
+           <table class="w-full text-left border-collapse uppercase min-w-[500px]">
+             <thead class="bg-slate-100/80 text-slate-600 text-[9px] sm:text-[10px] font-black backdrop-blur-sm">
+               <tr><th class="p-3 sm:p-4 w-10 sm:w-12 text-center">#</th><th class="p-3 sm:p-4">Lokasi 1</th><th class="p-3 sm:p-4">Lokasi 2</th><th class="p-3 sm:p-4 text-center">Jarak (km)</th><th class="p-3 sm:p-4 hidden sm:table-cell">Daerah / Negeri</th></tr>
+             </thead>
+             <tbody id="tbodyModalOverlap" class="divide-y divide-slate-100/60 font-bold text-slate-700"></tbody>
+           </table>
          </div>
       </div>
     </div>
@@ -1147,7 +1158,7 @@
             let c2 = p2.koordinat.split(",").map(Number);
             let jarak = kiraJarakHaversine(c1[0], c1[1], c2[0], c2[1]);
             
-            if (jarak < 6.0) {
+            if (jarak < 0.3) {
               SENARAI_OVERLAP.push({
                 lokasi1: p1.lokasi,
                 lokasi2: p2.lokasi,
@@ -1348,6 +1359,14 @@
       });
     }
 
+    function bukaModalOverlap() {
+      document.getElementById("modalOverlap").classList.remove("hidden");
+    }
+
+    function tutupModalOverlap() {
+      document.getElementById("modalOverlap").classList.add("hidden");
+    }
+
     function bukaModalKuarantin(tabAwal) {
       document.getElementById("modalKuarantin").classList.remove("hidden");
       tukarTabModal(tabAwal);
@@ -1387,7 +1406,7 @@
       
       markerGroup.clearLayers();
       
-      // Draw 3km overlap radius circles
+      // Draw 150m overlap radius circles (so they touch if distance is 300m)
       if (typeof SENARAI_OVERLAP !== 'undefined' && SENARAI_OVERLAP.length > 0) {
         let overlapRendered = new Set();
         SENARAI_OVERLAP.forEach(function(o) {
@@ -1395,11 +1414,11 @@
           let latLng2 = o.p2.koordinat.split(",").map(Number);
           
           if (!overlapRendered.has(o.p1.lokasi)) {
-            L.circle(latLng1, { radius: 3000, color: '#9333ea', fillColor: '#d8b4fe', fillOpacity: 0.25, weight: 2, dashArray: '6, 6' }).bindPopup(`<b>Kawasan Pertindihan</b><br/>Perangkap: ${o.p1.lokasi}`).addTo(markerGroup);
+            L.circle(latLng1, { radius: 150, color: '#9333ea', fillColor: '#d8b4fe', fillOpacity: 0.25, weight: 2, dashArray: '6, 6' }).bindPopup(`<b>Kawasan Pertindihan</b><br/>Perangkap: ${o.p1.lokasi}`).addTo(markerGroup);
             overlapRendered.add(o.p1.lokasi);
           }
           if (!overlapRendered.has(o.p2.lokasi)) {
-            L.circle(latLng2, { radius: 3000, color: '#9333ea', fillColor: '#d8b4fe', fillOpacity: 0.25, weight: 2, dashArray: '6, 6' }).bindPopup(`<b>Kawasan Pertindihan</b><br/>Perangkap: ${o.p2.lokasi}`).addTo(markerGroup);
+            L.circle(latLng2, { radius: 150, color: '#9333ea', fillColor: '#d8b4fe', fillOpacity: 0.25, weight: 2, dashArray: '6, 6' }).bindPopup(`<b>Kawasan Pertindihan</b><br/>Perangkap: ${o.p2.lokasi}`).addTo(markerGroup);
             overlapRendered.add(o.p2.lokasi);
           }
         });
