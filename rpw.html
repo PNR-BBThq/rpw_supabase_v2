@@ -714,8 +714,9 @@
          </div>
          <button onclick="tutupModalOverlap()" class="px-4 py-2 bg-purple-900/50 hover:bg-purple-900/80 text-white rounded-xl text-xs font-bold transition cursor-pointer backdrop-blur-sm border border-white/10 w-full sm:w-auto">✕ Tutup</button>
       </div>
-      <div class="p-4 sm:p-6 overflow-y-auto flex-1 bg-white/30">
-         <div class="border border-slate-200/50 rounded-2xl overflow-hidden bg-white/50 overflow-x-auto">
+      <div class="p-4 sm:p-6 overflow-y-auto flex-1 bg-white/30 flex flex-col">
+         <div id="mapOverlapContainer" style="height: 300px; min-height: 300px;" class="w-full rounded-2xl border border-purple-200/50 mb-4 overflow-hidden shadow-inner z-0"></div>
+         <div class="border border-slate-200/50 rounded-2xl overflow-hidden bg-white/50 overflow-x-auto flex-1">
            <table class="w-full text-left border-collapse uppercase min-w-[500px]">
              <thead class="bg-slate-100/80 text-slate-600 text-[9px] sm:text-[10px] font-black backdrop-blur-sm">
                <tr><th class="p-3 sm:p-4 w-10 sm:w-12 text-center">#</th><th class="p-3 sm:p-4">Lokasi 1</th><th class="p-3 sm:p-4">Lokasi 2</th><th class="p-3 sm:p-4 text-center">Jarak (km)</th><th class="p-3 sm:p-4 hidden sm:table-cell">Daerah / Negeri</th></tr>
@@ -730,6 +731,7 @@
   <script>
 
     let map, markerGroup;
+    let mapOverlapObj = null, markerGroupOverlap = null;
     let chartUtama, chartDefaulter, chartTrendline;
     let MASTER_DATA_KESELURUHAN = null; 
     let DATA_DITAPIS_SEMASA = [];
@@ -1361,6 +1363,40 @@
 
     function bukaModalOverlap() {
       document.getElementById("modalOverlap").classList.remove("hidden");
+      
+      if (!mapOverlapObj) {
+        mapOverlapObj = L.map('mapOverlapContainer', { attributionControl: false }).setView([4.2105, 101.9758], 6);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19
+        }).addTo(mapOverlapObj);
+        markerGroupOverlap = L.featureGroup().addTo(mapOverlapObj);
+      }
+      
+      setTimeout(() => {
+        mapOverlapObj.invalidateSize();
+        markerGroupOverlap.clearLayers();
+        if (typeof SENARAI_OVERLAP !== 'undefined' && SENARAI_OVERLAP.length > 0) {
+          let overlapRendered = new Set();
+          SENARAI_OVERLAP.forEach(function(o) {
+            let latLng1 = o.p1.koordinat.split(",").map(Number);
+            let latLng2 = o.p2.koordinat.split(",").map(Number);
+            
+            if (!overlapRendered.has(o.p1.lokasi)) {
+              L.circleMarker(latLng1, { radius: 6, fillColor: '#f43f5e', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(markerGroupOverlap);
+              L.circle(latLng1, { radius: 150, color: '#d8b4fe', fillColor: '#d8b4fe', fillOpacity: 0.4, weight: 2 }).bindPopup(`<b>${o.p1.lokasi}</b>`).addTo(markerGroupOverlap);
+              overlapRendered.add(o.p1.lokasi);
+            }
+            if (!overlapRendered.has(o.p2.lokasi)) {
+              L.circleMarker(latLng2, { radius: 6, fillColor: '#f43f5e', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(markerGroupOverlap);
+              L.circle(latLng2, { radius: 150, color: '#d8b4fe', fillColor: '#d8b4fe', fillOpacity: 0.4, weight: 2 }).bindPopup(`<b>${o.p2.lokasi}</b>`).addTo(markerGroupOverlap);
+              overlapRendered.add(o.p2.lokasi);
+            }
+          });
+          if (markerGroupOverlap.getLayers().length > 0) {
+            mapOverlapObj.fitBounds(markerGroupOverlap.getBounds().pad(0.1));
+          }
+        }
+      }, 300);
     }
 
     function tutupModalOverlap() {
@@ -1405,25 +1441,6 @@
       }
       
       markerGroup.clearLayers();
-      
-      // Draw 150m overlap radius circles (so they touch if distance is 300m)
-      if (typeof SENARAI_OVERLAP !== 'undefined' && SENARAI_OVERLAP.length > 0) {
-        let overlapRendered = new Set();
-        SENARAI_OVERLAP.forEach(function(o) {
-          let latLng1 = o.p1.koordinat.split(",").map(Number);
-          let latLng2 = o.p2.koordinat.split(",").map(Number);
-          
-          if (!overlapRendered.has(o.p1.lokasi)) {
-            L.circle(latLng1, { radius: 150, color: '#9333ea', fillColor: '#d8b4fe', fillOpacity: 0.25, weight: 2, dashArray: '6, 6' }).bindPopup(`<b>Kawasan Pertindihan</b><br/>Perangkap: ${o.p1.lokasi}`).addTo(markerGroup);
-            overlapRendered.add(o.p1.lokasi);
-          }
-          if (!overlapRendered.has(o.p2.lokasi)) {
-            L.circle(latLng2, { radius: 150, color: '#9333ea', fillColor: '#d8b4fe', fillOpacity: 0.25, weight: 2, dashArray: '6, 6' }).bindPopup(`<b>Kawasan Pertindihan</b><br/>Perangkap: ${o.p2.lokasi}`).addTo(markerGroup);
-            overlapRendered.add(o.p2.lokasi);
-          }
-        });
-      }
-
       let seenMapPins = new Set(); 
 
       senaraiPeta.forEach(function(p) {
