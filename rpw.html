@@ -701,8 +701,8 @@
 
   <!-- MODAL OVERLAP STANDALONE -->
   <div id="modalOverlap" class="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all duration-300">
-    <div class="modal-glass w-full max-w-4xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-white/40 overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[85vh]">
-      <div class="bg-gradient-to-r from-purple-700 to-purple-800 text-white p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 border-b border-purple-900/50">
+    <div class="modal-glass w-full max-w-6xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-white/40 overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[90vh]">
+      <div class="bg-gradient-to-r from-purple-700 to-purple-800 text-white p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 border-b border-purple-900/50 flex-none">
          <div class="flex items-center gap-3 sm:gap-4">
            <div class="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
              <span class="text-base sm:text-lg">🛰️</span>
@@ -714,14 +714,20 @@
          </div>
          <button onclick="tutupModalOverlap()" class="px-4 py-2 bg-purple-900/50 hover:bg-purple-900/80 text-white rounded-xl text-xs font-bold transition cursor-pointer backdrop-blur-sm border border-white/10 w-full sm:w-auto">✕ Tutup</button>
       </div>
-      <div class="p-4 sm:p-6 overflow-y-auto flex-1 bg-white/30 flex flex-col">
-         <div id="mapOverlapContainer" style="height: 300px; min-height: 300px;" class="w-full rounded-2xl border border-purple-200/50 mb-4 overflow-hidden shadow-inner z-0"></div>
-         <div class="border border-slate-200/50 rounded-2xl overflow-hidden bg-white/50 overflow-x-auto flex-1">
+      
+      <!-- MAP SECTION (FIXED HEIGHT) -->
+      <div class="p-3 sm:p-5 pb-0 sm:pb-0 bg-white/30 flex-none border-b border-slate-200/40">
+         <div id="mapOverlapContainer" style="height: 350px;" class="w-full rounded-2xl border border-purple-200/50 overflow-hidden shadow-inner z-0"></div>
+      </div>
+      
+      <!-- TABLE SECTION (SCROLLABLE) -->
+      <div class="p-3 sm:p-5 overflow-y-auto flex-1 bg-white/30">
+         <div class="border border-slate-200/50 rounded-2xl overflow-hidden bg-white/50 overflow-x-auto relative shadow-sm">
            <table class="w-full text-left border-collapse uppercase min-w-[500px]">
-             <thead class="bg-slate-100/80 text-slate-600 text-[9px] sm:text-[10px] font-black backdrop-blur-sm">
+             <thead class="bg-slate-100/95 text-slate-600 text-[9px] sm:text-[10px] font-black backdrop-blur-md sticky top-0 z-10 shadow-sm border-b border-slate-200/50">
                <tr><th class="p-3 sm:p-4 w-10 sm:w-12 text-center">#</th><th class="p-3 sm:p-4">Lokasi 1</th><th class="p-3 sm:p-4">Lokasi 2</th><th class="p-3 sm:p-4 text-center">Jarak (km)</th><th class="p-3 sm:p-4 hidden sm:table-cell">Daerah / Negeri</th></tr>
              </thead>
-             <tbody id="tbodyModalOverlap" class="divide-y divide-slate-100/60 font-bold text-slate-700"></tbody>
+             <tbody id="tbodyModalOverlap" class="divide-y divide-slate-200/60 font-bold text-slate-700 bg-white/40"></tbody>
            </table>
          </div>
       </div>
