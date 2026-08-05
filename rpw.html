@@ -1182,12 +1182,18 @@
       }
 
       const bOverlap = document.getElementById("bannerAmaranOverlap");
-      if (SENARAI_OVERLAP.length > 0) {
-        if(bOverlap) bOverlap.classList.remove("hidden");
-        const tOverlap = document.getElementById("teksAmaranOverlap");
-        if(tOverlap) tOverlap.innerText = `AMARAN: Terdapat ${SENARAI_OVERLAP.length} pasangan perangkap bertindih (overlap)!`;
+      const tOverlap = document.getElementById("teksAmaranOverlap");
+      
+      if (bOverlap) bOverlap.classList.remove("hidden"); // Sentiasa tunjuk
+
+      if (fNeg === "ALL") {
+        if(tOverlap) tOverlap.innerText = "Modul Pertindihan: Sila tapis mengikut Negeri untuk mula menyemak.";
       } else {
-        if(bOverlap) bOverlap.classList.add("hidden");
+        if (SENARAI_OVERLAP.length > 0) {
+          if(tOverlap) tOverlap.innerText = `AMARAN: Terdapat ${SENARAI_OVERLAP.length} pasangan perangkap bertindih (< 300m)!`;
+        } else {
+          if(tOverlap) tOverlap.innerText = "Sempurna: Tiada pertindihan perangkap dikesan di negeri ini.";
+        }
       }
 
       binaJadualModalAuditContent();
@@ -1255,7 +1261,7 @@
       let hOverlap = "";
       SENARAI_OVERLAP.forEach(function(o, idx) {
         hOverlap += `
-        <tr class="border-b border-slate-100 hover:bg-purple-50/50">
+        <tr class="border-b border-slate-100 hover:bg-purple-100 cursor-pointer transition" onclick="fokusPertindihan(${o.p1.koordinat.split(',')[0]}, ${o.p1.koordinat.split(',')[1]}, ${o.p2.koordinat.split(',')[0]}, ${o.p2.koordinat.split(',')[1]}, this)">
           <td class="p-3 text-center">${idx+1}</td>
           <td class="p-3 text-purple-900 font-bold">${o.lokasi1}</td>
           <td class="p-3 text-rose-700 font-bold">${o.lokasi2}</td>
@@ -1264,7 +1270,9 @@
         </tr>`;
       });
       if(document.getElementById("tbodyModalOverlap")) {
-        document.getElementById("tbodyModalOverlap").innerHTML = hOverlap || `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tiada pertindihan perangkap dikesan.</td></tr>`;
+        let fNegSemasa = document.getElementById("filterNegeri").value;
+        let emptyMsg = fNegSemasa === "ALL" ? "Sila pilih negeri pada penapis di dashboard terlebih dahulu." : "Tiada pertindihan perangkap dikesan.";
+        document.getElementById("tbodyModalOverlap").innerHTML = hOverlap || `<tr><td colspan="5" class="p-4 text-center text-slate-400">${emptyMsg}</td></tr>`;
       }
     }
 
@@ -1407,6 +1415,28 @@
 
     function tutupModalOverlap() {
       document.getElementById("modalOverlap").classList.add("hidden");
+    }
+
+    let barisOverlapAktif = null;
+    function fokusPertindihan(lat1, lon1, lat2, lon2, rowEl) {
+      let allRows = document.querySelectorAll("#tbodyModalOverlap tr");
+      
+      if (barisOverlapAktif === rowEl) {
+        // Toggle OFF (unselect)
+        rowEl.classList.remove("bg-purple-200");
+        barisOverlapAktif = null;
+        if (markerGroupOverlap && markerGroupOverlap.getLayers().length > 0) {
+          mapOverlapObj.fitBounds(markerGroupOverlap.getBounds().pad(0.1));
+        }
+      } else {
+        // Toggle ON (select)
+        allRows.forEach(r => r.classList.remove("bg-purple-200"));
+        rowEl.classList.add("bg-purple-200");
+        barisOverlapAktif = rowEl;
+        
+        let tempGroup = L.featureGroup([L.marker([lat1, lon1]), L.marker([lat2, lon2])]);
+        mapOverlapObj.fitBounds(tempGroup.getBounds().pad(0.2));
+      }
     }
 
     function bukaModalKuarantin(tabAwal) {
