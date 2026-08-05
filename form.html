@@ -18,9 +18,9 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 1100px;
             background: white;
-            padding: 25px;
+            padding: 30px 35px;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
             margin-top: 20px;
@@ -33,6 +33,88 @@
             color: #064e3b !important;
             border-bottom: 2px solid #e9ecef;
             padding-bottom: 10px;
+        }
+
+        /* ===== GRID LAYOUTS ===== */
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 20px;
+        }
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0 20px;
+        }
+        .form-grid-2 .span-full,
+        .form-grid-3 .span-full {
+            grid-column: 1 / -1;
+        }
+
+        /* ===== SYOR KAWALAN WIDE ===== */
+        .syor-section {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-top: 8px;
+        }
+        .syor-section .syor-label {
+            font-weight: 700;
+            color: #166534;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .syor-checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 6px 18px;
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 10px 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #d1fae5;
+        }
+        .syor-checkbox-grid .form-check {
+            margin: 0;
+            padding-left: 1.6em;
+        }
+        .syor-checkbox-grid .form-check-label {
+            font-size: 0.88rem;
+            line-height: 1.4;
+            color: #374151;
+        }
+        .syor-checkbox-grid .form-check-input:checked {
+            background-color: #16a34a;
+            border-color: #16a34a;
+        }
+
+        /* ===== UMUR UNIT SELECTOR ===== */
+        .umur-unit-group {
+            display: inline-flex;
+            width: fit-content;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+        }
+        .umur-unit-group .btn-check + .btn {
+            border: none;
+            border-radius: 0;
+            font-size: 0.78rem;
+            padding: 6px 10px;
+            font-weight: 600;
+            color: #6b7280;
+            background: #f3f4f6;
+            transition: all 0.15s;
+        }
+        .umur-unit-group .btn-check:checked + .btn {
+            background: #166534;
+            color: white;
+            box-shadow: none;
         }
 
         .perosak-item {
@@ -118,6 +200,21 @@
             margin-bottom: 15px;
             display: none;
         }
+
+        /* ===== RESPONSIVE: fallback to stacked on small screens ===== */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 100%;
+                padding: 18px;
+            }
+            .form-grid-2,
+            .form-grid-3 {
+                grid-template-columns: 1fr;
+            }
+            .syor-checkbox-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -152,110 +249,124 @@
 
             <h5 class="text-primary">A. Maklumat Am</h5>
 
-            <div class="mb-3">
-                <label class="fw-bold form-label">Nama Pegawai <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="namaPegawai" id="namaPegawai" list="userListSuggestions"
-                    required placeholder="Taip nama anda...">
-                <datalist id="userListSuggestions"></datalist>
+            <div class="form-grid-3">
+                <div class="mb-3">
+                    <label class="fw-bold form-label">Nama Pegawai <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="namaPegawai" id="namaPegawai" list="userListSuggestions"
+                        required placeholder="Taip nama anda...">
+                    <datalist id="userListSuggestions"></datalist>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-bold form-label">Email <span class="text-danger">*</span></label>
+                    <input type="email" class="form-control" name="email" id="email" required
+                        placeholder="email@jabatan.gov.my">
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-bold form-label">Tarikh Bancian <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" name="tarikhBancian" id="tarikhBancian" required>
+                </div>
             </div>
 
-            <div class="mb-3">
-                <label class="fw-bold form-label">Email <span class="text-danger">*</span></label>
-                <input type="email" class="form-control" name="email" id="email" required
-                    placeholder="email@jabatan.gov.my">
-            </div>
-
-            <div class="mb-3">
-                <label class="fw-bold form-label">Tarikh Bancian <span class="text-danger">*</span></label>
-                <input type="date" class="form-control" name="tarikhBancian" id="tarikhBancian" required>
-            </div>
-
-            <div class="row">
-                <div class="col-6 mb-3">
+            <div class="form-grid-3">
+                <div class="mb-3">
                     <label class="fw-bold form-label">Negeri <span class="text-danger">*</span></label>
                     <select class="form-select" name="negeri" id="negeriSelect" onchange="updateDaerah()" required>
                     </select>
                 </div>
-                <div class="col-6 mb-3">
+                <div class="mb-3">
                     <label class="fw-bold form-label">Daerah <span class="text-danger">*</span></label>
                     <select class="form-select" name="daerah" id="daerahSelect" required>
                         <option value="">- Pilih Negeri -</option>
                     </select>
                 </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="fw-bold form-label">Nama Lokasi/Kebun <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="lokasi" id="lokasi" required
-                    placeholder="Contoh: Kebun Pak Ali, Kg. Baru">
-            </div>
-
-            <div class="mb-3">
-                <label class="fw-bold d-block mb-2">Format Koordinat</label>
-                <div class="btn-group w-100 coord-mode-selector shadow-sm" role="group">
-                    <input type="radio" class="btn-check" name="coordMode" id="modeWGS" autocomplete="off" checked
-                        onclick="toggleCoordMode('wgs')">
-                    <label class="btn btn-outline-success" for="modeWGS">Lat, Long (WGS84)</label>
-
-                    <input type="radio" class="btn-check" name="coordMode" id="modeRSO" autocomplete="off"
-                        onclick="toggleCoordMode('rso')">
-                    <label class="btn btn-outline-primary" for="modeRSO">RSO Malaya (m)</label>
+                <div class="mb-3">
+                    <label class="fw-bold form-label">Nama Lokasi/Kebun <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="lokasi" id="lokasi" required
+                        placeholder="Contoh: Kebun Pak Ali, Kg. Baru">
                 </div>
             </div>
 
-            <div id="rsoInputArea" class="rso-container">
-                <div class="alert alert-warning py-1 small mb-2"><i class="bi bi-info-circle"></i> Penukar RSO
-                    memerlukan internet.</div>
-                <h6 class="text-primary fw-bold small">Penukar RSO ke WGS84</h6>
-                <div class="row g-2">
-                    <div class="col-6"><input type="number" id="rsoEast" class="form-control form-control-sm"
-                            placeholder="Easting (X)"></div>
-                    <div class="col-6"><input type="number" id="rsoNorth" class="form-control form-control-sm"
-                            placeholder="Northing (Y)"></div>
-                </div>
-                <button type="button" class="btn btn-primary btn-sm w-100 mt-2" id="btnConvert"
-                    onclick="executeRSOConversion()">🔄 Tukar (Online Only)</button>
-            </div>
+            <div class="form-grid-2">
+                <div class="mb-3">
+                    <label class="fw-bold d-block mb-2">Format Koordinat</label>
+                    <div class="btn-group w-100 coord-mode-selector shadow-sm" role="group">
+                        <input type="radio" class="btn-check" name="coordMode" id="modeWGS" autocomplete="off" checked
+                            onclick="toggleCoordMode('wgs')">
+                        <label class="btn btn-outline-success" for="modeWGS">Lat, Long (WGS84)</label>
 
-            <div class="mb-3">
-                <label class="fw-bold form-label">Koordinat GPS (WGS84) <span class="text-danger">*</span></label>
-                <div class="input-group">
-                    <input type="text" class="form-control" name="koordinat" id="gpsInput"
-                        placeholder="Contoh: 4.2105, 101.9758" onblur="validateCoord(this)" required>
-                    <button type="button" class="btn btn-secondary" onclick="getLocation()"><i
-                            class="bi bi-geo-alt-fill"></i> Lokasi Saya</button>
+                        <input type="radio" class="btn-check" name="coordMode" id="modeRSO" autocomplete="off"
+                            onclick="toggleCoordMode('rso')">
+                        <label class="btn btn-outline-primary" for="modeRSO">RSO Malaya (m)</label>
+                    </div>
                 </div>
-                <div id="coordError" class="text-danger mt-1 fw-bold small" style="display:none;"></div>
+
+                <div class="mb-3">
+                    <label class="fw-bold form-label">Koordinat GPS (WGS84) <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="koordinat" id="gpsInput"
+                            placeholder="Contoh: 4.2105, 101.9758" onblur="validateCoord(this)" required>
+                        <button type="button" class="btn btn-secondary" onclick="getLocation()"><i
+                                class="bi bi-geo-alt-fill"></i> Lokasi Saya</button>
+                    </div>
+                    <div id="coordError" class="text-danger mt-1 fw-bold small" style="display:none;"></div>
+                </div>
+
+                <div class="span-full">
+                    <div id="rsoInputArea" class="rso-container">
+                        <div class="alert alert-warning py-1 small mb-2"><i class="bi bi-info-circle"></i> Penukar RSO
+                            memerlukan internet.</div>
+                        <h6 class="text-primary fw-bold small">Penukar RSO ke WGS84</h6>
+                        <div class="row g-2">
+                            <div class="col-6"><input type="number" id="rsoEast" class="form-control form-control-sm"
+                                    placeholder="Easting (X)"></div>
+                            <div class="col-6"><input type="number" id="rsoNorth" class="form-control form-control-sm"
+                                    placeholder="Northing (Y)"></div>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm w-100 mt-2" id="btnConvert"
+                            onclick="executeRSOConversion()">🔄 Tukar (Online Only)</button>
+                    </div>
+                </div>
             </div>
 
             <h5 class="text-primary mt-4">B. Maklumat Tanaman</h5>
-            <div class="mb-3">
-                <label class="fw-bold form-label">Kategori <span class="text-danger">*</span></label>
-                <select class="form-select" name="kategori" id="kategoriSelect" onchange="updateTanamanList()" required>
-                    <option value="" disabled selected>- Loading Data... -</option>
-                </select>
-            </div>
-
-            <div class="row">
-                <div class="col-6 mb-3">
+            <div class="form-grid-2">
+                <div class="mb-3">
+                    <label class="fw-bold form-label">Kategori <span class="text-danger">*</span></label>
+                    <select class="form-select" name="kategori" id="kategoriSelect" onchange="updateTanamanList()" required>
+                        <option value="" disabled selected>- Loading Data... -</option>
+                    </select>
+                </div>
+                <div class="mb-3">
                     <label class="fw-bold form-label">Nama Tanaman <span class="text-danger">*</span></label>
                     <select class="form-select" name="namaTanaman" id="tanamanSelect" required
                         onchange="updatePestDatalist()">
                         <option value="">- Pilih Kategori -</option>
                     </select>
                 </div>
-                <div class="col-6 mb-3">
+            </div>
+
+            <div class="form-grid-3">
+                <div class="mb-3">
                     <label class="fw-bold form-label">Varieti <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" name="varieti" id="varieti" required>
                 </div>
-            </div>
-
-            <div class="row">
-                <div class="col-6 mb-3">
-                    <label class="fw-bold form-label">Umur Tanaman <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="umurTanaman" id="umurTanaman" required>
+                <div class="mb-3">
+                    <label class="fw-bold form-label">Umur Tanaman <span class="text-danger">*</span> <small class="fw-normal text-muted">(Pilih unit umur)</small></label>
+                    <input type="number" min="0" step="1" inputmode="numeric" class="form-control mb-2" name="umurTanamanNilai" id="umurTanamanNilai" required placeholder="Masukkan nilai" onkeydown="return hanyaNombor(event)" onblur="semakUnitUmur()">
+                    <div class="umur-unit-group" role="group">
+                        <input type="radio" class="btn-check" name="umurTanamanUnit" id="unitTahun" value="Tahun" autocomplete="off">
+                        <label class="btn" for="unitTahun">Tahun</label>
+                        <input type="radio" class="btn-check" name="umurTanamanUnit" id="unitBulan" value="Bulan" autocomplete="off">
+                        <label class="btn" for="unitBulan">Bulan</label>
+                        <input type="radio" class="btn-check" name="umurTanamanUnit" id="unitMinggu" value="Minggu" autocomplete="off">
+                        <label class="btn" for="unitMinggu">Minggu</label>
+                        <input type="radio" class="btn-check" name="umurTanamanUnit" id="unitHLT" value="HLT" autocomplete="off">
+                        <label class="btn" for="unitHLT">HLT (Hari Lepas Tanam)</label>
+                    </div>
                 </div>
-                <div class="col-6 mb-3">
+                <div class="mb-3">
                     <label class="fw-bold form-label">Luas Tanam (Ha) <span class="text-danger">*</span></label>
                     <input type="number" step="0.001" min="0.001" class="form-control" name="luasBertanam"
                         id="luasBertanamInput" required oninput="recalcAllPercent()">
@@ -271,11 +382,10 @@
                 <i class="bi bi-plus-circle"></i> Tambah Perosak
             </button>
 
-            <div class="mb-3">
-                <label class="fw-bold text-success mb-2">Syor Kawalan</label>
-                <div id="syorCheckboxContainer" class="border p-3 rounded bg-white mb-2"
-                    style="max-height: 180px; overflow-y: auto;">
-                    <div class="text-center py-3">
+            <div class="syor-section">
+                <div class="syor-label"><i class="bi bi-shield-check"></i> Syor Kawalan</div>
+                <div id="syorCheckboxContainer" class="syor-checkbox-grid mb-2">
+                    <div class="text-center py-3" style="grid-column: 1 / -1;">
                         <div class="spinner-border spinner-border-sm text-muted"></div> <small>Memuatkan syor...</small>
                     </div>
                 </div>
@@ -284,18 +394,24 @@
             </div>
 
             <h5 class="text-primary mt-4">D. Gambar (Pilihan)</h5>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Tajuk Gambar</label>
-                <input type="text" class="form-control" name="captionGambar" id="captionInput"
-                    oninput="limitCaption(this)" placeholder="Maksimum 30 huruf">
-                <div class="form-text text-muted text-end" id="captionCount" style="font-size: 11px;">0/30</div>
-            </div>
+            <div class="form-grid-2">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tajuk Gambar</label>
+                    <input type="text" class="form-control" name="captionGambar" id="captionInput"
+                        oninput="limitCaption(this)" placeholder="Maksimum 30 huruf">
+                    <div class="form-text text-muted text-end" id="captionCount" style="font-size: 11px;">0/30</div>
+                </div>
 
-            <div class="mb-3">
-                <input type="file" class="form-control" id="imageInput" multiple onchange="previewImages()"
-                    accept="image/*">
-                <div id="imagePreviewContainer" class="d-flex flex-wrap mt-2 p-2 border rounded bg-light">
-                    <small class="text-muted w-100 text-center py-2" id="noImgText">Tiada gambar dipilih</small>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Muat Naik Gambar</label>
+                    <input type="file" class="form-control" id="imageInput" multiple onchange="previewImages()"
+                        accept="image/*">
+                </div>
+
+                <div class="mb-3 span-full">
+                    <div id="imagePreviewContainer" class="d-flex flex-wrap mt-2 p-2 border rounded bg-light">
+                        <small class="text-muted w-100 text-center py-2" id="noImgText">Tiada gambar dipilih</small>
+                    </div>
                 </div>
             </div>
 
@@ -440,7 +556,12 @@
                     for (var key in savedData) {
                         var input = form.querySelector('[name="' + key + '"]');
                         if (input && input.type !== 'file') {
-                            input.value = savedData[key];
+                            if (input.type === 'radio') {
+                                var radioToCheck = form.querySelector('[name="' + key + '"][value="' + savedData[key] + '"]');
+                                if (radioToCheck) radioToCheck.checked = true;
+                            } else {
+                                input.value = savedData[key];
+                            }
                         }
                     }
                     if (savedData['negeri']) {
@@ -673,6 +794,39 @@
             }
         }
 
+        function hanyaNombor(event) {
+            // Membenarkan: backspace, delete, tab, escape, enter dan .
+            if ([46, 8, 9, 27, 13, 110, 190].indexOf(event.keyCode) !== -1 ||
+                 // Membenarkan: Ctrl+A, Command+A
+                (event.keyCode === 65 && (event.ctrlKey === true || event.metaKey === true)) || 
+                 // Membenarkan: home, end, left, right, down, up
+                (event.keyCode >= 35 && event.keyCode <= 40)) {
+                     // biarkan ia berlaku, jangan lakukan apa-apa
+                     return;
+            }
+            // Pastikan ia adalah nombor dan hentikan penekanan kekunci
+            if ((event.shiftKey || (event.keyCode < 48 || event.keyCode > 57)) && (event.keyCode < 96 || event.keyCode > 105)) {
+                event.preventDefault();
+            }
+        }
+
+        function semakUnitUmur() {
+            var nilai = document.getElementById('umurTanamanNilai').value;
+            var unitDipilih = document.querySelector('input[name="umurTanamanUnit"]:checked');
+            
+            if (nilai && !unitDipilih) {
+                Swal.fire({
+                    title: 'Pilih Unit Umur',
+                    text: 'Sila pilih unit untuk umur tanaman yang dimasukkan (Tahun, Bulan, Minggu, HLT).',
+                    icon: 'info',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 4000
+                });
+            }
+        }
+
         function limitCaption(el) {
             if (el.value.length > 30) el.value = el.value.substring(0, 30);
             document.getElementById('captionCount').innerText = el.value.length + "/30";
@@ -788,6 +942,14 @@
                     return;
                 }
 
+                // Validasi unit umur tanaman mesti dipilih
+                var unitDipilih = document.querySelector('input[name="umurTanamanUnit"]:checked');
+                if (!unitDipilih) {
+                    Swal.fire('Unit Umur Belum Dipilih', 'Sila pilih unit umur tanaman: Tahun, Bulan, Minggu atau HLT.', 'warning');
+                    document.getElementById('umurTanamanNilai').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+
                 var ralatKesan = false;
                 var teksMesej = "";
 
@@ -860,7 +1022,7 @@
                 kategori: fd.get('kategori'),
                 namaTanaman: fd.get('namaTanaman'),
                 varieti: fd.get('varieti'),
-                umurTanaman: fd.get('umurTanaman'),
+                umurTanaman: (fd.get('umurTanamanNilai') || '') + ' ' + (fd.get('umurTanamanUnit') || ''),
                 luasBertanam: fd.get('luasBertanam'),
                 senaraiPerosak: names.join(', '),
                 syor: syors.join('. '),
