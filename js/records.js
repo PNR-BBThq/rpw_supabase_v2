@@ -100,7 +100,7 @@ const DataManager = {
                 <div class="table-responsive border rounded mb-2"><table class="table table-sm table-striped mb-0" style="font-size:0.8rem"><thead class="table-light"><tr><th>PEROSAK</th><th class="text-center">LUAS SERANGAN(HA)</th><th class="text-center">PERATUS SERANGAN</th><th class="text-center">KETERUKAN SERANGAN</th></tr></thead><tbody>${pestRows}</tbody></table></div>
                 <div class="alert alert-warning border-warning mb-0 py-2 px-3 small"><i class="bi bi-lightbulb-fill text-warning me-1"></i> <strong>SYOR:</strong> ${d.s}</div>${imgHTML}
             </div>
-            <div class="p-3 mt-auto"><div class="bg-success bg-opacity-10 border border-success rounded p-2 text-center"><small class="text-success fw-bold text-uppercase mb-1 d-block">DISAHKAN OLEH:</small><div class="text-dark small fw-bold">${d.vb}</div></div>${adminBtns}</div>
+            <div class="p-3 mt-auto"><div class="bg-success bg-opacity-10 border border-success rounded p-2 text-center"><small class="text-success fw-bold text-uppercase mb-1 d-block">DISAHKAN OLEH:</small><div class="text-dark small fw-bold">${(() => { if (!d.vb) return '-'; const m = d.vb.match(/DISAHKAN\s+oleh\s+(.+)/i); return m ? m[1].replace(/\s*\|.*$/, '').trim() : d.vb; })()}</div></div>${adminBtns}</div>
         </div>`;
         document.getElementById('detailBody').innerHTML = html;
         document.getElementById('modalTitle').innerText = "BUTIRAN REKOD DISAHKAN";

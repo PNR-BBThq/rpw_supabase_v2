@@ -421,7 +421,7 @@ const DashboardManager = {
                 <td>${parseFloat(d.lt||0).toFixed(4)}</td>
                 <td class="text-danger fw-bold">${parseFloat(d.ls||0).toFixed(4)}</td>
                 <td class="text-center" onclick="event.stopPropagation();">
-                  <button class="btn btn-sm btn-outline-secondary me-1 shadow-sm" title="Lihat Modal Terperinci" onclick="DataManager.viewRec(${realIndex})">
+                  <button class="btn btn-sm btn-outline-secondary me-1 shadow-sm" title="Lihat Data Terperinci" onclick="DataManager.viewRec(${realIndex})">
                     <i class="bi bi-card-list"></i>
                   </button>
                   <button class="btn btn-sm btn-danger shadow-sm" 
