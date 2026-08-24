@@ -37,7 +37,11 @@ self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('Menyimpan aset ke dalam cache...');
-      return cache.addAll(ASSETS);
+      // ⚡ KALIS GAGAL: Jika mana-mana aset gagal di-cache (404/CORS),
+      // SW tetap install & activate — elakkan deadlock SW lama kekal berkuasa
+      return cache.addAll(ASSETS).catch(function(err) {
+        console.warn('⚠️ Sebahagian aset gagal di-cache, SW tetap diteruskan:', err);
+      });
     })
   );
 });
