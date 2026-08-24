@@ -642,7 +642,7 @@ const TaskManager = {
                 <div class="col-6"><label class="small fw-bold">Negeri</label><select id="fe_negeri" class="form-select form-select-sm" onchange="TaskManager.updateDistricts('fe_negeri','fe_daerah')"><option value="">- Pilih -</option>${Object.keys(DISTRICT_DATA).sort().map(n => `<option value="${n}">${n}</option>`).join('')}</select></div>
                 <div class="col-6"><label class="small fw-bold">Daerah</label><select id="fe_daerah" class="form-select form-select-sm"></select></div>
             </div>
-            <div class="mb-2"><label class="small fw-bold">Lokasi/Kebun</label><input type="text" id="fe_lokasi" class="form-control form-control-sm" value="${getV('LOKASI')}"></div>
+            <div class="mb-2"><label class="small fw-bold">Lokasi/Kebun</label><input type="text" id="fe_lokasi" class="form-control form-control-sm" value="${getV('LOKASI')||getV('KEBUN')}"></div>
             <div class="mb-2">
                 <label class="small fw-bold">Koordinat GPS (WGS84)</label>
                 <div class="input-group">
@@ -651,7 +651,7 @@ const TaskManager = {
                 </div>
             </div>
             <div class="row g-2 mb-2">
-                <div class="col-6"><label class="small fw-bold">Tarikh</label><input type="date" id="fe_tarikh" class="form-control form-control-sm" value="${(function(dStr){if(!dStr)return"";const x=new Date(dStr);return isNaN(x)?"":x.toISOString().split('T')[0];})(getV('TARIKH'))}"></div>
+                <div class="col-6"><label class="small fw-bold">Tarikh</label><input type="date" id="fe_tarikh" class="form-control form-control-sm" value="${(function(dStr){if(!dStr)return"";const x=new Date(dStr);return isNaN(x)?"":x.toISOString().split('T')[0];})(getV('TARIKH')||getV('DATE'))}"></div>
                 <div class="col-6"><label class="small fw-bold">Pegawai</label><input type="text" id="fe_pegawai" class="form-control form-control-sm" readonly value="${getV('NAMA')||getV('PEGAWAI')}"></div>
             </div>
             
@@ -664,7 +664,7 @@ const TaskManager = {
                 <div class="col-6"><label class="small fw-bold">Varieti</label><input type="text" id="fe_varieti" class="form-control form-control-sm" value="${getV('VARIETI')}"></div>
                 <div class="col-6"><label class="small fw-bold">Umur</label><input type="text" id="fe_umur" class="form-control form-control-sm" value="${getV('UMUR')}"></div>
             </div>
-            <div class="mb-2"><label class="small fw-bold">Luas Tanam (Ha)</label><input type="number" id="fe_luasT" class="form-control form-control-sm" value="${getV('LUAS')}"></div>
+            <div class="mb-2"><label class="small fw-bold">Luas Tanam (Ha)</label><input type="number" id="fe_luasT" class="form-control form-control-sm" value="${getV('LUAS BERTANAM')||getV('LUAS TANAMAN')||getV('LUAS')}"></div>
             
             <h6 class="text-primary border-bottom pb-2 mt-3">C. Data Serangan</h6>
             <table class="table table-sm table-bordered" id="fe_pestTable">
@@ -682,7 +682,7 @@ const TaskManager = {
                 <label class="small fw-bold mb-1 mt-3">Kapsyen</label>
                 <input type="text" id="fe_caption" class="form-control form-control-sm mb-2" value="${valCaption}">
             </div>
-            <div class="mb-3"><label class="small fw-bold text-success">Syor Kawalan</label><textarea id="fe_syor" class="form-control" rows="3">${getV('SYOR')}</textarea></div>
+            <div class="mb-3"><label class="small fw-bold text-success">Syor Kawalan</label><textarea id="fe_syor" class="form-control" rows="3">${getV('SYOR KAWALAN')||getV('CATATAN')||getV('SYOR')}</textarea></div>
             <button class="btn btn-success w-100 py-2 fw-bold" onclick="TaskManager.saveFullEdit()">SIMPAN PERUBAHAN</button>
         </div>`;
 
@@ -697,7 +697,7 @@ const TaskManager = {
         try { luasObj = JSON.parse(getV('LUAS SERANGAN')||"{}"); } catch(e){}
         try { sevObj = JSON.parse(getV('KETERUKAN')||"{}"); } catch(e){}
         const pests = Object.keys(luasObj);
-        const pestManual = getV('PEROSAK'); 
+        const pestManual = getV('NAMA PEROSAK') || getV('PEROSAK'); 
         
         if(pests.length > 0) { pests.forEach(p => this.addPestRow(p, luasObj[p], sevObj[p])); } 
         else if (pestManual) { this.addPestRow(pestManual, getV('LUAS SERANGAN'), getV('KETERUKAN')); } 
