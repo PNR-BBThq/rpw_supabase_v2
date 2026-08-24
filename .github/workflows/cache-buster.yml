@@ -1,8 +1,9 @@
 # ============================================================
 # 🚀 GitHub Action: Auto Cache Buster
 # Secara automatik update version query string (?v=xxx) pada
-# semua reference JS/CSS tempatan dalam index.html, dan
-# update CACHE_NAME dalam service-worker.js.
+# semua reference JS/CSS tempatan dalam index.html & form.html,
+# update CACHE_NAME dalam service-worker.js, dan
+# update APP_VERSION dalam inline anti-cache guardian script.
 #
 # Dicetuskan setiap kali push ke branch 'main'.
 # Hanya commit semula jika ada perubahan sebenar.
@@ -44,7 +45,7 @@ jobs:
           VERSION="${{ steps.version.outputs.tag }}"
 
           # Fail HTML yang perlu diproses
-          HTML_FILES="index.html"
+          HTML_FILES="index.html form.html"
 
           for FILE in $HTML_FILES; do
             if [ ! -f "$FILE" ]; then
@@ -74,6 +75,18 @@ jobs:
             echo "⏭️ SKIP: $SW_FILE tidak dijumpai"
           fi
 
+      - name: Update APP_VERSION in inline anti-cache guardian
+        run: |
+          VERSION="${{ steps.version.outputs.tag }}"
+
+          # Update APP_VERSION dalam inline script di semua HTML files
+          for FILE in index.html form.html; do
+            if [ -f "$FILE" ]; then
+              sed -i -E "s|(var APP_VERSION = ')[^']*(')|\1${VERSION}\2|" "$FILE"
+              echo "✅ APP_VERSION dalam $FILE -> $VERSION"
+            fi
+          done
+
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
@@ -84,7 +97,7 @@ jobs:
             echo "ℹ️ Tiada perubahan version — skip commit"
           else
             VERSION="${{ steps.version.outputs.tag }}"
-            git add index.html service-worker.js
+            git add index.html form.html service-worker.js
             git commit -m "🔄 auto: bump cache v${VERSION} [skip ci]"
             git push
             echo "✅ Commit dan push berjaya!"
