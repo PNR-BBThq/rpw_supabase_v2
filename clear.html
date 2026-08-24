@@ -139,13 +139,46 @@
             }
             setProgress(60);
 
-            // Langkah 3: Reset version marker
-            addLog('Menetapkan semula penanda versi...');
-            localStorage.removeItem('PNR_APP_VERSION');
-            addLog('Penanda versi dipadam', 'log-ok');
-            setProgress(80);
+            // Langkah 3: Paksa browser disk cache update dengan versi terkini
+            addLog('Memaksa muat turun versi terkini dari server...');
+            var freshHtml = await fetch('./index.html', { cache: 'reload' });
+            addLog('index.html dimuat turun semula (' + freshHtml.status + ')', 'log-ok');
+            setProgress(50);
 
-            // Langkah 4: Sedia untuk redirect
+            await fetch('./service-worker.js', { cache: 'reload' });
+            addLog('service-worker.js dimuat turun semula', 'log-ok');
+            await fetch('./css/style.css', { cache: 'reload' }).catch(function(){});
+            addLog('Fail CSS dimuat turun semula', 'log-ok');
+            setProgress(60);
+
+            // Langkah 4: Baca APP_VERSION dari HTML terbaru supaya kill switch tak re-trigger
+            addLog('Menyegerakkan penanda versi...');
+            var htmlText = await freshHtml.clone().text();
+            var versionMatch = htmlText.match(/var APP_VERSION = '([^']+)'/);
+            if (versionMatch) {
+                localStorage.setItem('PNR_APP_VERSION', versionMatch[1]);
+                addLog('Versi app ditetapkan: ' + versionMatch[1], 'log-ok');
+            }
+            setProgress(70);
+
+            // Langkah 5: Daftar Service Worker baru dan TUNGGU sehingga aktif
+            if ('serviceWorker' in navigator) {
+                addLog('Mendaftarkan Service Worker baru...');
+                var reg = await navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' });
+                var sw = reg.installing || reg.waiting || reg.active;
+                if (sw && sw.state !== 'activated') {
+                    await new Promise(function(resolve) {
+                        sw.addEventListener('statechange', function() {
+                            if (sw.state === 'activated') resolve();
+                        });
+                        setTimeout(resolve, 10000); // Timeout 10 saat
+                    });
+                }
+                addLog('Service Worker baru aktif!', 'log-ok');
+            }
+            setProgress(90);
+
+            // Langkah 6: Sedia untuk redirect
             addLog('Kemas kini selesai! Mengalih ke sistem utama...', 'log-ok');
             setProgress(100);
 
