@@ -57,6 +57,18 @@ if ('serviceWorker' in navigator) {
         console.log('🔄 Versi baharu Service Worker telah mengambil alih kawalan. Melancarkan auto-reload halaman (sekali sahaja)...');
         window.location.reload();
     });
+
+    // ⚡ LAPISAN KEDUA: Terima mesej terus dari SW selepas activate.
+    // Ini lebih reliable kerana SW sendiri yang hantar — tidak bergantung
+    // pada controllerchange yang kadang-kadang tak tercetus pada buka browser pertama.
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'SW_UPDATED') {
+            if (refreshing) return;
+            refreshing = true;
+            console.log('🔄 SW hantar arahan kemas kini. Cache baru:', event.data.cacheVersion);
+            window.location.reload();
+        }
+    });
 }
 
 // 2. Ambil Event Apabila DOM Selesai Dimuatkan

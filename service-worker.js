@@ -144,5 +144,17 @@ self.addEventListener('activate', (e) => {
         }
       }));
     }).then(() => self.clients.claim())
+      .then(() => {
+        // ⚡ PAKSA RELOAD: Selepas SW baru ambil alih kawalan,
+        // hantar arahan reload ke SEMUA tab yang terbuka.
+        // Ini menyelesaikan masalah "buka browser → nampak versi lama"
+        // kerana SW sendiri yang paksa reload, bukan bergantung pada main.js
+        // (yang mungkin masih versi lama dari cache).
+        return self.clients.matchAll({ type: 'window' }).then((clients) => {
+          clients.forEach((client) => {
+            client.postMessage({ type: 'SW_UPDATED', cacheVersion: CACHE_NAME });
+          });
+        });
+      })
   );
 });
