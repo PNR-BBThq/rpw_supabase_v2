@@ -137,31 +137,33 @@ self.addEventListener('fetch', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keyList) => {
+      // Semak kalau ada cache lama yang perlu dipadam (upgrade sebenar)
+      const hadOldCaches = keyList.some((key) => key !== CACHE_NAME);
       return Promise.all(keyList.map((key) => {
         if (key !== CACHE_NAME) {
           console.log('Memadam cache lama:', key);
           return caches.delete(key);
         }
-      }));
-    }).then(() => self.clients.claim())
-      .then(() => {
-        // ⚡ PAKSA RELOAD SEMUA TAB (KALIS DEADLOCK):
-        // Guna client.navigate() — SW sendiri yang paksa setiap tab
-        // navigate semula ke URL semasa. Ini TIDAK bergantung pada
-        // main.js langsung, jadi berfungsi walaupun main.js lama
-        // dari cache lama (pnr-cache-v3.1 dll) tak ada listener.
-        return self.clients.matchAll({ type: 'window' }).then((clients) => {
-          clients.forEach((client) => {
-            // navigate() paksa tab load semula — kali ini SW baru
-            // yang handle request, jadi content dari server (bukan cache lama)
-            if (client.url && client.navigate) {
-              client.navigate(client.url).catch(() => {
-                // Fallback: hantar mesej untuk main.js baru (jika ada)
-                client.postMessage({ type: 'SW_UPDATED', cacheVersion: CACHE_NAME });
-              });
-            }
-          });
+      })).then(() => hadOldCaches);
+    }).then((hadOldCaches) => {
+      return self.clients.claim().then(() => hadOldCaches);
+    }).then((hadOldCaches) => {
+      // ⚡ PAKSA RELOAD SEMUA TAB — HANYA bila upgrade sebenar berlaku.
+      // Guard ini elak infinite loop jika SW di-reinstall tanpa versi berubah
+      // (cth: DevTools "Update on reload" ditick, atau SW re-activate biasa).
+      if (!hadOldCaches) return;
+
+      console.log('🔄 Upgrade dikesan! Memaksa reload semua tab...');
+      return self.clients.matchAll({ type: 'window' }).then((clients) => {
+        clients.forEach((client) => {
+          if (client.url && client.navigate) {
+            client.navigate(client.url).catch(() => {
+              client.postMessage({ type: 'SW_UPDATED', cacheVersion: CACHE_NAME });
+            });
+          }
         });
-      })
+      });
+    })
   );
 });
+
