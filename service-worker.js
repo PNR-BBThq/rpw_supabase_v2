@@ -1,4 +1,4 @@
-const CACHE_NAME = "PNR-CACHE-v202608260258-72e63b7"; // ⚡ Tukar versi di sini untuk paksa browser update!
+const CACHE_NAME = "PNR-CACHE-v202608261116-1bf47ac"; // ⚡ Tukar versi di sini untuk paksa browser update!
 const ASSETS = [
   './',
   './index.html',
@@ -145,14 +145,21 @@ self.addEventListener('activate', (e) => {
       }));
     }).then(() => self.clients.claim())
       .then(() => {
-        // ⚡ PAKSA RELOAD: Selepas SW baru ambil alih kawalan,
-        // hantar arahan reload ke SEMUA tab yang terbuka.
-        // Ini menyelesaikan masalah "buka browser → nampak versi lama"
-        // kerana SW sendiri yang paksa reload, bukan bergantung pada main.js
-        // (yang mungkin masih versi lama dari cache).
+        // ⚡ PAKSA RELOAD SEMUA TAB (KALIS DEADLOCK):
+        // Guna client.navigate() — SW sendiri yang paksa setiap tab
+        // navigate semula ke URL semasa. Ini TIDAK bergantung pada
+        // main.js langsung, jadi berfungsi walaupun main.js lama
+        // dari cache lama (pnr-cache-v3.1 dll) tak ada listener.
         return self.clients.matchAll({ type: 'window' }).then((clients) => {
           clients.forEach((client) => {
-            client.postMessage({ type: 'SW_UPDATED', cacheVersion: CACHE_NAME });
+            // navigate() paksa tab load semula — kali ini SW baru
+            // yang handle request, jadi content dari server (bukan cache lama)
+            if (client.url && client.navigate) {
+              client.navigate(client.url).catch(() => {
+                // Fallback: hantar mesej untuk main.js baru (jika ada)
+                client.postMessage({ type: 'SW_UPDATED', cacheVersion: CACHE_NAME });
+              });
+            }
           });
         });
       })
