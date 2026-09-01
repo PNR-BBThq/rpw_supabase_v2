@@ -26,7 +26,10 @@ export default async function handler(req, res) {
       .eq('uid', u.toLowerCase().trim())
       .single();
 
-    if (error || !user) {
+    if (error) {
+      return sendError(res, 'Ralat DB: ' + error.message + ' (Code: ' + error.code + ')');
+    }
+    if (!user) {
       return sendError(res, 'ID Pengguna tidak dijumpai.');
     }
 
