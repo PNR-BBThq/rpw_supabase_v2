@@ -1,0 +1,9 @@
+{
+  "name": "rpw_supabase_v2",
+  "version": "1.0.0",
+  "description": "PNR Digital Serverless API",
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.4"
+  }
+}
