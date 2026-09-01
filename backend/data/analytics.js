@@ -35,7 +35,7 @@ export default async function handler(req, res) {
 
     if (error) {
       console.error('Analytics query error:', error);
-      return sendError(res, 'Gagal memuat data analitik.', 500);
+      return sendError(res, 'Ralat DB: ' + error.message, 500);
     }
 
     // Transform data ke format pendek (sesuai dengan frontend AppState.mData)
@@ -85,6 +85,6 @@ export default async function handler(req, res) {
 
   } catch (e) {
     console.error('Analytics error:', e);
-    return sendError(res, 'Ralat pelayan.', 500);
+    return sendError(res, 'Ralat Runtime: ' + (e.message || e.toString()), 500);
   }
 }

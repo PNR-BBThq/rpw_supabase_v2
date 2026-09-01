@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
     if (error) {
       console.error('Master tanaman error:', error);
-      return sendError(res, 'Gagal memuat data tanaman.', 500);
+      return sendError(res, 'Ralat DB: ' + error.message, 500);
     }
 
     // Transform ke format hierarki: { kategori: { tanaman: [perosak, ...] } }
@@ -40,6 +40,6 @@ export default async function handler(req, res) {
 
   } catch (e) {
     console.error('Master tanaman error:', e);
-    return sendError(res, 'Ralat pelayan.', 500);
+    return sendError(res, 'Ralat Runtime: ' + (e.message || e.toString()), 500);
   }
 }
