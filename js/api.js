@@ -1,100 +1,72 @@
 // ==========================================
 // FAIL: js/api.js
-// FUNGSI: Menguruskan komunikasi dengan Google Apps Script (Backend)
+// FUNGSI: Menguruskan komunikasi dengan API Vercel + Supabase
 // ==========================================
-// FAIL: js/api.js
-// FUNGSI: Menguruskan komunikasi dengan Google Apps Script (Backend)
-// ==========================================
-
-let isProcessingQueue = false;
-let requestQueue = [];
 
 const API = {
-    postData: function(action, payloadData = {}) {
-        return new Promise((resolve, reject) => {
-            requestQueue.push({ action, payloadData, resolve, reject });
-            API._processQueue();
-        });
-    },
-    
-    _processQueue: async function() {
-        if (isProcessingQueue || requestQueue.length === 0) return;
-        isProcessingQueue = true;
-        
-        while (requestQueue.length > 0) {
-            const req = requestQueue.shift();
-            try {
-                // Sengaja letak delay 500ms antara setiap panggilan supaya Google Apps Script 'bernafas'
-                await new Promise(r => setTimeout(r, 500));
-                const res = await API._executePostData(req.action, req.payloadData);
-                req.resolve(res);
-            } catch (err) {
-                req.reject(err);
-            }
-        }
-        isProcessingQueue = false;
+    // Peta action lama (GAS) ke route baru (Vercel)
+    routeMap: {
+        'login': '/auth/login',
+        'registerUser': '/auth/register',
+        'verifyForgotPwd': '/auth/forgot-password',
+        'updateMyAccess': '/auth/update-access',
+        'logSession': '/auth/log-session',
+        'getAnalytics': '/data/analytics',
+        'getTanamanList': '/data/master-tanaman',
+        'getPending': '/data/pending',
+        'submitVerify': '/data/verify',
+        'updateEntry': '/data/update-entry',
+        'deleteEntry': '/data/delete-entry',
+        'getMyTasks': '/data/my-tasks',
+        'getSingleRecord': '/data/single-record',
+        'getKPIData': '/data/kpi',
+        'getTanamanTumpuan': '/data/tumpuan',
+        'getIgnoredRedundant': '/data/redundant',
+        'ignoreRedundant': '/data/redundant',
+        'getUserList': '/users/list',
+        'updateUser': '/users/update',
+        'deleteUser': '/users/delete',
+        'uploadImageOnly': '/gdrive/upload'
     },
 
-    _executePostData: async function(action, payloadData = {}) {
+    postData: async function(action, payloadData = {}) {
         try {
-            let payload = { action: action, ...payloadData };
+            let payload = { action, ...payloadData };
+            let headers = {
+                "Content-Type": "application/json"
+            };
             
-            // Masukkan token sekuriti jika ia bukan laluan bebas (cth: bukan login/register)
-            if (!CONFIG.FREE_ROUTES.includes(action)) {
-                payload.token = AppState.userToken;
+            // Masukkan token sekuriti jika ia bukan laluan bebas
+            if (!CONFIG.FREE_ROUTES.includes(`auth/${action}`) && !CONFIG.FREE_ROUTES.includes(action)) {
+                if (AppState.userToken) {
+                    headers["Authorization"] = `Bearer ${AppState.userToken}`;
+                }
                 payload.u = AppState.currentUserID;
             }
             
-            // ⚡ KRITIKAL: Hantar request ke Google Apps Script
-            // - JANGAN set Content-Type header → ini mencetuskan preflight OPTIONS request
-            //   yang Google Apps Script TIDAK sokong (menyebabkan CORS block).
-            // - Gunakan redirect: 'follow' → GAS redirect ke URL exec selepas deployment.
-            
-            let res;
-            let textResponse;
-            let retryCount = 0;
-            const maxRetries = 2; // Retry 2 kali jika pelayan GAS error (404/HTML)
-            
-            while (retryCount <= maxRetries) {
-                res = await fetch(`${CONFIG.API_URL}?action=${action}`, { 
-                    method: "POST", 
-                    headers: {
-                        "Content-Type": "text/plain;charset=utf-8"
-                    },
-                    redirect: "follow",
-                    body: JSON.stringify(payload) 
-                });
-                
-                textResponse = await res.text();
-                
-                // Semak jika response adalah HTML (berlaku jika ada ralat pada backend GAS atau isu kuki 404)
-                if (textResponse.trim().startsWith('<')) {
-                    console.warn(`[API] Ralat HTML dikesan untuk aksi '${action}'. Percubaan semula ${retryCount + 1}/${maxRetries}...`);
-                    retryCount++;
-                    if (retryCount <= maxRetries) {
-                        await new Promise(r => setTimeout(r, 1000)); // Tunggu 1 saat sebelum retry
-                        continue;
-                    }
-                } else {
-                    break; // Berjaya dapat JSON
-                }
+            // Tentukan URL Vercel berdasarkan action
+            const route = this.routeMap[action];
+            if (!route) {
+                console.error(`Route tidak dijumpai untuk action: ${action}`);
+                return { success: false, message: "Aksi tidak sah." };
             }
 
-            if (textResponse.trim().startsWith('<')) {
-                console.error("CRITICAL: Pelayan Google Apps Script masih memulangkan ralat HTML selepas cuba semula! Kandungan ralat:", textResponse);
-                return { 
-                    success: false, 
-                    message: "⛔ Ralat Sambungan Pelayan (Gagal menyambung ke pangkalan data). Sila muat semula aplikasi." 
-                };
-            }
+            const url = `${CONFIG.API_URL}${route}`;
 
-            const responseData = JSON.parse(textResponse);
+            // ⚡ Hantar request terus ke Vercel (tiada delay/queue diperlukan)
+            const res = await fetch(url, { 
+                method: "POST", 
+                headers: headers,
+                body: JSON.stringify(payload) 
+            });
+            
+            const responseData = await res.json();
 
-            // Tangkap ralat jika sesi tamat (Token Expired)
-            if (!CONFIG.FREE_ROUTES.includes(action) && responseData.success === false && responseData.message && (responseData.message.includes("sesi") || responseData.message.includes("token"))) {
+            // Tangkap ralat jika sesi tamat (Token Expired/Unauthorized)
+            if (res.status === 401) {
                 alert("⛔ Sesi tamat. Sila log masuk semula."); 
-                AuthManager.doLogout();
-                return { success: false }; 
+                if (window.AuthManager) AuthManager.doLogout();
+                return { success: false, message: responseData.message || "Sesi tamat." }; 
             }
             
             return responseData;

@@ -465,13 +465,34 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwmlorXpSkvDx_PJT4eRYcWc0MGii7nyeafpSIDPdD-z_At1hY8leUzFyvAKy5kLrrA/exec";
+        const API_URL = "/api"; // Vercel API
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwmlorXpSkvDx_PJT4eRYcWc0MGii7nyeafpSIDPdD-z_At1hY8leUzFyvAKy5kLrrA/exec";
 
-        const districtData = {
-            "JOHOR": ["BATU PAHAT", "JOHOR BAHRU", "KLUANG", "KOTA TINGGI", "KULAI", "MERSING", "MUAR", "PONTIAN", "SEGAMAT", "TANGKAK"],
-            "KEDAH": ["BALING", "BANDAR BAHARU", "KOTA SETAR", "KUALA MUDA", "KUBANG PASU", "KULIM", "LANGKAWI", "PADANG TERAP", "PENDANG", "POKOK SENA", "SIK", "YAN"],
-            "KELANTAN": ["BACHOK", "GUA MUSANG", "JELI", "KOTA BHARU", "KUALA KRAI", "LOJING", "MACHANG", "PASIR MAS", "PASIR PUTEH", "TANAH MERAH", "TUMPAT"],
-            "MELAKA": ["ALOR GAJAH", "JASIN", "MELAKA TENGAH"],
+        // Fungsi pemetaan untuk memudahkan API Vercel
+        const apiRouteMap = {
+            'getTanamanList': '/data/master-tanaman',
+            'submitNew': '/data/submit-bancian',
+            'convertCoord': '/data/convert-coord' // Perlukan endpoint ini
+        };
+
+        async function formPostData(action, payload) {
+            let route = apiRouteMap[action];
+            if (!route) route = '';
+            
+            // Untuk convertCoord, kita masih guna GAS kerana ia proxy ke API luar
+            if (action === 'convertCoord') {
+                return await fetch(GAS_URL + '?action=convertCoord', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+            }
+
+            return await fetch(API_URL + route, {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        }
             "NEGERI SEMBILAN": ["JELEBU", "JEMPOL", "KUALA PILAH", "PORT DICKSON", "REMBAU", "SEREMBAN", "TAMPIN"],
             "PAHANG": ["BENTONG", "BERA", "CAMERON HIGHLANDS", "JERANTUT", "KUANTAN", "LIPIS", "MARAN", "PEKAN", "RAUB", "ROMPIN", "TEMERLOH"],
             "PERAK": ["BAGAN DATUK", "BATANG PADANG", "HILIR PERAK", "HULU PERAK", "KAMPAR", "KERIAN", "KINTA", "KUALA KANGSAR", "LARUT, MATANG DAN SELAMA", "MANJUNG", "MUALLIM", "PERAK TENGAH"],
@@ -656,11 +677,7 @@
 
         async function fetchMasterData() {
             try {
-                var res = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify({ action: 'getTanamanList' })
-                });
+                var res = await formPostData('getTanamanList', { action: 'getTanamanList' });
                 var json = await res.json();
                 var cleanData = json.data || json;
                 if (cleanData && Object.keys(cleanData).length > 0) {
@@ -1088,11 +1105,7 @@
 
             } else {
                 try {
-                    var res = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { "Content-Type": "text/plain" },
-                        body: JSON.stringify(payload)
-                    });
+                    var res = await formPostData('submitNew', payload);
                     var result = await res.json();
 
                     document.getElementById('loader').style.visibility = 'hidden';
@@ -1139,11 +1152,7 @@
             btn.innerText = "Menukar...";
 
             try {
-                var res = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify({ action: 'convertCoord', easting: east, northing: north })
-                });
+                var res = await formPostData('convertCoord', { action: 'convertCoord', easting: east, northing: north });
                 var json = await res.json();
 
                 if (json.status === 'success') {
@@ -1206,11 +1215,7 @@
 
             for (var i = 0; i < q.length; i++) {
                 try {
-                    var res = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { "Content-Type": "text/plain" },
-                        body: JSON.stringify(q[i])
-                    });
+                    var res = await formPostData(q[i].action, q[i]);
                     var json = await res.json();
                     if (!json.success) {
                         newQ.push(q[i]);

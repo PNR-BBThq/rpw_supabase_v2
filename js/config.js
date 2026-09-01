@@ -1,8 +1,9 @@
 // js/config.js
 const CONFIG = {
-    API_URL: "https://script.google.com/macros/s/AKfycbwkXRVKJoWfLlUv5NUjtnthJqAV9bSIrr25pwmD2F0k_dbEPINtNs7ziOpH2cB9p3kj/exec",
+    API_URL: "/api", // Route ke Vercel Serverless Functions
+    GAS_URL: "https://script.google.com/macros/s/AKfycbwkXRVKJoWfLlUv5NUjtnthJqAV9bSIrr25pwmD2F0k_dbEPINtNs7ziOpH2cB9p3kj/exec", // Kekalkan GAS untuk upload gambar
     RPW_URL: "https://www.appsheet.com/start/55b088df-3ec1-469a-b5c6-1fca48052906",
-    FREE_ROUTES: ['login', 'registerUser', 'verifyForgotPwd', 'updateMyAccess']
+    FREE_ROUTES: ['auth/login', 'auth/register', 'auth/forgot-password', 'auth/update-access']
 };
 
 const DISTRICT_DATA = {
