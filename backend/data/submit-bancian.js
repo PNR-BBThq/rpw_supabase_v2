@@ -61,39 +61,40 @@ export default async function handler(req, res) {
 
     // 3. Simpan ke Supabase
     // Cipta ID Unik (contoh R-timestamp)
-    const rowId = `R-${Date.now()}`;
+    const recordId = `R-${Date.now()}`;
     const timestamp = new Date().toISOString();
 
     const insertPayload = {
-        row_id: rowId,
+        id: recordId, // Simpan RECORD_ID asal
         uid: userId,
         nama: data.namaPegawai || "N/A",
-        tarikh: data.tarikhBancian || new Date().toISOString().split('T')[0],
+        tarikh_bancian: data.tarikhBancian || new Date().toISOString().split('T')[0],
         negeri: data.negeri || "N/A",
         daerah: data.daerah || "N/A",
         lokasi: data.lokasi || "N/A",
         koordinat: data.koordinat || "N/A",
         kategori: data.kategori || "N/A",
-        tanaman: data.namaTanaman || "N/A",
+        nama_tanaman: data.namaTanaman || "N/A",
         varieti: data.varieti || "N/A",
         umur_tanaman: data.umurTanaman || "N/A",
-        luas_tanam: parseFloat(data.luasBertanam) || 0,
+        luas_bertanam: parseFloat(data.luasBertanam) || 0,
         senarai_perosak: data.senaraiPerosak || "TIADA",
-        luas_sakit: data.luasSerangan || {},
-        peratus_sakit: data.peratusSerangan || {},
-        tahap_sakit: data.keterukan || {},
-        syor: data.syor || "TIADA",
-        gambar: finalImageLinks,
-        kapsyen: data.captionGambar || "TIADA",
+        luas_serangan: data.luasSerangan || {},
+        peratus_serangan: data.peratusSerangan || {},
+        keterukan: data.keterukan || {},
+        syor_kawalan: data.syor || "TIADA",
+        image_links: finalImageLinks,
+        caption: data.captionGambar || "TIADA",
         status: data.statusRekod || "MENUNGGU",
-        catatan: "",
-        created_at: timestamp
+        log: "",
+        created_at: timestamp,
+        timestamp: timestamp
     };
 
     const { error } = await supabase.from('Data').insert([insertPayload]);
     if (error) throw error;
 
-    return sendSuccess(res, { rowId }, 'Laporan berjaya dihantar ke Supabase.');
+    return sendSuccess(res, { rowId: recordId }, 'Laporan berjaya dihantar ke Supabase.');
 
   } catch (error) {
     console.error('Submit Bancian Error:', error);
