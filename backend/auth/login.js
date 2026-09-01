@@ -55,6 +55,6 @@ export default async function handler(req, res) {
 
   } catch (e) {
     console.error('Login error:', e);
-    return sendError(res, 'Ralat pelayan semasa log masuk.', 500);
+    return sendError(res, 'Ralat: ' + (e.message || e.toString()), 500);
   }
 }

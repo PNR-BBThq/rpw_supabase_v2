@@ -11,8 +11,9 @@ export default async function handler(req, res) {
   if (handleOptions(req, res)) return;
   if (req.method !== 'GET' && req.method !== 'POST') return sendError(res, 'Method not allowed', 405);
 
-  const { user, error: authError } = await authMiddleware(req);
-  if (authError) return sendError(res, authError, 401);
+  // Alih Keluar Pengesahan Token (Auth) kerana ia perlu diakses umum sebelum log masuk
+  // const { user, error: authError } = await authMiddleware(req);
+  // if (authError) return sendError(res, authError, 401);
 
   try {
     const supabase = getSupabase();
