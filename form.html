@@ -479,7 +479,6 @@
             let route = apiRouteMap[action];
             if (!route) route = '';
             
-            // Untuk convertCoord, kita masih guna GAS kerana ia proxy ke API luar
             if (action === 'convertCoord') {
                 return await fetch(GAS_URL + '?action=convertCoord', {
                     method: 'POST',
@@ -493,6 +492,12 @@
                 body: JSON.stringify(payload)
             });
         }
+
+        const districtData = {
+            "JOHOR": ["BATU PAHAT", "JOHOR BAHRU", "KLUANG", "KOTA TINGGI", "KULAI", "MERSING", "MUAR", "PONTIAN", "SEGAMAT", "TANGKAK"],
+            "KEDAH": ["BALING", "BANDAR BAHARU", "KOTA SETAR", "KUALA MUDA", "KUBANG PASU", "KULIM", "LANGKAWI", "PADANG TERAP", "PENDANG", "POKOK SENA", "SIK", "YAN"],
+            "KELANTAN": ["BACHOK", "GUA MUSANG", "JELI", "KOTA BHARU", "KUALA KRAI", "LOJING", "MACHANG", "PASIR MAS", "PASIR PUTEH", "TANAH MERAH", "TUMPAT"],
+            "MELAKA": ["ALOR GAJAH", "JASIN", "MELAKA TENGAH"],
             "NEGERI SEMBILAN": ["JELEBU", "JEMPOL", "KUALA PILAH", "PORT DICKSON", "REMBAU", "SEREMBAN", "TAMPIN"],
             "PAHANG": ["BENTONG", "BERA", "CAMERON HIGHLANDS", "JERANTUT", "KUANTAN", "LIPIS", "MARAN", "PEKAN", "RAUB", "ROMPIN", "TEMERLOH"],
             "PERAK": ["BAGAN DATUK", "BATANG PADANG", "HILIR PERAK", "HULU PERAK", "KAMPAR", "KERIAN", "KINTA", "KUALA KANGSAR", "LARUT, MATANG DAN SELAMA", "MANJUNG", "MUALLIM", "PERAK TENGAH"],

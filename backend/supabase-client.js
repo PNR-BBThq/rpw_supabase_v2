@@ -3,11 +3,11 @@
 // FUNGSI: Helper untuk inisialisasi Supabase client (digunakan oleh semua API)
 // =========================================================================
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from '@supabase/supabase-js';
 
 // Ambil rahsia dari Vercel Environment Variables
-const SUPABASE_URL = process.env.RAHSIA_URL_SUPABASE;
-const SUPABASE_KEY = process.env.RAHSIA_KEY_SUPABASE; // service_role key
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.RAHSIA_URL_SUPABASE;
+const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || process.env.RAHSIA_KEY_SUPABASE;
 
 /**
  * Cipta Supabase client dengan service_role key
