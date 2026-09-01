@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     const supabase = getSupabase();
 
     const { error } = await supabase
-      .from('users')
+      .from('user')
       .delete()
       .eq('id', row);
 

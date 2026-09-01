@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     const name = req.query?.name || req.body?.name || user.nama;
 
     const { data: records, error } = await supabase
-      .from('data_bancian')
+      .from('Data')
       .select('*')
       .eq('nama', name.toUpperCase().trim())
       .in('status', ['DRAF', 'DITOLAK'])

@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     let userId = 'N/A';
     if (data.namaPegawai) {
         const { data: userData } = await supabase
-            .from('users')
+            .from('user')
             .select('uid')
             .ilike('nama', data.namaPegawai.trim())
             .single();
@@ -90,7 +90,7 @@ export default async function handler(req, res) {
         created_at: timestamp
     };
 
-    const { error } = await supabase.from('data_bancian').insert([insertPayload]);
+    const { error } = await supabase.from('Data').insert([insertPayload]);
     if (error) throw error;
 
     return sendSuccess(res, { rowId }, 'Laporan berjaya dihantar ke Supabase.');

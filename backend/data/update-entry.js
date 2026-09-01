@@ -80,7 +80,7 @@ export default async function handler(req, res) {
     };
 
     const { error } = await supabase
-      .from('data_bancian')
+      .from('Data')
       .update(updateData)
       .eq('id', rowID);
 

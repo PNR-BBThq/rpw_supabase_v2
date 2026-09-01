@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     // Mod 1: Kemas kini satu field (status sahaja)
     if (field === 'status') {
       const { error } = await supabase
-        .from('users')
+        .from('user')
         .update({ status: body.value })
         .eq('id', row);
 
@@ -53,7 +53,7 @@ export default async function handler(req, res) {
       if (body.status) updateData.status = body.status;
 
       const { error } = await supabase
-        .from('users')
+        .from('user')
         .update(updateData)
         .eq('id', row);
 

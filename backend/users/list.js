@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     const supabase = getSupabase();
 
     const { data: users, error } = await supabase
-      .from('users')
+      .from('user')
       .select('*')
       .order('created_at', { ascending: false });
 

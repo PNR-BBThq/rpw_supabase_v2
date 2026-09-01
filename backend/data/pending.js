@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     const state = req.query?.state || req.body?.state || user.state || 'ALL';
 
     let query = supabase
-      .from('data_bancian')
+      .from('Data')
       .select('*')
       .eq('status', 'MENUNGGU')
       .order('timestamp', { ascending: false });

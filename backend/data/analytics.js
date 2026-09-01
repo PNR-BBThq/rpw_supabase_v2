@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
     // Query semua data bancian yang DISAHKAN
     let query = supabase
-      .from('data_bancian')
+      .from('Data')
       .select('*')
       .eq('status', 'DISAHKAN')
       .order('tarikh_bancian', { ascending: false });

@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
     // Kemas kini uid dan pwd
     const { error } = await supabase
-      .from('users')
+      .from('user')
       .update({
         uid: uid.toLowerCase().trim(),
         pwd: pwd

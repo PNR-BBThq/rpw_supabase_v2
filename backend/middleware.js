@@ -37,7 +37,7 @@ export async function verifyToken(token) {
     // Sahkan pengguna masih wujud dan aktif
     const supabase = getSupabase();
     const { data: user, error } = await supabase
-      .from('users')
+      .from('user')
       .select('*')
       .eq('uid', decoded.uid)
       .eq('status', 'AKTIF')

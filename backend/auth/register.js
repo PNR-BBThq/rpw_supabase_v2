@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
     // Semak jika username sudah wujud
     const { data: existing } = await supabase
-      .from('users')
+      .from('user')
       .select('uid')
       .eq('uid', uid.toLowerCase().trim())
       .single();
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
 
     // Semak jika IC sudah didaftar
     const { data: existingIC } = await supabase
-      .from('users')
+      .from('user')
       .select('ic')
       .eq('ic', ic.trim())
       .single();
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
 
     // Masukkan pengguna baru
     const { data, error } = await supabase
-      .from('users')
+      .from('user')
       .insert({
         uid: uid.toLowerCase().trim(),
         pwd: pwd,

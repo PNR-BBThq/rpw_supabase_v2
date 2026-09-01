@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     const supabase = getSupabase();
 
     const { data: record, error } = await supabase
-      .from('data_bancian')
+      .from('Data')
       .select('*')
       .eq('id', row)
       .single();

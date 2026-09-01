@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     const supabase = getSupabase();
 
     const { data: records, error } = await supabase
-      .from('master_tanaman')
+      .from('Pest_list')
       .select('*')
       .order('kategori', { ascending: true })
       .order('nama_tanaman', { ascending: true });

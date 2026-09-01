@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
     // Cari pengguna berdasarkan username
     const { data: user, error } = await supabase
-      .from('users')
+      .from('user')
       .select('*')
       .eq('uid', u.toLowerCase().trim())
       .single();

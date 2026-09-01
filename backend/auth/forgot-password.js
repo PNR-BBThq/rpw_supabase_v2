@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
     // Cari pengguna berdasarkan nama dan IC
     const { data: user, error } = await supabase
-      .from('users')
+      .from('user')
       .select('id, uid, pwd')
       .ilike('nama', nama.trim())
       .eq('ic', ic.trim())

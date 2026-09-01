@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       // Sahkan rekod
       const logMsg = `DISAHKAN oleh ${verifierName} | ${now}`;
       const { error } = await supabase
-        .from('data_bancian')
+        .from('Data')
         .update({
           status: 'DISAHKAN',
           verified_by: logMsg,
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
       // Tolak rekod
       const logMsg = `DITOLAK oleh ${verifierName} | Sebab: ${reason || 'Tiada sebab diberikan'} | ${now}`;
       const { error } = await supabase
-        .from('data_bancian')
+        .from('Data')
         .update({
           status: 'DITOLAK',
           log: logMsg

@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     await supabase.from('ignored_redundant').delete().eq('record_id', row);
 
     const { error } = await supabase
-      .from('data_bancian')
+      .from('Data')
       .delete()
       .eq('id', row);
 
