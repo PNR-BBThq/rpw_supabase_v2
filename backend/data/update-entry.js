@@ -68,6 +68,16 @@ export default async function handler(req, res) {
         try { keterukanObj = JSON.parse(keterukanObj); } catch(e) {}
     }
 
+    // Dapatkan log sedia ada untuk ditambah rekod kemaskini
+    const { data: oldRec } = await supabase.from('Data').select('log').eq('id', rowID).maybeSingle();
+    let oldLog = (oldRec && oldRec.log) ? oldRec.log : '';
+    
+    const now = new Date();
+    const ts = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    const kemaskiniName = body.namaPegawai || body.pegawai || user.nama || 'Pengguna';
+    const newLogMsg = `[${ts}] DIKEMASKINI oleh ${kemaskiniName}`;
+    const combinedLog = oldLog ? `${oldLog}\n\n${newLogMsg}` : newLogMsg;
+
     // Kemas kini rekod
     const updateData = {
       tarikh_bancian: body.tarikhBancian || body.tarikh || null,
@@ -87,7 +97,8 @@ export default async function handler(req, res) {
       syor_kawalan: body.syor || '',
       image_links: finalImageLinks,
       caption: body.captionGambar || body.caption || '',
-      status: 'MENUNGGU' // Selepas edit, hantar semula untuk pengesahan
+      status: 'BARU', // Selepas edit, status dikembalikan kepada BARU mengikut legasi asal
+      log: combinedLog
     };
 
     const { error } = await supabase
