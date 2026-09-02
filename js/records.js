@@ -382,6 +382,13 @@ const TaskManager = {
                     <button class="btn btn-outline-danger btn-sm" onclick="TaskManager.deleteMyTask('${r.row}')" title="Padam Data Ini"><i class="bi bi-trash-fill"></i></button>
                     <button class="btn btn-success flex-grow-1 fw-bold btn-sm shadow-sm" onclick="TaskManager.openTaskEdit('${r.row}')"><i class="bi bi-pencil-square"></i> SAMBUNG ISI / HANTAR</button>
                 </div>`;
+            } else if (statusRekod.toUpperCase() === 'BARU') {
+                badgeHtml = `<span class="badge bg-warning text-dark">MENUNGGU PENGESAHAN</span>`; cardBorder = "warning";
+                btnAction = `
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-danger btn-sm" onclick="TaskManager.deleteMyTask('${r.row}')" title="Padam Data Ini"><i class="bi bi-trash-fill"></i></button>
+                    <button class="btn btn-warning flex-grow-1 fw-bold btn-sm text-dark" onclick="TaskManager.openTaskEdit('${r.row}')"><i class="bi bi-pencil-square"></i> KEMASKINI</button>
+                </div>`;
             } else {
                 badgeHtml = `<span class="badge bg-danger">DITOLAK</span>`; cardBorder = "danger"; bgHeader = "danger bg-opacity-10";
                 let reason = log.includes("DITOLAK") ? log.split("Sebab:").pop() : "Sila semak log.";

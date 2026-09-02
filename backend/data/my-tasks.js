@@ -22,7 +22,7 @@ export default async function handler(req, res) {
       .from('Data')
       .select('*')
       .eq('nama', name.toUpperCase().trim())
-      .in('status', ['DRAF', 'DITOLAK'])
+      .in('status', ['BARU', 'DRAF', 'DITOLAK'])
       .order('timestamp', { ascending: false });
 
     if (error) {
