@@ -140,39 +140,37 @@ const MapManager = {
             const markers = pts.map(item => {
                 const p = item.coord; 
                 const d = item.data; 
-                let pestHTML = ""; 
-                let pestObj = {}; 
+                const marker = L.circleMarker(p, { radius: 7, color: '#ffffff', weight: 1.5, fillColor: '#dc2626', fillOpacity: 0.9, opacity: 1, customData: d });
                 
-                try { 
-                    pestObj = typeof d.p === 'string' ? JSON.parse(d.p) : d.p; 
-                } catch(e) { pestObj = {}; }
-                
-                if (pestObj && Object.keys(pestObj).length > 0) { 
-                    pestHTML = `<div style="margin-top:8px; border-top:1px dashed #ccc; padding-top:6px;"><small class="fw-bold text-muted d-block mb-1">PERINCIAN PEROSAK:</small><ul style="padding-left: 15px; margin-bottom: 0; font-size: 0.8rem;">`; 
-                    Object.entries(pestObj).forEach(([nama, luas]) => { 
-                        pestHTML += `<li>${nama}: <b class="text-danger">${parseFloat(luas).toFixed(2)} Ha</b></li>`; 
-                    }); 
-                    pestHTML += `</ul></div>`; 
-                } else { 
-                    pestHTML = `<div class="mt-2 text-muted small fst-italic">- Tiada data perosak terperinci -</div>`; 
-                }
-                
-                const popupContent = `
-                    <div style="font-family: 'Segoe UI', sans-serif; font-size: 0.88rem; min-width: 220px;">
-                        <div style="background-color: #f1f5f9; padding: 6px 10px; border-radius: 6px 6px 0 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px; font-weight: 800;">
-                            <span class="text-primary text-uppercase">${d.tn}</span>
-                        </div>
-                        <div class="mb-2 px-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i> <b>${d.l}</b><br><span class="text-muted small">${d.d}, ${d.n}</span></div>
-                        <div class="d-flex justify-content-between bg-light border rounded p-2 mb-2" style="font-size: 0.82rem;">
-                            <div><span class="d-block text-muted" style="font-size:0.68rem; font-weight:700;">LUAS TANAM</span><b>${parseFloat(d.lt||0).toFixed(2)} Ha</b></div>
-                            <div class="text-end border-start ps-2"><span class="d-block text-muted" style="font-size:0.68rem; font-weight:700;">JUMLAH SERANGAN</span><b class="text-danger">${parseFloat(d.ls||0).toFixed(2)} Ha</b></div>
-                        </div>
-                        ${pestHTML}
-                        <div class="text-end mt-2 pt-2 border-top"><small class="text-muted fw-bold" style="font-size: 0.72rem;"><i class="bi bi-calendar-event me-1"></i>Tarikh: ${Utils.formatDateDisplay(d.t)}</small></div>
-                    </div>`;
-                
-                const marker = L.circleMarker(p, { radius: 7, color: '#ffffff', weight: 1.5, fillColor: '#dc2626', fillOpacity: 0.9, opacity: 1 });
-                marker.bindPopup(popupContent, { minWidth: 230 }); 
+                marker.bindPopup(function(layer) {
+                    const data = layer.options.customData;
+                    let pestHTML = ""; 
+                    let pestObj = data.p || {}; 
+                    
+                    if (pestObj && Object.keys(pestObj).length > 0) { 
+                        pestHTML = `<div style="margin-top:8px; border-top:1px dashed #ccc; padding-top:6px;"><small class="fw-bold text-muted d-block mb-1">PERINCIAN PEROSAK:</small><ul style="padding-left: 15px; margin-bottom: 0; font-size: 0.8rem;">`; 
+                        Object.entries(pestObj).forEach(([nama, luas]) => { 
+                            pestHTML += `<li>${nama}: <b class="text-danger">${parseFloat(luas).toFixed(2)} Ha</b></li>`; 
+                        }); 
+                        pestHTML += `</ul></div>`; 
+                    } else { 
+                        pestHTML = `<div class="mt-2 text-muted small fst-italic">- Tiada data perosak terperinci -</div>`; 
+                    }
+                    
+                    return `
+                        <div style="font-family: 'Segoe UI', sans-serif; font-size: 0.88rem; min-width: 220px;">
+                            <div style="background-color: #f1f5f9; padding: 6px 10px; border-radius: 6px 6px 0 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px; font-weight: 800;">
+                                <span class="text-primary text-uppercase">${data.tn}</span>
+                            </div>
+                            <div class="mb-2 px-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i> <b>${data.l}</b><br><span class="text-muted small">${data.d}, ${data.n}</span></div>
+                            <div class="d-flex justify-content-between bg-light border rounded p-2 mb-2" style="font-size: 0.82rem;">
+                                <div><span class="d-block text-muted" style="font-size:0.68rem; font-weight:700;">LUAS TANAM</span><b>${parseFloat(data.lt||0).toFixed(2)} Ha</b></div>
+                                <div class="text-end border-start ps-2"><span class="d-block text-muted" style="font-size:0.68rem; font-weight:700;">JUMLAH SERANGAN</span><b class="text-danger">${parseFloat(data.ls||0).toFixed(2)} Ha</b></div>
+                            </div>
+                            ${pestHTML}
+                            <div class="text-end mt-2 pt-2 border-top"><small class="text-muted fw-bold" style="font-size: 0.72rem;"><i class="bi bi-calendar-event me-1"></i>Tarikh: ${Utils.formatDateDisplay(data.t)}</small></div>
+                        </div>`;
+                }, { minWidth: 230 }); 
                 marker.bindTooltip(`<b>${d.tn}</b>: ${d.l}`, { direction: 'top', offset: [0, -6], opacity: 0.9 }); 
                 return marker;
             });

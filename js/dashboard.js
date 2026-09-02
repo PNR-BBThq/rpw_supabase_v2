@@ -96,12 +96,10 @@ const DashboardManager = {
         AppState.fData.forEach(d => {
             tt += (d.lt||0); 
             ts += (d.ls||0);
-            try{ 
-                let p=typeof d.p==='string'?JSON.parse(d.p):d.p; 
-                if(p) Object.entries(p).forEach(([k,v])=>pm[k]=(pm[k]||0)+parseFloat(v)); 
-                else if(d.ls>0) pm["Umum"]=(pm["Umum"]||0)+d.ls; 
-            } catch(e){ 
-                if(d.ls>0) pm["Umum"]=(pm["Umum"]||0)+d.ls; 
+            if(d.p) {
+                Object.entries(d.p).forEach(([k,v])=>pm[k]=(pm[k]||0)+parseFloat(v)); 
+            } else if(d.ls>0) {
+                pm["Umum"]=(pm["Umum"]||0)+d.ls; 
             }
             let l = parseInt(d.k)||0; 
             if(l>0 && l<=5) km[l]++;

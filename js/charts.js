@@ -81,10 +81,7 @@ const ChartManager = {
             // TAHAP 1: TOP 10 PEROSAK
             let kiraPerosak = {};
             AppState.fData.forEach(item => { 
-                try { 
-                    let pObj = typeof item.p === 'string' ? JSON.parse(item.p) : item.p; 
-                    if(pObj) Object.entries(pObj).forEach(([nPest, luas]) => { kiraPerosak[nPest] = (kiraPerosak[nPest]||0) + parseFloat(luas); }); 
-                } catch(e){} 
+                if(item.p) Object.entries(item.p).forEach(([nPest, luas]) => { kiraPerosak[nPest] = (kiraPerosak[nPest]||0) + parseFloat(luas); }); 
             });
             let top10 = Object.entries(kiraPerosak).sort((a,b)=>b[1]-a[1]).slice(0,10);
             labelX = top10.map(x=>x[0]); dataY = top10.map(x=>x[1]); 
@@ -96,10 +93,7 @@ const ChartManager = {
             // TAHAP 2: PECAHAN TANAMAN
             let kiraTanaman = {};
             AppState.fData.forEach(item => { 
-                try { 
-                    let pObj = typeof item.p === 'string' ? JSON.parse(item.p) : item.p; 
-                    if(pObj && pObj[namaPest]) kiraTanaman[item.tn] = (kiraTanaman[item.tn]||0) + parseFloat(pObj[namaPest]); 
-                } catch(e){} 
+                if(item.p && item.p[namaPest]) kiraTanaman[item.tn] = (kiraTanaman[item.tn]||0) + parseFloat(item.p[namaPest]); 
             });
             let susun = Object.entries(kiraTanaman).sort((a,b)=>b[1]-a[1]);
             labelX = susun.map(x=>x[0]); dataY = susun.map(x=>x[1]); 
@@ -111,10 +105,7 @@ const ChartManager = {
             // TAHAP 3: PECAHAN DAERAH
             let kiraDaerah = {};
             AppState.fData.forEach(item => { 
-                try { 
-                    let pObj = typeof item.p === 'string' ? JSON.parse(item.p) : item.p; 
-                    if(pObj && pObj[namaPest] && item.tn === namaTanaman) kiraDaerah[item.d] = (kiraDaerah[item.d]||0) + parseFloat(pObj[namaPest]); 
-                } catch(e){} 
+                if(item.p && item.p[namaPest] && item.tn === namaTanaman) kiraDaerah[item.d] = (kiraDaerah[item.d]||0) + parseFloat(item.p[namaPest]); 
             });
             let susun = Object.entries(kiraDaerah).sort((a,b)=>b[1]-a[1]);
             labelX = susun.map(x=>x[0]); dataY = susun.map(x=>x[1]); 

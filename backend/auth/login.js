@@ -24,7 +24,7 @@ export default async function handler(req, res) {
       .from('user')
       .select('*')
       .eq('uid', u.toLowerCase().trim())
-      .single();
+      .maybeSingle();
 
     if (error) {
       return sendError(res, 'Ralat DB: ' + error.message + ' (Code: ' + error.code + ')');

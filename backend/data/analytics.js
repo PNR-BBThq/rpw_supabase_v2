@@ -40,20 +40,30 @@ export default async function handler(req, res) {
 
     // Transform data ke format pendek (sesuai dengan frontend AppState.mData)
     const transformed = (records || []).map((r, idx) => {
-      // Parse JSONB fields
-      const luasSerangan = r.luas_serangan || {};
-      const peratusSerangan = r.peratus_serangan || {};
-      const keterukan = r.keterukan || {};
+      // Parse JSONB fields secara selamat
+      const luasSerangan = (typeof r.luas_serangan === 'object' && r.luas_serangan !== null) ? r.luas_serangan : {};
+      const peratusSerangan = (typeof r.peratus_serangan === 'object' && r.peratus_serangan !== null) ? r.peratus_serangan : {};
+      const keterukan = (typeof r.keterukan === 'object' && r.keterukan !== null) ? r.keterukan : {};
 
       // Kira jumlah luas serangan
-      let totalLuasSerangan = r.luas_serangan_total || 0;
-      if (totalLuasSerangan === 0 && typeof luasSerangan === 'object') {
+      let totalLuasSerangan = parseFloat(r.luas_serangan_total) || 0;
+      if (totalLuasSerangan === 0) {
         totalLuasSerangan = Object.values(luasSerangan).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
+      }
+
+      // Selamatkan Date parser
+      let dateT = '-';
+      if (r.tarikh_bancian) {
+        try {
+          dateT = new Date(r.tarikh_bancian).toISOString().split('T')[0];
+        } catch (e) {
+          dateT = r.tarikh_bancian; // Fallback kepada string asal jika gagal parse
+        }
       }
 
       return {
         id: r.id,
-        t: r.tarikh_bancian ? new Date(r.tarikh_bancian).toISOString().split('T')[0] : '-',
+        t: dateT,
         n: r.negeri || '-',
         d: r.daerah || '-',
         l: r.lokasi || '-',
@@ -65,7 +75,7 @@ export default async function handler(req, res) {
         lt: parseFloat(r.luas_bertanam) || 0,
         p: luasSerangan,
         pk: keterukan,
-        k: r.keterukan_max || 0,
+        k: parseFloat(r.keterukan_max) || 0,
         ls: totalLuasSerangan,
         ps: peratusSerangan,
         s: r.syor_kawalan || '-',
@@ -75,7 +85,6 @@ export default async function handler(req, res) {
         vb: r.verified_by || '',
         st: r.status,
         catatan: r.syor_kawalan || '-',
-        // Timestamp untuk paparan "Tarikh Dihantar"
         timestamp: r.timestamp,
         created_at: r.created_at
       };
