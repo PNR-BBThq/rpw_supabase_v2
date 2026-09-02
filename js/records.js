@@ -560,6 +560,22 @@ const TaskManager = {
         let opt = document.createElement('option'); opt.value = val; opt.innerText = val + " (Data Asal)"; opt.selected = true; el.appendChild(opt);
     },
 
+    validatePestArea: function(el) {
+        const luasTInput = document.getElementById('fe_luasT');
+        if (!luasTInput) return;
+        const luasT = parseFloat(luasTInput.value) || 0;
+        const a = parseFloat(el.value) || 0;
+        if (a < 0) {
+            Swal.fire({ icon: 'error', title: 'Ralat', text: "Luas serangan tidak boleh bernilai negatif!" });
+            el.value = "";
+            return;
+        }
+        if (a > luasT) {
+            Swal.fire({ icon: 'error', title: 'Ralat', text: `Luas serangan (${a} Ha) melebihi luas tanaman keseluruhan (${luasT} Ha)!` });
+            el.value = "";
+        }
+    },
+
     addPestRow: function(name="", area="", sev="") {
         const tbody = document.querySelector('#fe_pestTable tbody');
         const tr = document.createElement('tr');
@@ -571,7 +587,7 @@ const TaskManager = {
                 <input type="text" class="form-control form-control-sm p-name" list="${uniqueId}" value="${name}" placeholder="Pilih/Taip...">
                 <datalist id="${uniqueId}">${pestOptions}</datalist>
             </td>
-            <td><input type="number" class="form-control form-control-sm p-area" value="${area}" step="0.01" min="0"></td>
+            <td><input type="number" class="form-control form-control-sm p-area" value="${area}" step="0.01" min="0" oninput="TaskManager.validatePestArea(this)"></td>
             <td>
                 <select class="form-select form-select-sm p-sev">
                     <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>

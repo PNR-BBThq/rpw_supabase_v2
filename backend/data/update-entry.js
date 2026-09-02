@@ -24,35 +24,48 @@ export default async function handler(req, res) {
     const supabase = getSupabase();
 
     // Gabungkan retained images + new image links
+    const GAS_UPLOAD_URL = "https://script.google.com/macros/s/AKfycbwmlorXpSkvDx_PJT4eRYcWc0MGii7nyeafpSIDPdD-z_At1hY8leUzFyvAKy5kLrrA/exec";
     let finalImageLinks = '';
     const retained = body.retainedImages || [];
-    const newLinks = body.newImageLinks || []; // Links dari GAS upload
+    let newLinks = body.newImageLinks || [];
+
+    // Jika ada gambar baru (Base64) dihantar, kita muat naik ke GAS terlebih dahulu
+    if (body.newImages && body.newImages.length > 0) {
+      try {
+        const gasRes = await fetch(GAS_UPLOAD_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'uploadImageOnly',
+                images: body.newImages,
+                id: `EDIT_${rowID}_${Date.now()}`
+            })
+        });
+        const gasData = await gasRes.json();
+        if (gasData.success && gasData.links) {
+            newLinks = gasData.links.split(',').map(l => l.trim());
+        }
+      } catch (err) {
+        console.error("Gagal muat naik gambar baru:", err);
+      }
+    }
+
     const allLinks = [...retained.filter(l => l), ...newLinks.filter(l => l)];
     finalImageLinks = allLinks.join(', ');
 
-    // Parse pest data
-    let luasSeranganObj = {};
-    let peratusObj = {};
-    let keterukanObj = {};
-    let totalLuasSerangan = 0;
-    let maxKeterukan = 0;
-
-    if (body.senaraiPerosak) {
-      const pestNames = body.senaraiPerosak.split(',').map(s => s.trim()).filter(s => s);
-      const luasValues = body.luasSerangan ? String(body.luasSerangan).split(',').map(s => parseFloat(s.trim()) || 0) : [];
-      const pctValues = body.peratusSerangan ? String(body.peratusSerangan).split(',').map(s => parseFloat(s.trim()) || 0) : [];
-      const sevValues = body.keterukan ? String(body.keterukan).split(',').map(s => parseInt(s.trim()) || 0) : [];
-
-      pestNames.forEach((name, i) => {
-        const luas = luasValues[i] || 0;
-        const pct = pctValues[i] || 0;
-        const sev = sevValues[i] || 0;
-        luasSeranganObj[name] = luas;
-        peratusObj[name] = pct;
-        keterukanObj[name] = sev;
-        totalLuasSerangan += luas;
-        if (sev > maxKeterukan) maxKeterukan = sev;
-      });
+    // Parse pest data (Pastikan sentiasa terima Object JSON, bukan comma separated)
+    let luasSeranganObj = body.luasSerangan || {};
+    let peratusObj = body.peratusSerangan || {};
+    let keterukanObj = body.keterukan || {};
+    
+    if (typeof luasSeranganObj === 'string') {
+        try { luasSeranganObj = JSON.parse(luasSeranganObj); } catch(e) {}
+    }
+    if (typeof peratusObj === 'string') {
+        try { peratusObj = JSON.parse(peratusObj); } catch(e) {}
+    }
+    if (typeof keterukanObj === 'string') {
+        try { keterukanObj = JSON.parse(keterukanObj); } catch(e) {}
     }
 
     // Kemas kini rekod
