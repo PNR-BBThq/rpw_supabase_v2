@@ -19,25 +19,44 @@ export default async function handler(req, res) {
     const supabase = getSupabase();
     const state = req.query?.state || req.body?.state || user.state || 'ALL';
 
-    // Query semua data bancian yang DISAHKAN
-    let query = supabase
-      .from('Data')
-      .select('*')
-      .eq('status', 'DISAHKAN')
-      .order('tarikh_bancian', { ascending: false })
-      .limit(10000);
+    let allRecords = [];
+    let from = 0;
+    const step = 1000;
+    let hasMore = true;
 
-    // Filter mengikut negeri (jika bukan ALL)
-    if (state && state !== 'ALL' && state !== 'SEMUA') {
-      query = query.eq('negeri', state.toUpperCase().trim());
+    while (hasMore) {
+      let query = supabase
+        .from('Data')
+        .select('*')
+        .eq('status', 'DISAHKAN')
+        .order('tarikh_bancian', { ascending: false })
+        .range(from, from + step - 1);
+
+      // Filter mengikut negeri (jika bukan ALL)
+      if (state && state !== 'ALL' && state !== 'SEMUA') {
+        query = query.eq('negeri', state.toUpperCase().trim());
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Analytics query error:', error);
+        return sendError(res, 'Ralat DB: ' + error.message, 500);
+      }
+
+      if (data && data.length > 0) {
+        allRecords = allRecords.concat(data);
+        if (data.length < step) {
+          hasMore = false;
+        } else {
+          from += step;
+        }
+      } else {
+        hasMore = false;
+      }
     }
 
-    const { data: records, error } = await query;
-
-    if (error) {
-      console.error('Analytics query error:', error);
-      return sendError(res, 'Ralat DB: ' + error.message, 500);
-    }
+    const records = allRecords;
 
     // Transform data ke format pendek (sesuai dengan frontend AppState.mData)
     const transformed = (records || []).map((r, idx) => {
