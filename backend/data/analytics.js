@@ -116,7 +116,7 @@ export default async function handler(req, res) {
         pg: r.nama || '-',
         em: r.email || '-',
         im: r.image_links || '',
-        vb: r.verified_by || '',
+        vb: r.log || '',
         st: r.status,
         catatan: r.syor_kawalan || '-',
         timestamp: r.timestamp,

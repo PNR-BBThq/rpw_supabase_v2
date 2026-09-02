@@ -32,7 +32,6 @@ export default async function handler(req, res) {
         .from('Data')
         .update({
           status: 'DISAHKAN',
-          verified_by: logMsg,
           log: logMsg
         })
         .eq('id', row);

@@ -71,8 +71,6 @@ export default async function handler(req, res) {
       luas_serangan: luasSeranganObj,
       peratus_serangan: peratusObj,
       keterukan: keterukanObj,
-      keterukan_max: maxKeterukan,
-      luas_serangan_total: totalLuasSerangan,
       syor_kawalan: body.syor || '',
       image_links: finalImageLinks,
       caption: body.captionGambar || body.caption || '',
