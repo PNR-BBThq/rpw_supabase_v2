@@ -170,7 +170,9 @@ const ChartManager = {
                         const chart = context.chart;
                         const {ctx, chartArea} = chart;
                         if (!chartArea) return '#ef4444';
+                        
                         const idx = context.dataIndex;
+                        if (idx === undefined) return '#ef4444';
                         
                         // Gradient warna dinamik mengikut ranking & level carta
                         const palettes = {
@@ -192,6 +194,8 @@ const ChartManager = {
                         const currentPalette = palettes[paletteType] || palettes[1];
                         const pair = currentPalette[idx % currentPalette.length];
                         
+                        if (!pair) return '#ef4444';
+
                         const gradient = ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
                         gradient.addColorStop(0, pair[0]);
                         gradient.addColorStop(1, pair[1]);
