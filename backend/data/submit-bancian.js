@@ -7,7 +7,7 @@
 import { getSupabase, handleOptions, sendSuccess, sendError } from '../supabase-client.js';
 
 // URL Proxy AppScript untuk muat naik gambar ke GDrive
-const GAS_UPLOAD_URL = "https://script.google.com/macros/s/AKfycbwGIJ3i1jUTsisnZWE3dDEFkWejFhEI2PD8np_l866vqTmIgv2MHoMFC7ffblLEpIb7/exec";
+const GAS_UPLOAD_URL = "https://script.google.com/macros/s/AKfycbznIzUO_1G9vhSrD7I2JLAnPmFNbPK5plRjPwbnW9T9rFO-2X5nVAQk0utLSxjSffjY/exec";
 
 export default async function handler(req, res) {
   if (handleOptions(req, res)) return;

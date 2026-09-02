@@ -1,7 +1,7 @@
 // js/config.js
 const CONFIG = {
     API_URL: "/api", // Route ke Vercel Serverless Functions
-    GAS_URL: "https://script.google.com/macros/s/AKfycbwGIJ3i1jUTsisnZWE3dDEFkWejFhEI2PD8np_l866vqTmIgv2MHoMFC7ffblLEpIb7/exec", // Kekalkan GAS untuk upload gambar
+    GAS_URL: "https://script.google.com/macros/s/AKfycbznIzUO_1G9vhSrD7I2JLAnPmFNbPK5plRjPwbnW9T9rFO-2X5nVAQk0utLSxjSffjY/exec", // Kekalkan GAS untuk upload gambar
     RPW_URL: "https://www.appsheet.com/start/55b088df-3ec1-469a-b5c6-1fca48052906",
     FREE_ROUTES: ['auth/login', 'auth/register', 'auth/forgot-password', 'auth/update-access']
 };
