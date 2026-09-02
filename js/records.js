@@ -862,7 +862,9 @@ const TaskManager = {
                     body: JSON.stringify({
                         action: 'uploadImageOnly',
                         images: newImagesArray,
-                        id: `EDIT_${rowID}_${Date.now()}`
+                        id: `EDIT_${rowID}_${Date.now()}`,
+                        tanaman: document.getElementById('fe_tanaman') ? document.getElementById('fe_tanaman').value : "",
+                        negeri: document.getElementById('fe_negeri') ? document.getElementById('fe_negeri').value : ""
                     })
                 });
                 const gasText = await gasRes.text();

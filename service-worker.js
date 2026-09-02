@@ -1,4 +1,4 @@
-const CACHE_NAME = "PNR-CACHE-v202609021502"; // ⚡ Tukar versi di sini untuk paksa browser update!
+const CACHE_NAME = "PNR-CACHE-v202609021532"; // ⚡ Tukar versi di sini untuk paksa browser update!
 const ASSETS = [
   './',
   './index.html',
