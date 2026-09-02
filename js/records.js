@@ -972,6 +972,7 @@ const TaskManager = {
         } catch(err) {
             alert("❌ Gagal berhubung dengan pelayan. Sila cuba lagi.");
             if (btn) { btn.innerHTML='<i class="bi bi-trash-fill"></i>'; btn.disabled=false; }
+        }
     }
 }; // 👈 INI PENUTUP SEBENAR TASKMANAGER
 
