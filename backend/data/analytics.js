@@ -41,9 +41,17 @@ export default async function handler(req, res) {
     // Transform data ke format pendek (sesuai dengan frontend AppState.mData)
     const transformed = (records || []).map((r, idx) => {
       // Parse JSONB fields secara selamat
-      const luasSerangan = (typeof r.luas_serangan === 'object' && r.luas_serangan !== null) ? r.luas_serangan : {};
-      const peratusSerangan = (typeof r.peratus_serangan === 'object' && r.peratus_serangan !== null) ? r.peratus_serangan : {};
-      const keterukan = (typeof r.keterukan === 'object' && r.keterukan !== null) ? r.keterukan : {};
+      const parseJSONSafe = (val) => {
+        if (typeof val === 'object' && val !== null) return val;
+        if (typeof val === 'string') {
+          try { return JSON.parse(val); } catch (e) { return {}; }
+        }
+        return {};
+      };
+
+      const luasSerangan = parseJSONSafe(r.luas_serangan);
+      const peratusSerangan = parseJSONSafe(r.peratus_serangan);
+      const keterukan = parseJSONSafe(r.keterukan);
 
       // Kira jumlah luas serangan
       let totalLuasSerangan = parseFloat(r.luas_serangan_total) || 0;
