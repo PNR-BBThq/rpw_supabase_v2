@@ -65,7 +65,7 @@ export default async function handler(req, res) {
         const uEmail = updatedRec[0].email;
         const uLokasi = updatedRec[0].lokasi;
         if (uEmail && String(uEmail).includes('@')) {
-           const gasUrl = "https://script.google.com/macros/s/AKfycbwmlorXpSkvDx_PJT4eRYcWc0MGii7nyeafpSIDPdD-z_At1hY8leUzFyvAKy5kLrrA/exec";
+           const gasUrl = "https://script.google.com/macros/s/AKfycbxVzVr6sJ4l04Bh0mUBI_f2L2Yph4for4FZNlXWzHh_SxFCwgFAO1DJ-LNLJWUEADhj/exec";
            // Jangan 'await' supaya respon ke frontend pantas
            fetch(gasUrl, {
              method: 'POST',
