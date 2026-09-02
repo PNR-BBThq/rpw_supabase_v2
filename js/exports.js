@@ -58,39 +58,103 @@ const ExportManager = {
     },
 
     dlPDF: async function() { 
+        if (!AppState.fData.length) { alert("Tiada data untuk dijana!"); return; }
+        
         const btn = document.getElementById('btnDlPDF'); 
         const originalText = btn.innerHTML;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Jana...'; 
         btn.disabled = true; 
         
-        let dateLabel = "Terkini"; 
-        if (AppState.fData.length > 0) { 
-            const sortedDates = AppState.fData.map(d => d.t).sort(); 
-            const fmt = (d) => d.split('-').reverse().join('/'); 
-            dateLabel = fmt(sortedDates[0]) === fmt(sortedDates[sortedDates.length - 1]) ? fmt(sortedDates[0]) : `${fmt(sortedDates[0])} - ${fmt(sortedDates[sortedDates.length - 1])}`; 
-        } 
-        
-        try { 
-            let targetName = document.getElementById('selNegeri') ? document.getElementById('selNegeri').innerText : "SEMUA"; 
-            if (AppState.uProf && AppState.uProf.state === "CAMERON HIGHLANDS") { targetName = "PAHANG"; } 
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+            
+            let dateLabel = "Terkini"; 
+            if (AppState.fData.length > 0) { 
+                const sortedDates = AppState.fData.map(d => d.t).sort(); 
+                const fmt = (d) => d.split('-').reverse().join('/'); 
+                dateLabel = fmt(sortedDates[0]) === fmt(sortedDates[sortedDates.length - 1]) ? fmt(sortedDates[0]) : `${fmt(sortedDates[0])} - ${fmt(sortedDates[sortedDates.length - 1])}`; 
+            } 
+            
+            let targetName = document.getElementById('selNegeri') ? document.getElementById('selNegeri').options[document.getElementById('selNegeri').selectedIndex].text : "SEMUA NEGERI"; 
+            if (AppState.uProf && AppState.uProf.state === "CAMERON HIGHLANDS") { targetName = "PAHANG (CAMERON HIGHLANDS)"; } 
             else if (AppState.uProf && AppState.uProf.state !== "ALL") { targetName = AppState.uProf.state; } 
             
-            if (!targetName || targetName === "- Semua -") targetName = "SEMUA"; 
+            if (!targetName || targetName.includes("Semua")) targetName = "SEMUA NEGERI"; 
             
-            const m = { user: AppState.uProf.name, negeri: targetName, dates: dateLabel }; 
-            const r = await API.postData('genPDF', { data: AppState.fData, meta: m }); 
+            // Set document properties
+            doc.setProperties({
+                title: 'Laporan Bancian PNR',
+                subject: 'Laporan Penuh Data Spatial Individu',
+                author: AppState.uProf ? AppState.uProf.name : 'Sistem PNR',
+                keywords: 'PNR, Laporan, Bancian'
+            });
+
+            // Header
+            doc.setFontSize(14);
+            doc.setTextColor(40, 40, 40);
+            doc.text("LAPORAN BANCIAN PEROSAK & PENYAKIT TANAMAN (PNR)", 14, 15);
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Negeri: ${targetName} | Tarikh: ${dateLabel} | Penjana: ${AppState.uProf ? AppState.uProf.name : 'Sistem PNR'}`, 14, 22);
+
+            // Table Data
+            const tableCols = ["Tarikh", "Negeri", "Daerah", "Lokasi", "Tanaman", "L.Tanam(Ha)", "Perosak", "L.Serang(Ha)", "% Serang", "Tahap"];
+            const tableRows = [];
             
-            if (r.success) { 
-                const a = document.createElement('a'); 
-                a.href = "data:application/pdf;base64," + r.base64; 
-                a.download = r.filename; a.click(); 
-            } else { 
-                alert("Gagal menjana PDF: " + r.message); 
-            } 
-        } catch (e) { 
-            console.error(e); 
-            alert("Ralat sistem semasa menjana PDF."); 
-        } 
+            AppState.fData.forEach(d => {
+                let pestEntries = (d.p && Object.keys(d.p).length > 0) ? Object.entries(d.p) : [["TIADA", 0]]; 
+                let luasTanam = parseFloat(d.lt) || 0; 
+                
+                pestEntries.forEach(([pName, pArea]) => { 
+                    let luasSerang = parseFloat(pArea) || 0; 
+                    let pctVal = (luasTanam > 0) ? ((luasSerang / luasTanam) * 100).toFixed(1) + '%' : "0%"; 
+                    let sevVal = (d.pk && d.pk[pName]) ? d.pk[pName] : (d.k || 0);
+                    
+                    tableRows.push([
+                        d.t, d.n, d.d, d.l, d.tn, 
+                        luasTanam.toFixed(2), pName, luasSerang.toFixed(2), 
+                        pctVal, `T${sevVal}`
+                    ]);
+                }); 
+            });
+
+            doc.autoTable({
+                head: [tableCols],
+                body: tableRows,
+                startY: 28,
+                theme: 'grid',
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: 'center' },
+                columnStyles: {
+                    0: { halign: 'center', cellWidth: 20 }, // Tarikh
+                    1: { cellWidth: 25 }, // Negeri
+                    2: { cellWidth: 25 }, // Daerah
+                    3: { cellWidth: 'auto' }, // Lokasi
+                    4: { cellWidth: 30 }, // Tanaman
+                    5: { halign: 'center', cellWidth: 22 }, // L.Tanam
+                    6: { cellWidth: 35 }, // Perosak
+                    7: { halign: 'center', cellWidth: 22 }, // L.Serang
+                    8: { halign: 'center', cellWidth: 20 }, // % Serang
+                    9: { halign: 'center', cellWidth: 15 } // Tahap
+                },
+                didParseCell: function (data) {
+                    if (data.section === 'body' && data.column.index === 9) {
+                        let txt = data.cell.raw;
+                        if (txt === "T1" || txt === "T2") data.cell.styles.textColor = [39, 174, 96];
+                        else if (txt === "T3") data.cell.styles.textColor = [211, 84, 0];
+                        else if (txt === "T4" || txt === "T5") data.cell.styles.textColor = [192, 57, 43];
+                    }
+                }
+            });
+
+            const fileName = `PNR_Laporan_${targetName.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`;
+            doc.save(fileName);
+            
+        } catch (e) {
+            console.error(e);
+            alert("Ralat sistem semasa menjana PDF.");
+        }
         
         btn.innerHTML = originalText; 
         btn.disabled = false; 
@@ -106,34 +170,77 @@ const ExportManager = {
         const pegawaiStr = btnElement.getAttribute('data-pegawai');
         const coordStr = btnElement.getAttribute('data-coord');      
         const tarikhStr = btnElement.getAttribute('data-tarikh');   
+        
+        const rec = AppState.mData.find(d => d.l === lokasiStr && d.pg === pegawaiStr && d.c === coordStr && d.t === tarikhStr);
+        if (!rec) {
+            Swal.fire('Ralat', 'Gagal mencari rekod.', 'error');
+            return;
+        }
 
         Swal.fire({
             title: 'Menjana Laporan PDF...',
-            html: 'Sila tunggu sebentar. Memproses data & gambar...<br><br><div class="spinner-border text-danger" role="status"></div>',
+            html: 'Sila tunggu sebentar. Memproses data...<br><br><div class="spinner-border text-danger" role="status"></div>',
             showConfirmButton: false,
             allowOutsideClick: false
         });
 
         try {
-            const r = await API.postData('janaPDFBaris', { 
-                lokasi: lokasiStr, pegawai: pegawaiStr, coord: coordStr, tarikh: tarikhStr 
-            });
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('portrait');
+
+            // Header
+            doc.setFontSize(16);
+            doc.setFont("helvetica", "bold");
+            doc.text("Laporan Bancian Perosak Tanaman", 105, 20, null, null, "center");
             
-            if ((r.success || r.status === 'success') && r.base64) {
-                const link = document.createElement('a');
-                link.href = "data:application/pdf;base64," + r.base64;
-                link.download = r.fileName || ("Laporan_" + lokasiStr.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                Swal.fire({ icon: 'success', title: 'Berjaya!', text: 'Laporan PDF telah disimpan ke dalam peranti anda.', timer: 3000, showConfirmButton: false });
-            } else {
-                Swal.fire('Ralat', r.message || r.error || 'Gagal memuatkan data PDF.', 'error');
-            }
+            doc.setFontSize(11);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Tarikh: ${rec.t}`, 20, 35);
+            doc.text(`Lokasi: ${rec.l}`, 20, 42);
+            doc.text(`Koordinat: ${rec.c}`, 20, 49);
+            doc.text(`Pegawai Pelapor: ${rec.pg}`, 20, 56);
+            doc.text(`Negeri: ${rec.n}   Daerah: ${rec.d}`, 20, 63);
+
+            // Table details
+            let pestEntries = (rec.p && Object.keys(rec.p).length > 0) ? Object.entries(rec.p) : [["TIADA", 0]]; 
+            let luasTanam = parseFloat(rec.lt) || 0; 
+            
+            const tableRows = [];
+            pestEntries.forEach(([pName, pArea]) => { 
+                let luasSerang = parseFloat(pArea) || 0; 
+                let pctVal = (luasTanam > 0) ? ((luasSerang / luasTanam) * 100).toFixed(1) + '%' : "0%"; 
+                let sevVal = (rec.pk && rec.pk[pName]) ? rec.pk[pName] : (rec.k || 0);
+                tableRows.push([
+                    rec.tn, 
+                    luasTanam.toFixed(2), 
+                    pName, 
+                    luasSerang.toFixed(2), 
+                    pctVal, 
+                    `T${sevVal}`
+                ]);
+            });
+
+            doc.autoTable({
+                startY: 75,
+                head: [["Tanaman", "L. Tanam(Ha)", "Perosak", "L. Serang(Ha)", "% Serangan", "Tahap"]],
+                body: tableRows,
+                theme: 'grid',
+                styles: { fontSize: 10, cellPadding: 3 },
+                headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: 'center' }
+            });
+
+            // Status
+            let finalY = doc.lastAutoTable.finalY + 15;
+            doc.text(`Syor Kawalan: ${rec.s || '-'}`, 20, finalY);
+            doc.text(`Status Laporan: ${rec.st || 'Disahkan'}`, 20, finalY + 7);
+
+            const fileName = `Laporan_${rec.l.replace(/[^a-zA-Z0-9]/g, "_")}_${rec.t}.pdf`;
+            doc.save(fileName);
+            
+            Swal.close();
         } catch (err) {
-            Swal.fire('Ralat API', 'Gagal berhubung dengan pelayan. Sila cuba lagi.', 'error');
+            console.error(err);
+            Swal.fire('Ralat Sistem', 'Gagal menjana PDF.', 'error');
         }
     },
 
