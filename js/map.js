@@ -37,10 +37,9 @@ const MapManager = {
         if (!this.map) {
             try {
                 this.map = L.map('map').setView([4.2105, 101.9758], 6);
-                // Tile layer CartoDB Positron (Light All)
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-                    subdomains: 'abcd',
+                // Tile layer OpenStreetMap (Percuma & Tiada API Key)
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                     maxZoom: 19
                 }).addTo(this.map);
 
