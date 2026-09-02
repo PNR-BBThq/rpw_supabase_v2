@@ -565,6 +565,7 @@ const TaskManager = {
         if (!luasTInput) return;
         const luasT = parseFloat(luasTInput.value) || 0;
         const a = parseFloat(el.value) || 0;
+        if (el.value === "") return; // Allow empty initially
         if (a < 0) {
             Swal.fire({ icon: 'error', title: 'Ralat', text: "Luas serangan tidak boleh bernilai negatif!" });
             el.value = "";
@@ -574,6 +575,12 @@ const TaskManager = {
             Swal.fire({ icon: 'error', title: 'Ralat', text: `Luas serangan (${a} Ha) melebihi luas tanaman keseluruhan (${luasT} Ha)!` });
             el.value = "";
         }
+    },
+
+    validateAllPestAreas: function() {
+        document.querySelectorAll('.p-area').forEach(el => {
+            TaskManager.validatePestArea(el);
+        });
     },
 
     addPestRow: function(name="", area="", sev="") {
@@ -680,7 +687,7 @@ const TaskManager = {
                 <div class="col-6"><label class="small fw-bold">Varieti</label><input type="text" id="fe_varieti" class="form-control form-control-sm" value="${getV('VARIETI')}"></div>
                 <div class="col-6"><label class="small fw-bold">Umur</label><input type="text" id="fe_umur" class="form-control form-control-sm" value="${getV('UMUR')}"></div>
             </div>
-            <div class="mb-2"><label class="small fw-bold">Luas Tanam (Ha)</label><input type="number" id="fe_luasT" class="form-control form-control-sm" value="${getV('LUAS BERTANAM')||getV('LUAS TANAMAN')||getV('LUAS')}"></div>
+            <div class="mb-2"><label class="small fw-bold">Luas Tanam (Ha)</label><input type="number" id="fe_luasT" class="form-control form-control-sm" value="${getV('LUAS BERTANAM')||getV('LUAS TANAMAN')||getV('LUAS')}" oninput="TaskManager.validateAllPestAreas()"></div>
             
             <h6 class="text-primary border-bottom pb-2 mt-3">C. Data Serangan</h6>
             <table class="table table-sm table-bordered" id="fe_pestTable">
@@ -822,6 +829,7 @@ const TaskManager = {
         const fileInput = document.getElementById('fe_img');
         const files = fileInput ? fileInput.files : [];
         let newImagesArray = [];
+        let newLinks = []; // ⬅️ KRITIKAL: Mesti diisytiharkan di sini
 
         if (files.length > 0) {
             Swal.fire({ title: 'Memuat Naik Gambar...', html: 'Sila tunggu sebentar...', showConfirmButton: false, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -836,11 +844,14 @@ const TaskManager = {
                 });
             });
             newImagesArray = await Promise.all(readPromises);
+            console.log("📸 Base64 images ready:", newImagesArray.length, "files");
             
             // Terus hantar ke Google Apps Script dari Frontend (Lebih laju & tiada isu Vercel limit)
             try {
+                console.log("📤 Menghantar ke GAS:", CONFIG.GAS_URL);
                 const gasRes = await fetch(CONFIG.GAS_URL, {
                     method: 'POST',
+                    redirect: 'follow', // ⬅️ KRITIKAL: GAS sentiasa redirect 302
                     body: JSON.stringify({
                         action: 'uploadImageOnly',
                         images: newImagesArray,
@@ -848,15 +859,23 @@ const TaskManager = {
                     })
                 });
                 const gasText = await gasRes.text();
+                console.log("📥 GAS Response:", gasText);
                 try {
                     const gasJson = JSON.parse(gasText);
-                    if (gasJson.success) newLinks = gasJson.links.split(',').map(l => l.trim());
-                    else newLinks = [];
+                    if (gasJson.success && gasJson.links) {
+                        newLinks = gasJson.links.split(',').map(l => l.trim()).filter(l => l);
+                        console.log("✅ Gambar berjaya dimuat naik:", newLinks);
+                    } else {
+                        console.warn("⚠️ GAS response tidak berjaya:", gasJson);
+                        newLinks = [];
+                    }
                 } catch(e) {
-                    newLinks = gasText.split(',').map(l => l.trim());
+                    console.error("❌ Gagal parse GAS response:", e, gasText);
+                    newLinks = [];
                 }
             } catch (err) {
-                console.error("Gagal muat naik gambar ke GAS:", err);
+                console.error("❌ Gagal muat naik gambar ke GAS:", err);
+                newLinks = [];
             }
         } else {
             Swal.fire({ title: 'Menghantar Data...', showConfirmButton: false, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -946,9 +965,11 @@ const TaskManager = {
         } catch(err) {
             alert("❌ Gagal berhubung dengan pelayan. Sila cuba lagi.");
             if (btn) { btn.innerHTML='<i class="bi bi-trash-fill"></i>'; btn.disabled=false; }
-        }
     }
 }; // 👈 INI PENUTUP SEBENAR TASKMANAGER
+
+window.TaskManager = TaskManager;
+window.VerifyManager = typeof VerifyManager !== 'undefined' ? VerifyManager : {};
 
 // Pasangkan Butang Verify (Duduk kat luar TaskManager)
 document.addEventListener("DOMContentLoaded", () => {

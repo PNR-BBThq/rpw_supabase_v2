@@ -66,18 +66,21 @@ export default async function handler(req, res) {
         const uLokasi = updatedRec[0].lokasi;
         if (uEmail && String(uEmail).includes('@')) {
            const gasUrl = "https://script.google.com/macros/s/AKfycbxVzVr6sJ4l04Bh0mUBI_f2L2Yph4for4FZNlXWzHh_SxFCwgFAO1DJ-LNLJWUEADhj/exec";
-           // Jangan 'await' supaya respon ke frontend pantas
-           fetch(gasUrl, {
-             method: 'POST',
-             headers: { 'Content-Type': 'application/json' },
-             body: JSON.stringify({
-               action: 'sendRejectEmail',
-               email: uEmail,
-               lokasi: uLokasi,
-               reason: reason || 'Tiada sebab',
-               name: verifierName
-             })
-           }).catch(err => console.error("Gagal panggil GAS email:", err));
+           try {
+               await fetch(gasUrl, {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({
+                   action: 'sendRejectEmail',
+                   email: uEmail,
+                   lokasi: uLokasi,
+                   reason: reason || 'Tiada sebab',
+                   name: verifierName
+                 })
+               });
+           } catch(err) {
+               console.error("Gagal panggil GAS email:", err);
+           }
         }
       }
 
