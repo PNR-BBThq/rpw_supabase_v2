@@ -824,7 +824,7 @@ const TaskManager = {
         let newImagesArray = [];
 
         if (files.length > 0) {
-            Swal.fire({ title: 'Memproses Gambar...', html: 'Sila tunggu sebentar...', showConfirmButton: false, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Memuat Naik Gambar...', html: 'Sila tunggu sebentar...', showConfirmButton: false, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             const readPromises = Array.from(files).map(file => {
                 return new Promise((resolve) => {
                     const reader = new FileReader();
@@ -836,6 +836,28 @@ const TaskManager = {
                 });
             });
             newImagesArray = await Promise.all(readPromises);
+            
+            // Terus hantar ke Google Apps Script dari Frontend (Lebih laju & tiada isu Vercel limit)
+            try {
+                const gasRes = await fetch(CONFIG.GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'uploadImageOnly',
+                        images: newImagesArray,
+                        id: `EDIT_${rowID}_${Date.now()}`
+                    })
+                });
+                const gasText = await gasRes.text();
+                try {
+                    const gasJson = JSON.parse(gasText);
+                    if (gasJson.success) newLinks = gasJson.links.split(',').map(l => l.trim());
+                    else newLinks = [];
+                } catch(e) {
+                    newLinks = gasText.split(',').map(l => l.trim());
+                }
+            } catch (err) {
+                console.error("Gagal muat naik gambar ke GAS:", err);
+            }
         } else {
             Swal.fire({ title: 'Menghantar Data...', showConfirmButton: false, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
         }
@@ -845,7 +867,7 @@ const TaskManager = {
             row: rowID, 
             syor: document.getElementById('fe_syor').value,
             retainedImages: finalRetainedImages, 
-            newImages: newImagesArray,
+            newImageLinks: newLinks,
 
             tarikhBancian: document.getElementById('fe_tarikh').value,
             namaPegawai: document.getElementById('fe_pegawai').value,
