@@ -24,7 +24,8 @@ export default async function handler(req, res) {
       .from('Data')
       .select('*')
       .eq('status', 'DISAHKAN')
-      .order('tarikh_bancian', { ascending: false });
+      .order('tarikh_bancian', { ascending: false })
+      .limit(10000);
 
     // Filter mengikut negeri (jika bukan ALL)
     if (state && state !== 'ALL' && state !== 'SEMUA') {
@@ -59,6 +60,12 @@ export default async function handler(req, res) {
         totalLuasSerangan = Object.values(luasSerangan).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
       }
 
+      // Kira tahap keterukan max
+      let maxKeterukan = parseFloat(r.keterukan_max) || 0;
+      if (maxKeterukan === 0 && Object.keys(keterukan).length > 0) {
+        maxKeterukan = Math.max(...Object.values(keterukan).map(v => parseFloat(v) || 0));
+      }
+
       // Selamatkan Date parser
       let dateT = '-';
       if (r.tarikh_bancian) {
@@ -83,7 +90,7 @@ export default async function handler(req, res) {
         lt: parseFloat(r.luas_bertanam) || 0,
         p: luasSerangan,
         pk: keterukan,
-        k: parseFloat(r.keterukan_max) || 0,
+        k: maxKeterukan,
         ls: totalLuasSerangan,
         ps: peratusSerangan,
         s: r.syor_kawalan || '-',
