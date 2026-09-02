@@ -18,22 +18,41 @@ export default async function handler(req, res) {
     const supabase = getSupabase();
     const state = req.query?.state || req.body?.state || user.state || 'ALL';
 
-    let query = supabase
-      .from('Data')
-      .select('*')
-      .eq('status', 'MENUNGGU')
-      .order('timestamp', { ascending: false });
+    let allRecords = [];
+    let from = 0;
+    const step = 1000;
+    let hasMore = true;
 
-    if (state && state !== 'ALL' && state !== 'SEMUA') {
-      query = query.eq('negeri', state.toUpperCase().trim());
+    while (hasMore) {
+      // Dapatkan data dengan status MENUNGGU, BARU, null, atau kosong
+      let query = supabase
+        .from('Data')
+        .select('*')
+        .or('status.eq.MENUNGGU,status.eq.BARU,status.is.null,status.eq.')
+        .order('timestamp', { ascending: false })
+        .range(from, from + step - 1);
+
+      if (state && state !== 'ALL' && state !== 'SEMUA') {
+        query = query.eq('negeri', state.toUpperCase().trim());
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Pending query error:', error);
+        return sendError(res, 'Gagal memuat data menunggu.', 500);
+      }
+
+      if (data && data.length > 0) {
+        allRecords = allRecords.concat(data);
+        if (data.length < step) hasMore = false;
+        else from += step;
+      } else {
+        hasMore = false;
+      }
     }
 
-    const { data: records, error } = await query;
-
-    if (error) {
-      console.error('Pending query error:', error);
-      return sendError(res, 'Gagal memuat data menunggu.', 500);
-    }
+    const records = allRecords;
 
     // Headers untuk frontend (format GAS compatible)
     const headers = [
