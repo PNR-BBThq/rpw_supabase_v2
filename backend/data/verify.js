@@ -46,17 +46,39 @@ export default async function handler(req, res) {
     } else if (act === 'REJECT') {
       // Tolak rekod
       const logMsg = `DITOLAK oleh ${verifierName} | Sebab: ${reason || 'Tiada sebab diberikan'} | ${now}`;
-      const { error } = await supabase
+      const { data: updatedRec, error } = await supabase
         .from('Data')
         .update({
           status: 'DITOLAK',
           log: logMsg
         })
-        .eq('id', row);
+        .eq('id', row)
+        .select('email, lokasi');
 
       if (error) {
         console.error('Verify reject error:', error);
         return sendError(res, 'Gagal menolak rekod.');
+      }
+
+      // Hantar notifikasi email menggunakan GAS
+      if (updatedRec && updatedRec.length > 0) {
+        const uEmail = updatedRec[0].email;
+        const uLokasi = updatedRec[0].lokasi;
+        if (uEmail && String(uEmail).includes('@')) {
+           const gasUrl = "https://script.google.com/macros/s/AKfycbwmlorXpSkvDx_PJT4eRYcWc0MGii7nyeafpSIDPdD-z_At1hY8leUzFyvAKy5kLrrA/exec";
+           // Jangan 'await' supaya respon ke frontend pantas
+           fetch(gasUrl, {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({
+               action: 'sendRejectEmail',
+               email: uEmail,
+               lokasi: uLokasi,
+               reason: reason || 'Tiada sebab',
+               name: verifierName
+             })
+           }).catch(err => console.error("Gagal panggil GAS email:", err));
+        }
       }
 
       return sendSuccess(res, {}, '❌ Rekod telah ditolak.');
