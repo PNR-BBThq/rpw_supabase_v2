@@ -844,13 +844,53 @@ const TaskManager = {
                 return new Promise((resolve) => {
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        let ext = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : ".jpg"; 
-                        resolve({ imgName: captionVal ? (captionVal + ext) : file.name, imgType: file.type, imgData: e.target.result.split(',')[1] });
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            const MAX_DIMENSION = 1200;
+
+                            if (width > height) {
+                                if (width > MAX_DIMENSION) {
+                                    height *= MAX_DIMENSION / width;
+                                    width = MAX_DIMENSION;
+                                }
+                            } else {
+                                if (height > MAX_DIMENSION) {
+                                    width *= MAX_DIMENSION / height;
+                                    height = MAX_DIMENSION;
+                                }
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            // Compress ke JPEG kualiti 70%
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                            let ext = ".jpg"; 
+                            resolve({ 
+                                imgName: captionVal ? (captionVal + ext) : (file.name.replace(/\.[^/.]+$/, "") + ext), 
+                                imgType: 'image/jpeg', 
+                                imgData: dataUrl.split(',')[1] 
+                            });
+                        };
+                        img.onerror = () => {
+                            // Jika gagal load image (bukan imej valid), fallback ke base64 asal tanpa compress
+                            console.warn("Gagal compress imej, guna saiz asal:", file.name);
+                            let ext = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : ".jpg"; 
+                            resolve({ imgName: captionVal ? (captionVal + ext) : file.name, imgType: file.type, imgData: e.target.result.split(',')[1] });
+                        };
+                        img.src = e.target.result;
                     };
+                    reader.onerror = () => resolve(null);
                     reader.readAsDataURL(file);
                 });
             });
-            newImagesArray = await Promise.all(readPromises);
+            let resolvedImages = await Promise.all(readPromises);
+            newImagesArray = resolvedImages.filter(img => img !== null);
             console.log("📸 Base64 images ready:", newImagesArray.length, "files");
             
             // Terus hantar ke Google Apps Script dari Frontend (Lebih laju & tiada isu Vercel limit)
