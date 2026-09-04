@@ -17,6 +17,7 @@ const AuthManager = {
         btn.innerText = "Memproses...";
         
         const r = await API.postData('login', { u, p });
+        console.log('Login response:', JSON.stringify(r));
         
         if(r.success) {
             const sessionData = { uProf: r, userToken: r.token, currentUserID: u };
