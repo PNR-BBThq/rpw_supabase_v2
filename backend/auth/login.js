@@ -28,13 +28,11 @@ export default async function handler(req, res) {
       .ilike('uid', searchUid)
       .maybeSingle();
 
-    console.log('Login lookup:', { searchUid, found: !!user, error: error?.message });
-
     if (error) {
       return sendError(res, 'Ralat DB: ' + error.message + ' (Code: ' + error.code + ')');
     }
     if (!user) {
-      return sendError(res, 'ID Pengguna tidak dijumpai. (Carian: ' + searchUid + ')');
+      return sendError(res, 'ID Pengguna tidak dijumpai.');
     }
 
     // Semak kata laluan (plaintext comparison)
