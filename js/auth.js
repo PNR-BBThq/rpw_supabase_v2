@@ -16,7 +16,7 @@ const AuthManager = {
         btn.disabled = true; 
         btn.innerText = "Memproses...";
         
-        const r = await API.postData('login', {u, p});
+        const r = await API.postData('login', { u, p });
         
         if(r.success) {
             const sessionData = { uProf: r, userToken: r.token, currentUserID: u };

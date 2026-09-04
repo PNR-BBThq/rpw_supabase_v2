@@ -51,7 +51,7 @@ const API = {
                 return { success: false, message: "Aksi tidak sah." };
             }
 
-            console.log('API request', { action, payload });
+
             const url = `${CONFIG.API_URL}${route}`;
 
             // ⚡ Hantar request terus ke Vercel (tiada delay/queue diperlukan)
