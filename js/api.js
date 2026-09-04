@@ -31,7 +31,7 @@ const API = {
 
     postData: async function(action, payloadData = {}) {
         try {
-            let payload = { action, ...payloadData };
+            let payload = { ...payloadData };
             let headers = {
                 "Content-Type": "application/json"
             };
