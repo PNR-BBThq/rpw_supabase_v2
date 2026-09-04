@@ -19,20 +19,22 @@ export default async function handler(req, res) {
     }
 
     const supabase = getSupabase();
+    const searchUid = u.trim();
 
-    // Cari pengguna berdasarkan username
+    // Cari pengguna berdasarkan username (case-insensitive)
     const { data: user, error } = await supabase
       .from('user')
       .select('*')
-      .eq('uid', u.toLowerCase().trim())
+      .ilike('uid', searchUid)
       .maybeSingle();
 
+    console.log('Login lookup:', { searchUid, found: !!user, error: error?.message });
 
     if (error) {
       return sendError(res, 'Ralat DB: ' + error.message + ' (Code: ' + error.code + ')');
     }
     if (!user) {
-      return sendError(res, 'ID Pengguna tidak dijumpai.');
+      return sendError(res, 'ID Pengguna tidak dijumpai. (Carian: ' + searchUid + ')');
     }
 
     // Semak kata laluan (plaintext comparison)
