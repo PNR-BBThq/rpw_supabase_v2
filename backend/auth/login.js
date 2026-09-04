@@ -7,6 +7,7 @@ import { getSupabase, handleOptions, sendSuccess, sendError, setCorsHeaders } fr
 import { generateToken } from '../middleware.js';
 
 export default async function handler(req, res) {
+  console.log('Login request body', req.body);
   if (handleOptions(req, res)) return;
   if (req.method !== 'POST') return sendError(res, 'Method not allowed', 405);
 
