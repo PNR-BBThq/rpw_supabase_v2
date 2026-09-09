@@ -1,4 +1,4 @@
-const CACHE_NAME = "PNR-CACHE-v202609090231-523d113"; // ⚡ Tukar versi di sini untuk paksa browser update!
+const CACHE_NAME = "PNR-CACHE-v20260909-redesign2"; // ⚡ Tukar versi di sini untuk paksa browser update!
 const ASSETS = [
   './',
   './index.html',
@@ -20,6 +20,8 @@ const ASSETS = [
   './js/dashboard.js',
   './js/kpi.js',
   './js/main.js',
+  './js/workspace.js',
+  './js/form-workspace.js',
   './js/nlp-bot.js',
   './js/tumpuan.js',
   

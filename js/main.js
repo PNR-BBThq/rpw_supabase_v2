@@ -175,6 +175,7 @@ const ViewManager = {
             if(view) view.style.display = 'none';
         });
         
+        if (typeof Workspace !== 'undefined') Workspace.onView(t);
         const targetView = document.getElementById('view-'+t);
         if(targetView) targetView.style.display = 'block';
 

@@ -72,7 +72,7 @@ const MapManager = {
                                 }
                             });
                             // Tingkatkan opacity ke 0.55 agar kontras warna jelas terserlah di atas peta CartoDB Positron
-                            return { color: "#64748b", weight: 1.5, fill: true, fillColor: color, fillOpacity: 0.55, dashArray: '4, 3' };
+                            return { color: "#64748b", weight: 1.5, fill: true, fillColor: "#dce5d4", fillOpacity: 0.22, dashArray: '4, 3' };
                         },
                         interactive: false // Supaya tidak menghalang klik pada pin data/cluster
                     }).addTo(this.map);
@@ -83,6 +83,7 @@ const MapManager = {
     },
 
     updateMap: function(pts) {
+        this._lastPoints = pts;
         if(!this.map) return;
         if(this.clusterGroup) this.map.removeLayer(this.clusterGroup);
         if(this.heatLayer) this.map.removeLayer(this.heatLayer);

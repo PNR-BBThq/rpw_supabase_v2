@@ -15,7 +15,7 @@
     <!-- WAJIB inline — JANGAN pindah ke fail .js luaran (akan kena intercept oleh SW lama) -->
     <script>
     (function() {
-        var APP_VERSION = '202609090231-523d113';
+        var APP_VERSION = '20260909-redesign2';
         var STORED = localStorage.getItem('PNR_APP_VERSION');
         if (STORED !== APP_VERSION) {
             localStorage.setItem('PNR_APP_VERSION', APP_VERSION);
@@ -44,19 +44,19 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 
-    <link rel="stylesheet" href="./css/style.css?v=202609090231-523d113">
-    <link rel="stylesheet" href="./css/upgrade.css?v=202609090231-523d113">
+    <link rel="stylesheet" href="./css/style.css?v=20260909-redesign2">
+    <link rel="stylesheet" href="./css/upgrade.css?v=20260909-redesign2">
 </head>
 
-<body>
+<body class="workspace-app">
     <a class="skip-link" href="#view-main">Langkau ke kandungan</a>
 
-    <div id="loginOverlay">
+    <div id="loginOverlay"><aside class="login-intro"><span class="login-wordmark"><i class="bi bi-flower1"></i> PNR DIGITAL</span><div><span class="section-eyebrow">BIOSEKURITI TUMBUHAN</span><h1>Data lapangan.<br>Pemantauan<br>lebih bermakna<span>.</span></h1><p>Ruang kerja pelaporan bancian dan pemantauan perosak tanaman.</p></div><span class="login-agency">Jabatan Pertanian Malaysia <span>V2 · Percubaan</span></span></aside>
         <div class="login-box" id="formLogin">
-            <div class="brand justify-content-center mb-4"><i class="bi bi-flower1"></i> PNR DIGITAL</div>
-            <h6 class="text-muted mb-4">Log Masuk Sistem</h6>
-            <input type="text" id="uid" class="form-control mb-3 p-3" placeholder="ID Pengguna">
-            <input type="password" id="pwd" class="form-control mb-4 p-3" placeholder="Kata Laluan">
+            <div class="brand justify-content-center mb-4 login-form-brand"><i class="bi bi-flower1"></i> PNR DIGITAL</div>
+            <h2 class="login-title">Selamat kembali.</h2><p class="text-muted mb-4">Log masuk untuk meneruskan bancian anda.</p>
+            <input type="text" id="uid" aria-label="ID pengguna" autocomplete="username" class="form-control mb-3 p-3" placeholder="ID Pengguna">
+            <input type="password" id="pwd" aria-label="Kata laluan" autocomplete="current-password" class="form-control mb-4 p-3" placeholder="Kata Laluan">
             <button type="button" class="btn btn-success w-100 fw-bold p-3" id="btnLogin">MASUK</button>
 
             <div class="d-flex justify-content-between mt-3 px-2">
@@ -120,94 +120,16 @@
         </div>
     </div>
 
-    <div class="sidebar" id="sidebar">
-        <div class="brand"><i class="bi bi-flower1"></i> PNR DIGITAL</div>
-
-        <div class="sidebar-content">
-            <div class="nav-item active" data-view="main">
-                <span><i class="bi bi-grid-1x2-fill me-2"></i> Dashboard</span>
-            </div>
-
-            <a href="rpw.html" target="_blank" class="nav-item"
-                style="text-decoration: none; display: block; color: inherit;">
-                <span><i class="bi bi-bar-chart-fill me-2" style="color: #10b981;"></i> Dashboard Perosak RPW</span>
-            </a>
-
-            <div class="nav-item" id="navTasks" style="display:none" data-view="tasks">
-                <span><i class="bi bi-list-task me-2"></i> Tugasan Saya</span>
-                <span class="badge-pending" id="badgeTask" style="background:#dc2626;">0</span>
-            </div>
-
-            <div class="nav-item" id="navVerify" style="display:none" data-view="verify">
-                <span><i class="bi bi-check-circle-fill me-2"></i> Pengesahan</span>
-                <span class="badge-pending" id="badgePending">0</span>
-            </div>
-
-            <div class="nav-item shadow-sm mt-2" id="navEfficiency" style="display:none; background-color: #e0f2fe; color: #0369a1;" data-view="efficiency">
-                <span><i class="bi bi-clock-history me-2" style="color: #0284c7;"></i> Rekod Pengesahan</span>
-            </div>
-
-
-            <div class="nav-item shadow-sm mt-2" id="navUsers" style="display:none; background-color: #e0f2fe; color: #0369a1;"
-                data-view="users">
-                <span><i class="bi bi-people-fill me-2" style="color: #0284c7;"></i> Urus Pengguna</span>
-            </div>
-
-            <div class="nav-item shadow-sm mt-2" id="navRedundant" style="display:none; background-color: #e0f2fe; color: #0369a1;"
-                data-view="redundant">
-                <span><i class="bi bi-shield-check me-2" style="color: #0284c7;"></i> Semakan Data Redundant</span>
-                <span class="badge-pending" id="badgeRedundant" style="display:none; background-color: #0284c7; color: white;">0</span>
-            </div>
-
-            <div class="nav-item shadow-sm mt-2" id="navSKU" style="background-color: #e0f2fe; color: #0369a1;"
-                onclick="ViewManager.switchTab('sku', this)">
-                <span><i class="bi bi-trophy-fill me-2" style="color: #0284c7;"></i> Pencapaian SKU</span>
-            </div>
-
-            <div class="nav-item shadow-sm mt-2" id="navTumpuan" style="display:none; background-color: #f8fafc; color: #0f172a;"
-                data-view="tumpuan">
-                <span><i class="bi bi-graph-up-arrow me-2" style="color: #334155;"></i> Analisis Tumpuan</span>
-            </div>
-
-            <hr class="my-3" style="border-color: #e2e8f0; opacity: 1;">
-
-            <div class="p-3 rounded-3 border shadow-sm mt-2 bg-white" style="border-color: #cbd5e1 !important;">
-                <div class="d-flex align-items-center mb-2">
-                    <div class="bg-danger text-white rounded p-1 me-2 shadow-sm d-flex align-items-center justify-content-center"
-                        style="width:26px; height:26px;"><i class="bi bi-bug-fill small"></i></div>
-                    <small class="fw-bold text-dark"
-                        style="line-height:1.2; font-size: 0.75rem;">Pemantauan<br>Perangkap RPW</small>
-                </div>
-                <p class="text-muted mb-2" style="font-size: 0.7rem;">Akses pantas ke data perangkap kumbang.</p>
-                <button id="btnOpenRPW" class="btn btn-outline-danger btn-sm w-100 fw-bold py-1"
-                    style="font-size: 0.75rem;">
-                    <i class="bi bi-box-arrow-up-right me-1"></i> Buka Sistem
-                </button>
-            </div>
-        </div>
-        <div class="sidebar-footer">
-            <div class="nav-item mb-3 bg-success text-white shadow-sm rounded-3" data-view="form"
-                style="cursor: pointer;">
-                <span><i class="bi bi-plus-lg me-2"></i> Tambah Data</span>
-            </div>
-            <div class="d-flex align-items-center justify-content-between px-2">
-                <div><small class="text-muted d-block text-uppercase"
-                        style="font-size: 0.7rem; font-weight:700;">Pengguna</small><strong id="uDisp"
-                        class="text-dark fw-bold" style="font-size:0.9rem">-</strong></div>
-                <button class="btn btn-link text-danger btn-sm p-0" id="btnLogout" title="Log Keluar"><i
-                        class="bi bi-box-arrow-right fs-5"></i></button>
-            </div>
-        </div>
-    </div>
+    <aside class="sidebar" id="sidebar" aria-label="Navigasi utama">
+      <a class="brand" href="./index.html"><span class="brand-mark"><i class="bi bi-flower1"></i></span><span>PNR<span class="brand-sub">DIGITAL WORKSPACE</span></span></a>
+      <button type="button" class="new-survey" data-view="form"><i class="bi bi-plus-lg"></i> Bancian baharu</button>
+      <div class="sidebar-content"><div class="nav-section-label">RUANG KERJA</div><button type="button" class="nav-item active" data-view="main" ><span><i class="bi bi-grid-1x2" aria-hidden="true"></i>Overview</span></button><button type="button" class="nav-item " id="navTasks" data-view="tasks" style="display:none" ><span><i class="bi bi-check2-square" aria-hidden="true"></i>Tugasan saya</span><span class="badge-pending" id="badgeTask">0</span></button><button type="button" class="nav-item " id="navVerify" data-view="verify" style="display:none" ><span><i class="bi bi-clipboard-check" aria-hidden="true"></i>Pengesahan</span><span class="badge-pending" id="badgePending">0</span></button><div class="nav-section-label">ANALISIS & PENGURUSAN</div><button type="button" class="nav-item " id="navSKU" data-view="sku" ><span><i class="bi bi-bullseye" aria-hidden="true"></i>Pencapaian SKU</span></button><button type="button" class="nav-item " id="navTumpuan" data-view="tumpuan" style="display:none" ><span><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>Analisis tumpuan</span></button><button type="button" class="nav-item " id="navEfficiency" data-view="efficiency" style="display:none" ><span><i class="bi bi-clock-history" aria-hidden="true"></i>Prestasi pengesahan</span></button><button type="button" class="nav-item " id="navRedundant" data-view="redundant" style="display:none" ><span><i class="bi bi-intersect" aria-hidden="true"></i>Semakan pertindihan</span><span class="badge-pending" id="badgeRedundant">0</span></button><button type="button" class="nav-item " id="navUsers" data-view="users" style="display:none" ><span><i class="bi bi-people" aria-hidden="true"></i>Pengguna</span></button>
+      <div class="nav-section-label">MODUL BERKAITAN</div><button id="btnOpenRPW" class="nav-item"><span><i class="bi bi-bug"></i> Perangkap RPW</span><i class="bi bi-arrow-up-right"></i></button>
+      </div>
+      <div class="sidebar-footer"><div class="profile-avatar"><i class="bi bi-person"></i></div><div class="profile-copy"><small>Pegawai bertugas</small><strong id="uDisp">—</strong></div><button id="btnLogout" aria-label="Log keluar" title="Log keluar"><i class="bi bi-box-arrow-right"></i></button></div>
+    </aside>
     <div class="main-content" role="main">
-        <header class="workspace-header"><div><span class="workspace-eyebrow">JABATAN PERTANIAN MALAYSIA</span><strong>Pelaporan bancian & pemantauan perosak</strong></div><span class="workspace-version">V2 · Percubaan</span></header>
-        <div class="d-md-none mb-3 d-flex justify-content-between align-items-center bg-white p-3 rounded shadow-sm">
-            <span class="fw-bold text-success fs-5"><i class="bi bi-flower1"></i> PNR</span>
-            <button class="btn btn-light btn-sm border"
-                onclick="document.getElementById('sidebar').classList.toggle('active'); document.getElementById('mobileOverlay').classList.toggle('active');"><i
-                    class="bi bi-list fs-5"></i></button>
-        </div>
-
+        <header class="workspace-header"><div class="workspace-breadcrumb"><span>Biosekuriti tumbuhan</span><i class="bi bi-chevron-right"></i><strong id="workspaceViewLabel">Overview</strong></div><div class="workspace-header-right"><span class="workspace-version">V2 / Percubaan</span><button type="button" class="icon-button" id="workspaceMenu" aria-label="Buka menu navigasi"><i class="bi bi-list"></i></button></div></header>
         <!-- 📱 BUTANG FILTER MOBILE (hanya papar pada ≤768px) — DIKONGSI SEMUA VIEW -->
         <button class="btn btn-primary btn-sm fw-bold d-md-none mb-3 shadow-sm" id="btnMobileFilterTop" style="display:none;" onclick="MobileFilter.open()">
             <i class="bi bi-funnel-fill me-1"></i> Tapisan Data
@@ -256,116 +178,26 @@
         </div>
 
         <div id="view-main" class="app-view" tabindex="-1">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-                <div>
-                    <h4 class="fw-bold m-0 text-dark">Overview pemantauan</h4>
-                    <p class="text-muted mb-1">Ringkasan rekod bancian yang telah disahkan</p><small class="text-muted" id="lastUpdate" role="status">Menunggu data…</small>
-                </div>
-                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-                    <div class="btn-group shadow-sm">
-                        <button class="btn btn-white border bg-white text-secondary btn-sm px-3" id="btnRefreshDash" aria-label="Muat semula data" title="Muat semula data"><i
-                                class="bi bi-arrow-clockwise"></i></button>
-                        <button class="btn btn-success btn-sm px-3" id="btnDlExcel"><i
-                                class="bi bi-file-earmark-excel me-1"></i> Excel</button>
-                        <button class="btn btn-danger btn-sm px-3" id="btnDlPDF"><i
-                                class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
-                    </div>
-                    <div class="btn-group shadow-sm">
-                        <button class="btn btn-dark btn-sm px-3" id="btnDlGeoJSON"><i class="bi bi-geo-fill me-1"></i>
-                            GeoJSON</button>
-                        <button class="btn btn-primary btn-sm px-3" id="btnDlKML"><i
-                                class="bi bi-pin-map-fill me-1"></i> KML</button>
-                    </div>
-                </div>
+          <section class="overview-heading"><div><div class="section-eyebrow">PUSAT PEMANTAUAN</div><h1>Overview bancian<span class="title-period">.</span></h1><p>Daripada pemerhatian lapangan kepada tindakan.</p></div><div class="overview-actions"><button class="icon-button" id="btnRefreshDash" title="Muat semula data" aria-label="Muat semula data"><i class="bi bi-arrow-clockwise"></i></button><div class="dropdown"><button class="workspace-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-download"></i> Eksport <i class="bi bi-chevron-down"></i></button><ul class="dropdown-menu dropdown-menu-end export-menu"><li><button class="dropdown-item" id="btnDlExcel"><i class="bi bi-file-earmark-excel"></i> Excel</button></li><li><button class="dropdown-item" id="btnDlPDF"><i class="bi bi-file-earmark-pdf"></i> PDF</button></li><li><button class="dropdown-item" id="btnDlGeoJSON">GeoJSON</button></li><li><button class="dropdown-item" id="btnDlKML">KML</button></li></ul></div><button class="workspace-button primary" data-view="form"><i class="bi bi-plus-lg"></i> Bancian baharu</button></div></section>
+          <div class="overview-toolbar"><div class="workspace-tabs" role="tablist" aria-label="Paparan pemantauan"><button role="tab" id="tab-overview" aria-selected="true" aria-controls="overviewPanel" data-dashboard-tab="overview"><i class="bi bi-grid"></i> Ringkasan</button><button role="tab" id="tab-geo" aria-selected="false" aria-controls="geoPanel" tabindex="-1" data-dashboard-tab="geo"><i class="bi bi-map"></i> Peta</button><button role="tab" id="tab-records" aria-selected="false" aria-controls="surveyRecords" tabindex="-1" data-dashboard-tab="records"><i class="bi bi-table"></i> Rekod</button></div><div class="period-actions"><select id="quickPeriod" aria-label="Tempoh pantas"><option value="all">Semua tempoh</option><option value="month">Bulan ini</option><option value="90">90 hari terkini</option><option value="custom" disabled>Tempoh tersuai</option></select><button class="workspace-button" id="toggleWorkspaceFilters" aria-expanded="true" aria-controls="filterSection"><i class="bi bi-sliders2"></i> Tapis</button></div></div>
+          <div class="data-meta"><span id="dashboardContext" role="status">Menunggu rekod disahkan…</span><small id="lastUpdate" role="status">Menunggu sambungan</small></div>
+          <div class="metrics-grid" id="kpiCardsContainer"><div class="metric-placeholder">Memuatkan metrik bancian…</div></div>
+          <p class="metric-note"><i class="bi bi-info-circle"></i> Jumlah luas dilaporkan boleh bertindih antara lawatan atau perosak. Rekod berulang bukan lokasi unik.</p>
+          <div id="overviewPanel" role="tabpanel" aria-labelledby="tab-overview" data-dashboard-panel="overview">
+            <div class="analysis-grid">
+              <section class="workspace-panel trend-panel"><header class="panel-heading"><div><span class="section-eyebrow">AKTIVITI LAPANGAN</span><h2>Trend pelaporan</h2></div><span class="panel-unit">Rekod / bulan</span></header><div class="trend-chart"><canvas id="surveyTrend" aria-label="Bilangan rekod bancian disahkan mengikut bulan" role="img"></canvas><p id="trendEmpty" hidden>Tiada rekod bertarikh untuk tempoh ini.</p></div><div class="panel-footnote" id="trendCaption">Mengikut tarikh bancian, berdasarkan tapisan semasa.</div></section>
+              <section class="workspace-panel severity-panel"><header class="panel-heading"><div><span class="section-eyebrow">INTENSITI SERANGAN</span><h2>Tahap keterukan</h2></div><i class="bi bi-activity"></i></header><div class="severity-chart"><canvas id="cPie" role="img" aria-label="Bilangan rekod mengikut tahap keterukan"></canvas></div><div id="legendContainer"></div></section>
+              <section class="workspace-panel pest-panel" id="pestAnalysis"><header class="panel-heading"><div><span class="section-eyebrow">PEROSAK UTAMA</span><h2 id="tajukCBar">Luas serangan mengikut perosak</h2><small id="subCBar">Klik bar untuk lihat pecahan tanaman</small></div><button id="btnBackPest" class="workspace-button" style="display:none"><i class="bi bi-arrow-left"></i> Kembali</button></header><div class="pest-chart"><canvas id="cBar" role="img" aria-label="Luas serangan perosak dalam hektar"></canvas></div></section>
+              <section class="workspace-panel attention-panel"><header class="panel-heading"><div><span class="section-eyebrow">UNTUK PERHATIAN</span><h2>Insiden dilaporkan</h2></div><i class="bi bi-crosshair"></i></header><div id="smartSummary" aria-live="polite">Memuatkan ringkasan…</div><div class="panel-footnote">Insiden mengikut nisbah luas serangan yang dilaporkan.</div></section>
             </div>
-
-            <div class="dashboard-context" id="dashboardContext" role="status">Menunggu rekod bancian…</div>
-            <div class="row g-3 mb-3" id="kpiCardsContainer"></div>
-            <p class="metric-note">Luas ialah jumlah yang dilaporkan; lawatan berulang dan serangan pelbagai perosak boleh melibatkan kawasan yang sama.</p>
-            <nav class="dashboard-jumps" aria-label="Bahagian dashboard">
-                <a href="#pestAnalysis">Analisis perosak</a><a href="#map">Taburan lokasi</a><a href="#surveyRecords">Rekod bancian</a>
-            </nav>
-            <div class="summary-panel mb-4"><div id="smartSummary" class="text-dark" aria-live="polite"><span class="spinner-border spinner-border-sm me-2"></span>Memuatkan ringkasan…</div></div>
-
-            <div class="row g-3 mb-4" id="pestAnalysis">
-                <div class="col-md-8">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div
-                            class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="fw-bold text-secondary m-0" id="tajukCBar">Carta Serangan Perosak Tertinggi
-                                    (Ha)</h6>
-                                <small class="text-muted d-block mt-1 fw-bold" style="font-size: 0.75rem;"
-                                    id="subCBar"><i class="bi bi-hand-index-thumb-fill text-primary me-1"></i> Klik pada
-                                    bar untuk lihat pecahan</small>
-                            </div>
-                            <button id="btnBackPest" class="btn btn-sm btn-outline-secondary shadow-sm"
-                                style="display:none;"><i class="bi bi-arrow-left"></i> Kembali</button>
-                        </div>
-                        <div class="card-body px-4 pb-4">
-                            <div style="height: 350px"><canvas id="cBar"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-header bg-transparent border-0 py-3 d-flex align-items-center px-4 pt-4">
-                            <div class="icon-shape bg-warning text-white rounded-3 p-2 me-3 shadow-sm d-flex align-items-center justify-content-center"
-                                style="width: 40px; height: 40px;"><i class="bi bi-pie-chart-fill"></i></div>
-                            <h6 class="m-0 fw-bold text-secondary">Tahap Keterukan</h6>
-                        </div>
-                        <div class="card-body text-center position-relative px-4 pb-4">
-                            <div style="height: 250px;"><canvas id="cPie"></canvas></div>
-                            <div class="mt-4 pt-3 border-top" id="legendContainer"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-3 mb-4">
-                <div class="col-md-8">
-                    <div class="card shadow-sm border-0 h-100 rounded-4 overflow-hidden">
-                        <div
-                            class="card-header bg-white border-bottom pt-3 pb-2 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                            <h6 class="fw-bold text-dark m-0 d-flex align-items-center"><i
-                                    class="bi bi-map-fill text-danger me-2"></i>Peta Taburan & Hotspot Serangan</h6>
-                            <span
-                                class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill py-1 px-3 d-flex align-items-center"
-                                style="font-size: 0.75rem;">
-                                <i class="bi bi-info-circle-fill me-1"></i> Tip: Klik pada pin/marker untuk papar
-                                perincian lokasi & perosak
-                            </span>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="map-box border-0 rounded-0" id="map" style="height: 420px;"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card shadow-sm border-0 h-100 rounded-4 overflow-hidden">
-                        <div class="card-header bg-white border-bottom pt-3 pb-2 px-4">
-                            <h6 class="fw-bold m-0 text-danger d-flex align-items-center"><i
-                                    class="bi bi-fire me-2"></i>Hotspot Daerah</h6>
-                        </div>
-                        <div class="card-body p-0" style="max-height: 420px; overflow-y: auto;">
-                            <table class="table table-hover small mb-0 custom-zebra-table">
-                                <thead class="table-light sticky-top shadow-sm">
-                                    <tr>
-                                        <th class="ps-4">Daerah</th>
-                                        <th class="text-end pe-4">Luas Serangan (Ha)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="hotspotTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="table-box shadow-sm border-0 rounded-4 p-4 mb-4" id="surveyRecords">
+          </div>
+          <div id="geoPanel" role="tabpanel" aria-labelledby="tab-geo" data-dashboard-panel="geo" hidden>
+            <div class="geo-layout"><section class="workspace-panel map-panel"><header class="panel-heading"><div><span class="section-eyebrow">PENGAWASAN GEOGRAFI</span><h2>Taburan lokasi bancian</h2></div><span class="panel-unit">Klik pin untuk butiran</span></header><div id="map" class="map-box"></div></section><section class="workspace-panel hotspot-panel"><header class="panel-heading"><div><span class="section-eyebrow">5 DAERAH TERTINGGI</span><h2>Luas serangan</h2></div></header><table class="table custom-zebra-table"><thead><tr><th>Daerah · Negeri</th><th class="text-end">ha</th></tr></thead><tbody id="hotspotTable"></tbody></table><div class="panel-footnote">Jumlah luas dalam rekod ditapis; bukan ukuran risiko ramalan.</div></section></div>
+          </div>
+            <div class="table-box shadow-sm border-0 rounded-4 p-4 mb-4" id="surveyRecords" data-dashboard-panel="records" hidden>
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
                     <h6 class="fw-bold m-0 text-dark d-flex align-items-center"><i
-                            class="bi bi-table me-2 text-primary"></i>Jadual Rekod</h6>
+                            class="bi bi-table me-2 text-primary"></i>Daftar bancian</h6>
                     <div class="d-flex align-items-center gap-2 flex-grow-1 justify-content-end"
                         style="max-width: 400px;">
                         <div class="input-group input-group-sm shadow-sm">
@@ -409,8 +241,8 @@
                 <!-- 📱 MOBILE CARD LIST VIEW (hanya papar pada ≤768px) -->
                 <div class="mobile-card-list d-none" id="mobileCardList"></div>
                 <div class="d-flex justify-content-end gap-2 mt-2">
-                    <button class="btn btn-sm btn-white border shadow-sm px-3" id="btnPrevPg">Prev</button>
-                    <button class="btn btn-sm btn-white border shadow-sm px-3" id="btnNextPg">Next</button>
+                    <button class="btn btn-sm btn-white border shadow-sm px-3" id="btnPrevPg">Sebelum</button>
+                    <button class="btn btn-sm btn-white border shadow-sm px-3" id="btnNextPg">Seterusnya</button>
                 </div>
             </div>
         </div>
@@ -903,23 +735,24 @@
         <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-        <script src="js/efficiency.js?v=202609090231-523d113"></script>
+        <script src="js/efficiency.js?v=20260909-redesign2"></script>
 
-        <script src="./js/config.js?v=202609090231-523d113"></script>
-        <script src="./js/api.js?v=202609090231-523d113"></script>
-        <script src="./js/auth.js?v=202609090231-523d113"></script>
-        <script src="./js/map.js?v=202609090231-523d113"></script>
-        <script src="./js/filter.js?v=202609090231-523d113"></script>
-        <script src="./js/charts.js?v=202609090231-523d113"></script>
-        <script src="./js/exports.js?v=202609090231-523d113"></script>
-        <script src="./js/users.js?v=202609090231-523d113"></script>
-        <script src="./js/records.js?v=202609090231-523d113"></script>
-        <script src="./js/dashboard.js?v=202609090231-523d113"></script>
-        <script src="./js/redundant.js?v=202609090231-523d113"></script>
-        <script src="./js/kpi.js?v=202609090231-523d113"></script>
-        <script src="./js/main.js?v=202609090231-523d113"></script>
-        <script src="./js/nlp-bot.js?v=202609090231-523d113"></script>
-        <script src="./js/tumpuan.js?v=202609090231-523d113"></script>
+        <script src="./js/config.js?v=20260909-redesign2"></script>
+        <script src="./js/api.js?v=20260909-redesign2"></script>
+        <script src="./js/auth.js?v=20260909-redesign2"></script>
+        <script src="./js/map.js?v=20260909-redesign2"></script>
+        <script src="./js/filter.js?v=20260909-redesign2"></script>
+        <script src="./js/charts.js?v=20260909-redesign2"></script>
+        <script src="./js/exports.js?v=20260909-redesign2"></script>
+        <script src="./js/users.js?v=20260909-redesign2"></script>
+        <script src="./js/records.js?v=20260909-redesign2"></script>
+        <script src="./js/dashboard.js?v=20260909-redesign2"></script>
+        <script src="./js/redundant.js?v=20260909-redesign2"></script>
+        <script src="./js/kpi.js?v=20260909-redesign2"></script>
+        <script src="./js/main.js?v=20260909-redesign2"></script>
+        <script src="./js/nlp-bot.js?v=20260909-redesign2"></script>
+        <script src="./js/tumpuan.js?v=20260909-redesign2"></script>
+<script src="./js/workspace.js?v=20260909-redesign2"></script>
 </body>
 
 </html>

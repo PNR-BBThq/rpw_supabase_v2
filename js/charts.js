@@ -169,44 +169,12 @@ const ChartManager = {
                     borderRadius: 8,
                     barThickness: 22,
                     maxBarThickness: 26,
-                    backgroundColor: (context) => {
-                        const chart = context.chart;
-                        const {ctx, chartArea} = chart;
-                        if (!chartArea) return '#ef4444';
-
-                        const idx = context.dataIndex;
-                        if (idx === undefined) return '#ef4444';
-
-                        // Gradient warna dinamik mengikut ranking & level carta
-                        const palettes = {
-                            1: [
-                                ['#991b1b', '#ef4444'], ['#b91c1c', '#f87171'], ['#c2410c', '#f97316'],
-                                ['#d97706', '#fbbf24'], ['#b45309', '#f59e0b'], ['#15803d', '#4ade80'],
-                                ['#0f766e', '#2dd4bf'], ['#0369a1', '#38bdf8'], ['#4338ca', '#818cf8'], ['#475569', '#94a3b8']
-                            ],
-                            2: [
-                                ['#c2410c', '#f97316'], ['#d97706', '#fbbf24'], ['#b45309', '#f59e0b'],
-                                ['#047857', '#34d399'], ['#0284c7', '#38bdf8'], ['#475569', '#94a3b8']
-                            ],
-                            3: [
-                                ['#1d4ed8', '#60a5fa'], ['#0369a1', '#38bdf8'], ['#0f766e', '#2dd4bf'],
-                                ['#15803d', '#4ade80'], ['#d97706', '#fbbf24'], ['#475569', '#94a3b8']
-                            ]
-                        };
-
-                        const currentPalette = palettes[paletteType] || palettes[1];
-                        const pair = currentPalette[idx % currentPalette.length];
-
-                        if (!pair) return '#ef4444';
-
-                        const gradient = ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
-                        gradient.addColorStop(0, pair[0]);
-                        gradient.addColorStop(1, pair[1]);
-                        return gradient;
-                    }
+                    backgroundColor: context => context.dataIndex === 0 ? '#36573d' : '#a4b884',
+                    hoverBackgroundColor: '#789153'
                 }]
             },
             options: {
+                animation: false,
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,

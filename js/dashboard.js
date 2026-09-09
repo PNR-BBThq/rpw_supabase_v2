@@ -72,7 +72,7 @@ const DashboardManager = {
             FilterManager.updateBtnText('selNegeri');
         }
 
-        MapManager.initMap();
+        if (typeof Workspace === 'undefined' || Workspace.tab === 'geo') MapManager.initMap();
         FilterManager.runFilter('n');
     },
 
@@ -112,68 +112,12 @@ const DashboardManager = {
         });
 
         const peratus = tt > 0 ? ((ts/tt)*100).toFixed(1) : "0.0";
+        const fmt = value => Number(value).toLocaleString('ms-MY', {maximumFractionDigits:2});
         document.getElementById('kpiCardsContainer').innerHTML = `
-            <div class="col-6 col-md-3">
-                <div class="kpi-card kpi-bancian d-flex flex-column justify-content-between">
-                    <div>
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="kpi-title">Luas bertanam dilaporkan</span>
-                            <div class="kpi-icon-circle bg-success-subtle text-success"><i class="bi bi-rulers"></i></div>
-                        </div>
-                        <div class="kpi-value">${tt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <small class="fs-6 fw-normal text-muted">Ha</small></div>
-                    </div>
-                    <div class="d-flex align-items-center mt-3 pt-2 border-top border-light" style="font-size: 0.75rem; color: #475569; font-weight: 700;">
-                        <span class="badge bg-success-subtle text-success border border-success rounded-circle me-2 p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 22px; height: 22px;"><i class="bi bi-globe-americas" style="font-size: 0.7rem;"></i></span>
-                        <span class="text-truncate">Jumlah luas dalam rekod ditapis</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="kpi-card kpi-serangan d-flex flex-column justify-content-between">
-                    <div>
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="kpi-title">Luas Serangan</span>
-                            <div class="kpi-icon-circle bg-danger-subtle text-danger"><i class="bi bi-bug-fill"></i></div>
-                        </div>
-                        <div class="kpi-value text-danger">${ts.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <small class="fs-6 fw-normal text-muted">Ha</small></div>
-                    </div>
-                    <div class="d-flex align-items-center mt-3 pt-2 border-top border-light" style="font-size: 0.75rem; color: #475569; font-weight: 700;">
-                        <span class="badge bg-danger-subtle text-danger border border-danger rounded-circle me-2 p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 22px; height: 22px;"><i class="bi bi-exclamation-triangle-fill" style="font-size: 0.7rem;"></i></span>
-                        <span class="text-truncate">Jumlah Luas Serangan Perosak Semasa</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="kpi-card kpi-peratus d-flex flex-column justify-content-between">
-                    <div>
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="kpi-title">Nisbah luas serangan</span>
-                            <div class="kpi-icon-circle bg-warning-subtle text-warning"><i class="bi bi-percent"></i></div>
-                        </div>
-                        <div class="kpi-value">${peratus}%</div>
-                    </div>
-                    <div class="d-flex align-items-center mt-3 pt-2 border-top border-light" style="font-size: 0.75rem; color: #475569; font-weight: 700;">
-                        <span class="badge bg-warning-subtle text-warning border border-warning rounded-circle me-2 p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 22px; height: 22px;"><i class="bi bi-activity" style="font-size: 0.7rem;"></i></span>
-                        <span class="text-truncate">Jumlah serangan ÷ luas bertanam</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="kpi-card kpi-rekod d-flex flex-column justify-content-between">
-                    <div>
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="kpi-title">Bil. Rekod</span>
-                            <div class="kpi-icon-circle bg-primary-subtle text-primary"><i class="bi bi-file-text-fill"></i></div>
-                        </div>
-                        <div class="kpi-value">${AppState.fData.length.toLocaleString('en-US')}</div>
-                    </div>
-                    <div class="d-flex align-items-center mt-3 pt-2 border-top border-light" style="font-size: 0.75rem; color: #475569; font-weight: 700;">
-                        <span class="badge bg-primary-subtle text-primary border border-primary rounded-circle me-2 p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 22px; height: 22px;"><i class="bi bi-pin-map-fill" style="font-size: 0.7rem;"></i></span>
-                        <span class="text-truncate">Bilangan rekod bancian disahkan</span>
-                    </div>
-                </div>
-            </div>
-        `;
+            <article class="metric-tile metric-featured"><div class="metric-label">Rekod bancian <i class="bi bi-journal-check"></i></div><div class="metric-number">${fmt(AppState.fData.length)}</div><div class="metric-footer"><span class="metric-status">Disahkan</span><span>Dalam tapisan semasa</span></div></article>
+            <article class="metric-tile"><div class="metric-label">Luas bertanam dilaporkan <i class="bi bi-bounding-box"></i></div><div class="metric-number">${fmt(tt)}<small>ha</small></div><div class="metric-footer">Jumlah luas dalam rekod bancian</div></article>
+            <article class="metric-tile"><div class="metric-label">Luas serangan <i class="bi bi-bug"></i></div><div class="metric-number">${fmt(ts)}<small>ha</small></div><div class="metric-footer"><span class="metric-warning">${AppState.fData.filter(d => Number(d.ls) > 0).length} rekod</span><span>melaporkan serangan</span></div></article>
+            <article class="metric-tile"><div class="metric-label">Nisbah luas serangan <i class="bi bi-percent"></i></div><div class="metric-number">${peratus}<small>%</small></div><div class="metric-footer">Luas serangan ÷ luas bertanam</div></article>`;
 
         const context = document.getElementById('dashboardContext');
         if (context) {
@@ -185,6 +129,7 @@ const DashboardManager = {
             context.textContent = `${AppState.fData.length.toLocaleString('ms-MY')} daripada ${AppState.mData.length.toLocaleString('ms-MY')} rekod disahkan · ${labels.join(' / ') || 'Semua tempoh dan pilihan'} · ${pts.length} rekod berkoordinat sah`;
         }
         if (typeof ChartManager !== 'undefined') ChartManager.updateCharts(pm, km);
+        if (typeof Workspace !== 'undefined') Workspace.updateData();
         MapManager.updateMap(pts);
         DashboardManager.updateHotspot(hData);
         DashboardManager.genSummary(pm, tt, ts);
@@ -680,6 +625,12 @@ const MobileFilter = {
         const sheet = document.getElementById('filterBottomSheet');
         const overlay = document.getElementById('filterDrawerOverlay');
 
+        const content = document.getElementById('filterSheetBody')?.firstElementChild;
+        const original = document.getElementById('filterSection');
+        if (this._filterMoved && content && original) {
+            original.appendChild(content);
+            this._filterMoved = false;
+        }
         if (sheet) sheet.classList.remove('active');
         if (overlay) overlay.classList.remove('active');
         document.body.style.overflow = '';

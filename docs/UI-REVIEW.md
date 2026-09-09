@@ -30,3 +30,20 @@ Skop: PNR-BBThq/rpw_supabase_v2 sahaja. Semakan kod dashboard, penapis, borang, 
 ## Pengesahan dan batas
 
 Semakan sintaks JavaScript, rujukan aset tempatan, ID unik dashboard, dan fixture logik dashboard (tiada data, sifar serangan, angka teks, koordinat tidak sah, daerah nama sama di negeri berlainan). Tiada ujian pelayar atau sesi log masuk Supabase sebenar; perubahan ini perlu percubaan pengguna pada V2. Tiada angka peningkatan prestasi didakwa tanpa pengukuran.
+
+
+## Reka bentuk semula ruang kerja — 9 September 2026
+
+Maklum balas pengguna: iterasi awal terlalu mirip asal. Iterasi kedua menggantikan struktur overview dan sidebar, bukan sekadar lapisan warna.
+
+- Sidebar gelap dengan tindakan bancian baharu, menu mengikut kumpulan, profil pegawai dan pautan RPW tunggal. Semua ID menu berasaskan peranan dikekalkan.
+- Tiga paparan Ringkasan / Peta / Rekod. Kawalan tab menyokong anak panah, Home/End dan fokus papan kekunci. Penapis dikongsi kekal tersedia pada modul pengesahan, SKU dan pengguna.
+- Kad metrik dibina semula; trend bulanan rekod disahkan, analisis perosak, keterukan dan insiden dalam grid baharu. Tiada angka contoh atau perubahan data.
+- Menu eksport tunggal, pilihan semua tempoh/bulan ini/90 hari, penapis boleh dibuka dan ditutup.
+- Peta hanya diinisialisasi apabila paparan Peta dibuka. Carta trend menggunakan semula instance; warna carta perosak seragam supaya warna tidak memberi makna risiko palsu.
+- Skrin log masuk dua panel. Borang dipecahkan kepada seksyen A–D dengan navigasi dan kemajuan medan wajib; fungsi penghantaran/draf asal dikekalkan. Tema RPW diselaraskan dengan navigasi kembali ke PNR.
+- Penapis telefon dikembalikan ke tempat asal apabila ditutup, membolehkan pertukaran modul/saiz paparan.
+
+Rujukan arah reka bentuk: Linear “A calmer interface for a product in motion” (https://linear.app/now/behind-the-latest-design-refresh) dan Vercel Geist (https://vercel.com/geist/introduction). Pelaksanaan tersuai dengan stack Bootstrap/JavaScript sedia ada; tiada penambahan dependency.
+
+Pengesahan tambahan: tests/workspace.cjs menguji tab, tempoh 90 hari, bulan semasa, agregasi bulanan sah, keadaan kosong dan penggunaan semula carta. Semua ID dashboard terdahulu dikekalkan, tiada ID pendua pada tiga halaman, aset tempatan dan sintaks skrip inline/luaran disemak. Tiada pengujian visual pelayar, akses akaun sebenar atau penanda aras prestasi dijalankan.
