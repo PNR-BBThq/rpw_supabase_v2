@@ -19,7 +19,7 @@ const DashboardManager = {
 
         if (isOffline && !cachedRaw) {
             document.getElementById('smartSummary').innerHTML = '<div class="alert alert-danger">Tiada sambungan internet & tiada data simpanan.</div>';
-            return; 
+            return;
         }
 
         if (isOffline || cachedRaw) {
@@ -38,37 +38,37 @@ const DashboardManager = {
                     localStorage.setItem('pnr_dashboard_data', JSON.stringify(AppState.mData));
                     const now = new Date().toLocaleString('en-MY', { hour12: true });
                     localStorage.setItem('pnr_dashboard_time', now);
-                    
+
                     DashboardManager.processDataToUI(AppState.mData);
                     DashboardManager.updateLastUpdateLabel(now, 'ONLINE');
                     if (typeof TaskManager !== 'undefined') {
-                        await TaskManager.checkTaskCount(); 
+                        await TaskManager.checkTaskCount();
                     }
                 } else {
                     // Jika API gagal (cth: masalah CORS atau sesi luput) tatkala online
                     DashboardManager.updateLastUpdateLabel(cachedTime, 'ERROR');
                 }
-            } catch (e) { 
-                console.log("Gagal tarik data server:", e); 
+            } catch (e) {
+                console.log("Gagal tarik data server:", e);
                 DashboardManager.updateLastUpdateLabel(cachedTime, 'ERROR');
             }
         }
     },
 
     processDataToUI: function(dataList) {
-        const currentN = FilterManager.v('selNegeri'); 
+        const currentN = FilterManager.v('selNegeri');
         FilterManager.fillSel('selNegeri', dataList.map(d => d.n).filter((val, i, a) => a.indexOf(val) === i).sort(), 'n');
-        
-        if(AppState.uProf.state !== "ALL") { 
+
+        if(AppState.uProf.state !== "ALL") {
             const cbList = document.querySelectorAll('.chk-selNegeri');
             cbList.forEach(cb => {
                 if(cb.value === AppState.uProf.state) { cb.checked = true; cb.disabled = true; }
-                else { cb.checked = false; cb.disabled = true; } 
+                else { cb.checked = false; cb.disabled = true; }
             });
             const btn = document.getElementById('btnselNegeri');
             if(btn) { btn.innerText = AppState.uProf.state; btn.classList.add('disabled', 'bg-light'); }
         } else if (currentN.length > 0) {
-            document.querySelectorAll('.chk-selNegeri').forEach(cb => { if(currentN.includes(cb.value)) cb.checked = true; }); 
+            document.querySelectorAll('.chk-selNegeri').forEach(cb => { if(currentN.includes(cb.value)) cb.checked = true; });
             FilterManager.updateBtnText('selNegeri');
         }
 
@@ -84,7 +84,7 @@ const DashboardManager = {
         } else if (status === 'SYNCING') {
             el.innerHTML = `<span class="text-primary fw-bold"><i class="bi bi-cloud-download-fill"></i> Memuat Turun Data Server... (Cache: ${timeStr || "Tiada"})</span>`;
         } else if (status === 'ERROR') {
-            el.innerHTML = `<span class="text-warning fw-bold text-dark"><i class="bi bi-exclamation-triangle-fill text-danger"></i> Gagal Sambung ke Server/CORS! (Paparan Cache: ${timeStr || "Tiada"})</span>`;
+            el.innerHTML = `<span class="text-warning fw-bold text-dark"><i class="bi bi-exclamation-triangle-fill text-danger"></i> Data belum dapat dikemas kini. Cuba muat semula. (Simpanan: ${timeStr || "Tiada"})</span>`;
         } else {
             el.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-clock-history"></i> Data Offline (${timeStr || "Tiada Tarikh"})</span>`;
         }
@@ -92,23 +92,23 @@ const DashboardManager = {
 
     calcUI: function() {
         let tt=0, ts=0, pm={}, km={1:0,2:0,3:0,4:0,5:0}, pts=[], hData={};
-        
+
         AppState.fData.forEach(d => {
-            tt += (d.lt||0); 
-            ts += (d.ls||0);
+            tt += (Number(d.lt)||0);
+            ts += (Number(d.ls)||0);
             if(d.p) {
-                Object.entries(d.p).forEach(([k,v])=>pm[k]=(pm[k]||0)+parseFloat(v)); 
+                Object.entries(d.p).forEach(([k,v])=>pm[k]=(pm[k]||0)+parseFloat(v));
             } else if(d.ls>0) {
-                pm["Umum"]=(pm["Umum"]||0)+d.ls; 
+                pm["Umum"]=(pm["Umum"]||0)+d.ls;
             }
-            let l = parseInt(d.k)||0; 
+            let l = parseInt(d.k)||0;
             if(l>0 && l<=5) km[l]++;
-            
-            if(d.c && d.c.includes(',')) { 
-                let p = d.c.split(',').map(Number); 
-                if(p.length===2 && !isNaN(p[0])) pts.push({ coord: p, data: d }); 
+
+            if(d.c && d.c.includes(',')) {
+                let p = d.c.split(',').map(Number);
+                if(p.length===2 && p.every(Number.isFinite) && Math.abs(p[0]) <= 90 && Math.abs(p[1]) <= 180) pts.push({ coord: p, data: d });
             }
-            if(d.ls > 0 && d.d !== "-") hData[d.d] = (hData[d.d]||0) + d.ls;
+            if(d.ls > 0 && d.d !== "-") hData[`${d.d} · ${d.n}`] = (hData[`${d.d} · ${d.n}`]||0) + (Number(d.ls)||0);
         });
 
         const peratus = tt > 0 ? ((ts/tt)*100).toFixed(1) : "0.0";
@@ -117,14 +117,14 @@ const DashboardManager = {
                 <div class="kpi-card kpi-bancian d-flex flex-column justify-content-between">
                     <div>
                         <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="kpi-title">Luas Bancian</span>
+                            <span class="kpi-title">Luas bertanam dilaporkan</span>
                             <div class="kpi-icon-circle bg-success-subtle text-success"><i class="bi bi-rulers"></i></div>
                         </div>
                         <div class="kpi-value">${tt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <small class="fs-6 fw-normal text-muted">Ha</small></div>
                     </div>
                     <div class="d-flex align-items-center mt-3 pt-2 border-top border-light" style="font-size: 0.75rem; color: #475569; font-weight: 700;">
                         <span class="badge bg-success-subtle text-success border border-success rounded-circle me-2 p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 22px; height: 22px;"><i class="bi bi-globe-americas" style="font-size: 0.7rem;"></i></span>
-                        <span class="text-truncate">Jumlah Luas Bancian Semasa</span>
+                        <span class="text-truncate">Jumlah luas dalam rekod ditapis</span>
                     </div>
                 </div>
             </div>
@@ -147,14 +147,14 @@ const DashboardManager = {
                 <div class="kpi-card kpi-peratus d-flex flex-column justify-content-between">
                     <div>
                         <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="kpi-title">Peratus Serangan</span>
+                            <span class="kpi-title">Nisbah luas serangan</span>
                             <div class="kpi-icon-circle bg-warning-subtle text-warning"><i class="bi bi-percent"></i></div>
                         </div>
                         <div class="kpi-value">${peratus}%</div>
                     </div>
                     <div class="d-flex align-items-center mt-3 pt-2 border-top border-light" style="font-size: 0.75rem; color: #475569; font-weight: 700;">
                         <span class="badge bg-warning-subtle text-warning border border-warning rounded-circle me-2 p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 22px; height: 22px;"><i class="bi bi-activity" style="font-size: 0.7rem;"></i></span>
-                        <span class="text-truncate">Peratus Serangan Perosak Semasa</span>
+                        <span class="text-truncate">Jumlah serangan ÷ luas bertanam</span>
                     </div>
                 </div>
             </div>
@@ -169,17 +169,26 @@ const DashboardManager = {
                     </div>
                     <div class="d-flex align-items-center mt-3 pt-2 border-top border-light" style="font-size: 0.75rem; color: #475569; font-weight: 700;">
                         <span class="badge bg-primary-subtle text-primary border border-primary rounded-circle me-2 p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 22px; height: 22px;"><i class="bi bi-pin-map-fill" style="font-size: 0.7rem;"></i></span>
-                        <span class="text-truncate">Bilangan Lokasi Bancian Semasa</span>
+                        <span class="text-truncate">Bilangan rekod bancian disahkan</span>
                     </div>
                 </div>
             </div>
         `;
 
-        if (typeof ChartManager !== 'undefined') ChartManager.updateCharts(pm, km); 
-        MapManager.updateMap(pts); 
-        DashboardManager.updateHotspot(hData); 
-        DashboardManager.genSummary(pm, tt, ts); 
-        
+        const context = document.getElementById('dashboardContext');
+        if (context) {
+            const labels = ['selNegeri', 'selDaerah', 'selKategori', 'selTanaman', 'selPerosak'].flatMap(id => FilterManager.v(id));
+            const month = FilterManager.v('selBulan');
+            if (month) labels.push(month);
+            const start = FilterManager.v('dS'), end = FilterManager.v('dE');
+            if (start || end) labels.push(`${start || 'Awal'} hingga ${end || 'Terkini'}`);
+            context.textContent = `${AppState.fData.length.toLocaleString('ms-MY')} daripada ${AppState.mData.length.toLocaleString('ms-MY')} rekod disahkan · ${labels.join(' / ') || 'Semua tempoh dan pilihan'} · ${pts.length} rekod berkoordinat sah`;
+        }
+        if (typeof ChartManager !== 'undefined') ChartManager.updateCharts(pm, km);
+        MapManager.updateMap(pts);
+        DashboardManager.updateHotspot(hData);
+        DashboardManager.genSummary(pm, tt, ts);
+
         if (this.currentSortCol) {
             this.reExecuteSort();
         } else {
@@ -187,18 +196,22 @@ const DashboardManager = {
         }
     },
 
-    updateHotspot: function(hData) { 
-        const s = Object.entries(hData).sort((a,b)=>b[1]-a[1]).slice(0,5); 
-        document.getElementById('hotspotTable').innerHTML = s.length ? s.map(x=>`<tr><td class="fw-medium">${x[0]}</td><td class="text-end fw-bold text-danger">${x[1].toFixed(2)}</td></tr>`).join('') : '<tr><td colspan="2" class="text-center text-muted p-3">Tiada Data</td></tr>'; 
+    updateHotspot: function(hData) {
+        const s = Object.entries(hData).sort((a,b)=>b[1]-a[1]).slice(0,5);
+        document.getElementById('hotspotTable').innerHTML = s.length ? s.map(x=>`<tr><td class="fw-medium">${x[0]}</td><td class="text-end fw-bold text-danger">${x[1].toFixed(2)}</td></tr>`).join('') : '<tr><td colspan="2" class="text-center text-muted p-3">Tiada Data</td></tr>';
     },
 
     genSummary: function(pm, tt, ts) {
         const el = document.getElementById('smartSummary');
         if (!el) return;
-        
+
         this.stopCarousel();
 
-        if (ts === 0 || AppState.fData.length === 0) { 
+        if (AppState.fData.length === 0) {
+            el.innerHTML = '<div class="p-4"><strong>Tiada rekod sepadan</strong><p class="text-muted mb-0">Ubah tapisan atau tempoh bancian untuk melihat rekod lain.</p></div>';
+            return;
+        }
+        if (ts === 0) {
             el.innerHTML = `
             <div class="insight-carousel-card w-100">
                 <div class="insight-slide">
@@ -206,13 +219,13 @@ const DashboardManager = {
                     <div class="insight-details">
                         <span class="text-success fw-bold d-block small mb-1" style="letter-spacing:0.5px">RINGKASAN ANALISIS</span>
                         <h6 class="fw-bold mb-1 text-dark">Tiada Serangan Perosak Dilaporkan</h6>
-                        <span class="text-muted small">Semua lokasi bancian berada dalam keadaan selamat dan terkawal.</span>
+                        <span class="text-muted small">Tiada luas serangan direkodkan dalam pilihan ini. Semak butiran rekod untuk status lapangan.</span>
                     </div>
                 </div>
-            </div>`; 
-            return; 
+            </div>`;
+            return;
         }
-        
+
         // Gunakan kaedah original Analisis Pintar bagi pengiraan peratus serangan yang tepat
         const getPct = (d) => {
             const lt = parseFloat(d.lt) || 0;
@@ -242,14 +255,14 @@ const DashboardManager = {
                     pestNames = "Serangan Umum";
                 }
             } catch (e) { pestNames = d.p || "-"; }
-            
+
             const sev = parseInt(d.k) || 1;
             let sevText = "Rendah";
             let badgeColor = "#22c55e";
             if (sev >= 4) { sevText = "Sangat Teruk"; badgeColor = "#ef4444"; }
             else if (sev === 3) { sevText = "Sederhana"; badgeColor = "#eab308"; }
             else if (sev === 2) { sevText = "Rendah"; badgeColor = "#84cc16"; }
-            
+
             return {
                 negeri: d.n || "-",
                 daerah: d.d || d.l || "-",
@@ -263,7 +276,7 @@ const DashboardManager = {
         });
 
         this.renderInsightSlide(0);
-        this.startCarousel();
+        // Manual navigation keeps findings readable and avoids background timers.
     },
 
     renderInsightSlide: function(idx) {
@@ -271,7 +284,7 @@ const DashboardManager = {
         if (!el || !this.insightSlides.length) return;
         this.currentSlideIndex = (idx + this.insightSlides.length) % this.insightSlides.length;
         const slide = this.insightSlides[this.currentSlideIndex];
-        
+
         el.innerHTML = `
         <div class="insight-carousel-card w-100">
             <div class="insight-slide">
@@ -324,13 +337,13 @@ const DashboardManager = {
 
     resetCarousel: function() {
         this.stopCarousel();
-        this.startCarousel();
     },
 
     handleLiveSearch: function(val) {
         this.searchQuery = (val || "").toLowerCase().trim();
         AppState.pg = 1;
-        this.renTab();
+        clearTimeout(this.searchTimer);
+        this.searchTimer = setTimeout(() => this.renTab(), 180);
     },
 
     toggleExpandRow: function(detailId) {
@@ -340,7 +353,7 @@ const DashboardManager = {
         }
     },
 
-    renTab: function() { 
+    renTab: function() {
         let listToRender = AppState.fData;
         if (this.searchQuery && this.searchQuery !== "") {
             const q = this.searchQuery;
@@ -354,11 +367,11 @@ const DashboardManager = {
             });
         }
 
-        const st = (AppState.pg-1)*AppState.pSize; 
-        const dt = listToRender.slice(st, st+AppState.pSize); 
-        
-        document.getElementById('tBody').innerHTML = dt.length ? dt.map((d, i) => { 
-            const realIndex = AppState.fData.indexOf(d); 
+        const st = (AppState.pg-1)*AppState.pSize;
+        const dt = listToRender.slice(st, st+AppState.pSize);
+
+        document.getElementById('tBody').innerHTML = dt.length ? dt.map((d, i) => {
+            const realIndex = AppState.fData.indexOf(d);
             const rowId = `row_${d.id || (st+i)}`;
             const detailId = `detail_${d.id || (st+i)}`;
 
@@ -384,7 +397,7 @@ const DashboardManager = {
                 let pObj = typeof d.p === 'string' ? JSON.parse(d.p) : (d.p || {});
                 let sevObj = typeof d.pk === 'string' ? JSON.parse(d.pk) : (d.pk || {});
                 const lt = parseFloat(d.lt) || 0;
-                
+
                 if (pObj && Object.keys(pObj).length > 0) {
                     pestDetailsHTML = "<div class='mt-1'>" + Object.entries(pObj).map(([pestName, pestArea]) => {
                         const luasS = parseFloat(pestArea) || 0;
@@ -402,8 +415,8 @@ const DashboardManager = {
                         &bull; <strong>Serangan Umum</strong>, Luas serangan (<span class="text-danger fw-bold">${luasS.toFixed(2)} Ha</span>), (${pctS}) &minus; Skala keterukan (<span class="fw-bold text-danger">${sevVal}</span>)
                     </div>`;
                 }
-            } catch(e) { 
-                pestDetailsHTML = `<span class="text-danger">${d.p || "-"}</span>`; 
+            } catch(e) {
+                pestDetailsHTML = `<span class="text-danger">${d.p || "-"}</span>`;
             }
 
             const statusSah = d.st || "DISAHKAN";
@@ -422,8 +435,8 @@ const DashboardManager = {
                   <button class="btn btn-sm btn-outline-secondary me-1 shadow-sm" title="Lihat Data Terperinci" onclick="DataManager.viewRec(${realIndex})">
                     <i class="bi bi-card-list"></i>
                   </button>
-                  <button class="btn btn-sm btn-danger shadow-sm" 
-                    data-lokasi="${d.l}" data-pegawai="${d.pg}" data-coord="${d.c}" data-tarikh="${d.t}" 
+                  <button class="btn btn-sm btn-danger shadow-sm"
+                    data-lokasi="${d.l}" data-pegawai="${d.pg}" data-coord="${d.c}" data-tarikh="${d.t}"
                     onclick="ExportManager.klikJanaPDF(this)">
                     <i class="bi bi-file-earmark-pdf-fill"></i> PDF
                 </button>
@@ -450,17 +463,17 @@ const DashboardManager = {
                         </div>
                     </div>
                 </td>
-            </tr>`; 
-        }).join('') : '<tr><td colspan="7" class="text-center text-muted p-4">Tiada rekod dijumpai.</td></tr>'; 
-        
+            </tr>`;
+        }).join('') : '<tr><td colspan="7" class="text-center text-muted p-4">Tiada rekod dijumpai.</td></tr>';
+
         const totalPgs = Math.ceil(listToRender.length / AppState.pSize) || 1;
         document.getElementById('pgInfo').innerText = `Muka ${AppState.pg} dari ${totalPgs} (${listToRender.length} rekod)`;
 
         // Render mobile card-list view
         DashboardManager.renderMobileCards(dt);
     },
-    
-    movePg: function(v) { 
+
+    movePg: function(v) {
         let listToRender = AppState.fData;
         if (this.searchQuery && this.searchQuery !== "") {
             const q = this.searchQuery;
@@ -474,8 +487,8 @@ const DashboardManager = {
             });
         }
         const maxP = Math.ceil(listToRender.length / AppState.pSize) || 1;
-        AppState.pg = Math.min(maxP, Math.max(1, AppState.pg+v)); 
-        this.renTab(); 
+        AppState.pg = Math.min(maxP, Math.max(1, AppState.pg+v));
+        this.renTab();
     },
 
     // ============================================================
@@ -488,7 +501,7 @@ const DashboardManager = {
             this.currentSortCol = property;
             this.currentSortDir = 'asc';
         }
-        
+
         this.reExecuteSort();
     },
 
@@ -512,7 +525,7 @@ const DashboardManager = {
             return 0;
         });
 
-        AppState.pg = 1; 
+        AppState.pg = 1;
         this.renTab();
         this.updateSortIcons();
     },
@@ -568,7 +581,7 @@ const DashboardManager = {
                     <span class="card-field-value"><span class="badge bg-light text-dark border px-2 py-1">${d.tn || '-'}</span></span>
                 </div>
                 <div class="card-field">
-                    <span class="card-field-label"><i class="bi bi-rulers me-1"></i>Luas Bancian</span>
+                    <span class="card-field-label"><i class="bi bi-rulers me-1"></i>Luas bertanam dilaporkan</span>
                     <span class="card-field-value">${parseFloat(d.lt || 0).toFixed(4)} Ha</span>
                 </div>
                 <div class="card-field">
@@ -579,8 +592,8 @@ const DashboardManager = {
                     <button class="btn btn-outline-secondary btn-sm shadow-sm" onclick="DataManager.viewRec(${realIndex})">
                         <i class="bi bi-card-list me-1"></i> Butiran
                     </button>
-                    <button class="btn btn-danger btn-sm shadow-sm" 
-                        data-lokasi="${d.l}" data-pegawai="${d.pg}" data-coord="${d.c}" data-tarikh="${d.t}" 
+                    <button class="btn btn-danger btn-sm shadow-sm"
+                        data-lokasi="${d.l}" data-pegawai="${d.pg}" data-coord="${d.c}" data-tarikh="${d.t}"
                         onclick="ExportManager.klikJanaPDF(this)">
                         <i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF
                     </button>
@@ -619,12 +632,12 @@ const Utils = {
         if (str.includes('T')) str = str.split('T')[0];
         if (str.includes(' ')) str = str.split(' ')[0];
         if (str.includes('-')) {
-            const parts = str.split('-'); 
+            const parts = str.split('-');
             if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
         }
-        if (str.includes('/')) return str; 
+        if (str.includes('/')) return str;
         const d = new Date(str);
-        if (isNaN(d)) return str; 
+        if (isNaN(d)) return str;
         const day = String(d.getDate()).padStart(2, '0');
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const year = d.getFullYear();

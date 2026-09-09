@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ms">
 
 <head>
     <meta charset="UTF-8">
@@ -15,7 +15,7 @@
     <!-- WAJIB inline — JANGAN pindah ke fail .js luaran (akan kena intercept oleh SW lama) -->
     <script>
     (function() {
-        var APP_VERSION = '202609070236-0b396a5';
+        var APP_VERSION = '20260909-ui1';
         var STORED = localStorage.getItem('PNR_APP_VERSION');
         if (STORED !== APP_VERSION) {
             localStorage.setItem('PNR_APP_VERSION', APP_VERSION);
@@ -44,10 +44,12 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 
-    <link rel="stylesheet" href="./css/style.css?v=202609070236-0b396a5">
+    <link rel="stylesheet" href="./css/style.css?v=20260909-ui1">
+    <link rel="stylesheet" href="./css/upgrade.css?v=20260909-ui1">
 </head>
 
 <body>
+    <a class="skip-link" href="#view-main">Langkau ke kandungan</a>
 
     <div id="loginOverlay">
         <div class="login-box" id="formLogin">
@@ -197,7 +199,8 @@
             </div>
         </div>
     </div>
-    <div class="main-content">
+    <div class="main-content" role="main">
+        <header class="workspace-header"><div><span class="workspace-eyebrow">JABATAN PERTANIAN MALAYSIA</span><strong>Pelaporan bancian & pemantauan perosak</strong></div><span class="workspace-version">V2 · Percubaan</span></header>
         <div class="d-md-none mb-3 d-flex justify-content-between align-items-center bg-white p-3 rounded shadow-sm">
             <span class="fw-bold text-success fs-5"><i class="bi bi-flower1"></i> PNR</span>
             <button class="btn btn-light btn-sm border"
@@ -238,7 +241,7 @@
                         </select>
                     </div>
 
-                    <div id="dateJulatContainer" class="d-inline-flex align-items-center gap-1" style="display: none;">
+                    <div id="dateJulatContainer" class="align-items-center gap-1" style="display: none;">
                         <input type="date" id="dS" class="form-control form-control-sm shadow-sm" style="font-size: 0.75rem; height: 31px; width: 130px;" onchange="FilterManager.runFilter('tarikh')" title="Tarikh Mula">
                         <span class="text-muted small">-</span>
                         <input type="date" id="dE" class="form-control form-control-sm shadow-sm" style="font-size: 0.75rem; height: 31px; width: 130px;" onchange="FilterManager.runFilter('tarikh')" title="Tarikh Akhir">
@@ -252,15 +255,15 @@
             </div>
         </div>
 
-        <div id="view-main" class="app-view">
+        <div id="view-main" class="app-view" tabindex="-1">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                 <div>
-                    <h4 class="fw-bold m-0 text-dark">Analisis Data</h4>
-                    <small class="text-muted" id="lastUpdate">Data setakat: Terkini</small>
+                    <h4 class="fw-bold m-0 text-dark">Overview pemantauan</h4>
+                    <p class="text-muted mb-1">Ringkasan rekod bancian yang telah disahkan</p><small class="text-muted" id="lastUpdate" role="status">Menunggu data…</small>
                 </div>
                 <div class="d-flex flex-wrap gap-2 justify-content-md-end">
                     <div class="btn-group shadow-sm">
-                        <button class="btn btn-white border bg-white text-secondary btn-sm px-3" id="btnRefreshDash"><i
+                        <button class="btn btn-white border bg-white text-secondary btn-sm px-3" id="btnRefreshDash" aria-label="Muat semula data" title="Muat semula data"><i
                                 class="bi bi-arrow-clockwise"></i></button>
                         <button class="btn btn-success btn-sm px-3" id="btnDlExcel"><i
                                 class="bi bi-file-earmark-excel me-1"></i> Excel</button>
@@ -276,20 +279,15 @@
                 </div>
             </div>
 
-            <div class="card mb-4 border-0 shadow-sm" style="background: linear-gradient(to right, #e0f2fe, #f0f9ff);">
-                <div class="card-body p-4">
-                    <div id="smartSummary" class="text-dark">
-                        <div class="d-flex align-items-center">
-                            <div class="spinner-border spinner-border-sm text-primary me-2"></div> Sedang menganalisis
-                            data...
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div class="dashboard-context" id="dashboardContext" role="status">Menunggu rekod bancian…</div>
+            <div class="row g-3 mb-3" id="kpiCardsContainer"></div>
+            <p class="metric-note">Luas ialah jumlah yang dilaporkan; lawatan berulang dan serangan pelbagai perosak boleh melibatkan kawasan yang sama.</p>
+            <nav class="dashboard-jumps" aria-label="Bahagian dashboard">
+                <a href="#pestAnalysis">Analisis perosak</a><a href="#map">Taburan lokasi</a><a href="#surveyRecords">Rekod bancian</a>
+            </nav>
+            <div class="summary-panel mb-4"><div id="smartSummary" class="text-dark" aria-live="polite"><span class="spinner-border spinner-border-sm me-2"></span>Memuatkan ringkasan…</div></div>
 
-            <div class="row g-3 mb-4" id="kpiCardsContainer"></div>
-
-            <div class="row g-3 mb-4">
+            <div class="row g-3 mb-4" id="pestAnalysis">
                 <div class="col-md-8">
                     <div class="card h-100 shadow-sm border-0">
                         <div
@@ -364,7 +362,7 @@
                 </div>
             </div>
 
-            <div class="table-box shadow-sm border-0 rounded-4 p-4 mb-4">
+            <div class="table-box shadow-sm border-0 rounded-4 p-4 mb-4" id="surveyRecords">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
                     <h6 class="fw-bold m-0 text-dark d-flex align-items-center"><i
                             class="bi bi-table me-2 text-primary"></i>Jadual Rekod</h6>
@@ -373,7 +371,7 @@
                         <div class="input-group input-group-sm shadow-sm">
                             <span class="input-group-text bg-white border-end-0 text-muted"><i
                                     class="bi bi-search"></i></span>
-                            <input type="text" id="tableLiveSearch" class="form-control border-start-0 ps-0"
+                            <input type="text" id="tableLiveSearch" aria-label="Cari dalam jadual rekod" class="form-control border-start-0 ps-0"
                                 placeholder="Cari perosak, negeri, lokasi, tanaman..."
                                 oninput="DashboardManager.handleLiveSearch(this.value)">
                         </div>
@@ -905,23 +903,23 @@
         <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-        <script src="js/efficiency.js?v=202609070236-0b396a5"></script>
+        <script src="js/efficiency.js?v=20260909-ui1"></script>
 
-        <script src="./js/config.js?v=202609070236-0b396a5"></script>
-        <script src="./js/api.js?v=202609070236-0b396a5"></script>
-        <script src="./js/auth.js?v=202609070236-0b396a5"></script>
-        <script src="./js/map.js?v=202609070236-0b396a5"></script>
-        <script src="./js/filter.js?v=202609070236-0b396a5"></script>
-        <script src="./js/charts.js?v=202609070236-0b396a5"></script>
-        <script src="./js/exports.js?v=202609070236-0b396a5"></script>
-        <script src="./js/users.js?v=202609070236-0b396a5"></script>
-        <script src="./js/records.js?v=202609070236-0b396a5"></script>
-        <script src="./js/dashboard.js?v=202609070236-0b396a5"></script>
-        <script src="./js/redundant.js?v=202609070236-0b396a5"></script>
-        <script src="./js/kpi.js?v=202609070236-0b396a5"></script>
-        <script src="./js/main.js?v=202609070236-0b396a5"></script>
-        <script src="./js/nlp-bot.js?v=202609070236-0b396a5"></script>
-        <script src="./js/tumpuan.js?v=202609070236-0b396a5"></script>
+        <script src="./js/config.js?v=20260909-ui1"></script>
+        <script src="./js/api.js?v=20260909-ui1"></script>
+        <script src="./js/auth.js?v=20260909-ui1"></script>
+        <script src="./js/map.js?v=20260909-ui1"></script>
+        <script src="./js/filter.js?v=20260909-ui1"></script>
+        <script src="./js/charts.js?v=20260909-ui1"></script>
+        <script src="./js/exports.js?v=20260909-ui1"></script>
+        <script src="./js/users.js?v=20260909-ui1"></script>
+        <script src="./js/records.js?v=20260909-ui1"></script>
+        <script src="./js/dashboard.js?v=20260909-ui1"></script>
+        <script src="./js/redundant.js?v=20260909-ui1"></script>
+        <script src="./js/kpi.js?v=20260909-ui1"></script>
+        <script src="./js/main.js?v=20260909-ui1"></script>
+        <script src="./js/nlp-bot.js?v=20260909-ui1"></script>
+        <script src="./js/tumpuan.js?v=20260909-ui1"></script>
 </body>
 
 </html>

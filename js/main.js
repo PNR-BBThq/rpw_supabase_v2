@@ -101,6 +101,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Menu Navigation System
     document.querySelectorAll('[data-view]').forEach(item => {
+        if (!['BUTTON', 'A'].includes(item.tagName)) {
+            item.setAttribute('role', 'button');
+            item.tabIndex = 0;
+            item.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    item.click();
+                }
+            });
+        }
         item.addEventListener('click', function() {
             ViewManager.switchTab(this.getAttribute('data-view'), this);
         });

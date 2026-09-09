@@ -1,0 +1,17 @@
+const fs = require('node:fs');
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+const elements = new Map();
+const document = { getElementById: id => { if (!elements.has(id)) elements.set(id, {innerHTML:'',textContent:''}); return elements.get(id); } };
+let points;
+const context = vm.createContext({document, AppState:{fData:[],mData:[]}, FilterManager:{v:id=>['selBulan','dS','dE'].includes(id)?'':[]}, MapManager:{updateMap:p=>points=p}, setTimeout,clearTimeout,clearInterval,Utils:{formatDateDisplay:x=>x}});
+vm.runInContext(fs.readFileSync('js/dashboard.js','utf8')+'\nthis.manager = DashboardManager;', context);
+const d=context.manager; d.renTab=()=>{};
+d.calcUI(); assert.match(elements.get('smartSummary').innerHTML,/Tiada rekod sepadan/);
+context.AppState.fData=[{lt:'10',ls:0}]; d.calcUI(); assert.match(elements.get('smartSummary').innerHTML,/Tiada luas serangan/); assert.doesNotMatch(elements.get('smartSummary').innerHTML,/selamat dan terkawal/);
+context.AppState.fData=[{lt:'10',ls:2,d:'SAMA',n:'A',c:'3,101',p:{Ulat:2}},{lt:'20',ls:3,d:'SAMA',n:'B',c:'3,999',p:{Ulat:3}}];
+d.genSummary=()=>{}; d.calcUI();
+assert.match(elements.get('kpiCardsContainer').innerHTML,/30\.00/);
+assert.equal(points.length,1);
+assert.match(elements.get('hotspotTable').innerHTML,/SAMA · A/);assert.match(elements.get('hotspotTable').innerHTML,/SAMA · B/);
+console.log('PASS: empty/zero states, numeric totals, valid coordinates, distinct state hotspots');

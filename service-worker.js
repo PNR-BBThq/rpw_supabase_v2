@@ -1,10 +1,11 @@
-const CACHE_NAME = "PNR-CACHE-v202609070236-0b396a5"; // ⚡ Tukar versi di sini untuk paksa browser update!
+const CACHE_NAME = "PNR-CACHE-v20260909-ui1"; // ⚡ Tukar versi di sini untuk paksa browser update!
 const ASSETS = [
   './',
   './index.html',
   './form.html',
   './manifest.json',
   './css/style.css',
+  './css/upgrade.css',
   
   // Fail logik JavaScript tempatan (Kritikal untuk fungsi offline)
   './js/config.js',
