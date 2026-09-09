@@ -1,34 +1,41 @@
-# PNR Digital V2 — Android
+# PNR Digital Native 2.0
 
-Aplikasi Android hibrid untuk keseluruhan sistem percubaan di https://rpw-supabase-v2.vercel.app/.
-Package: `my.pnr.digital.v2`. Android 10/API 29 dan lebih baharu. Versi 1.0.0.
+Aplikasi Android dengan UI **native Java / Android SDK**, tanpa WebView. Backend menggunakan API sistem v2 di https://rpw-supabase-v2.vercel.app/.
 
-## Fungsi
+Package `my.pnr.digital.v2` · versionCode 2 · Android 10/API 29 ke atas.
 
-- Dashboard, pengesahan, tugasan, borang, SKU, pengurusan dan RPW menggunakan sistem/akses pengguna sedia ada.
-- Menu asli untuk Dashboard PNR, Dashboard RPW, muat semula dan pelayar.
-- GPS dengan permintaan kebenaran Android; koordinat manual jika ditolak. Ketepatan tertakluk kepada pilihan lokasi/peranti.
-- Kamera sistem dan pemilih fail/gambar, termasuk berbilang gambar (maksimum 20 pilihan).
-- Eksport Blob/data URL PDF, Excel, GeoJSON dan KML melalui pemilih lokasi simpanan Android, maksimum 25 MiB setiap fail. Tiada kebenaran akses keseluruhan storan.
-- Pautan luar, termasuk AppSheet, dibuka menggunakan aplikasi/pelayar luar. Login perkhidmatan luar mungkin diperlukan.
-- HTTPS sahaja. Tiada `addJavascriptInterface`, sijil tidak sah tidak diabaikan, WebMessagePort diberikan hanya kepada origin V2. Tiada kunci Supabase atau signing key di repo.
+## Fungsi native
 
-## Batas dan penggunaan
+- Login dan sesi tersulit menggunakan Android Keystore; kata laluan tidak disimpan.
+- Navigasi bawah: Utama, Rekod, Bancian, Tugasan, Akaun.
+- Dashboard KPI ringkasan, tempoh/negeri dan perosak utama daripada rekod sebenar yang disahkan.
+- Carian dan pagination 20 rekod setiap halaman, butiran laporan, eksport CSV melalui pemilih fail Android.
+- Borang empat langkah, tarikh native, negeri/daerah, master kategori/tanaman dan cadangan perosak, multi-perosak, luas/peratus/keterukan, syor.
+- Pengesanan GPS dengan kebenaran Android dan ketepatan; koordinat manual.
+- Kamera/pemilih gambar, pemampatan, sehingga empat gambar baharu untuk setiap laporan (500KB JPEG maksimum setiap gambar selepas pemampatan).
+- Draf telefon disulitkan mengikut akaun. Draf tidak dihantar automatik; pengguna menyemak sebelum penghantaran.
+- Senarai tugasan, butiran, pembetulan draf/ditolak dan hantar semula. Gambar rekod lama dikekalkan; penambahan gambar semasa edit masih melalui web.
+- Pengesahan / penolakan oleh peranan admin/penyelia dengan sebab penolakan.
+- Sasaran KPI dan senarai pengguna (admin) dipaparkan secara native.
 
-Ini aplikasi hibrid dengan UI sistem web, bukan penulisan semula seluruh sistem secara native. Sambungan internet diperlukan untuk log masuk pertama, mendapatkan data, pengesahan dan penyegerakan. Draf/offline bergantung kepada fungsi dan cache web sedia ada; APK tidak menjanjikan operasi penuh tanpa internet. Data aplikasi berasingan daripada Chrome; log masuk semula diperlukan. Memadam data aplikasi/uninstall boleh menghilangkan draf belum disegerakkan.
+## Fungsi yang masih dalam pelayar
 
-Pasang APK pada Android: buka fail APK dan benarkan pemasangan daripada sumber yang digunakan jika diminta. Nama aplikasi ialah PNR Digital V2. Pakej ditandatangani untuk pemasangan terus; bukan penerbitan Google Play. Simpan signing kit secara peribadi untuk mengemas kini app tanpa menukar identiti tandatangan.
+RPW, peta interaktif penuh, analisis lanjutan, pendaftaran/pemulihan akaun, pentadbiran pengguna penuh dan eksport PDF/Excel/KML/GeoJSON dibuka melalui pelayar luar. APK native tidak mendakwa semua modul web telah dipindahkan. Pengesahan akses pelayan kekal berkuasa; butang mengikut peranan bukan pengganti kawalan pelayan.
 
-## Bina semula
+## Migrasi daripada APK 1.0
 
-JDK 17, Android SDK `platforms;android-35` dan `build-tools;35.0.0` diperlukan. Tetapkan `ANDROID_SDK_ROOT`, `PNR_SIGNING_STORE` kepada keystore peribadi, dan `PNR_SIGNING_PASSWORD`. Alias `pnr-v2`.
+APK 2.0 menggunakan pakej dan tandatangan yang sama untuk kemas kini. Segerakkan draf APK WebView lama terlebih dahulu: stor draf native berasingan dan tiada migrasi automatik daripada localStorage WebView. Pengguna perlu login semula dalam UI native. Jangan uninstall/clear data sebelum menyegerakkan draf.
+
+## Binaan
+
+JDK 17 dengan jdk.compiler, Android SDK platforms;android-35 dan build-tools;35.0.0. Tetapkan ANDROID_SDK_ROOT, PNR_SIGNING_STORE, PNR_SIGNING_PASSWORD. Alias tandatangan pnr-v2. Kunci disimpan dalam kit peribadi, tidak di repo.
 
 ```sh
 python3 android/build.py
 ```
 
-Output `android/build/PNR-Digital-V2-1.0.0.apk`. Untuk versi baharu, naikkan versionCode/versionName dalam manifest dan nama output dalam build.py. Jangan commit keystore/password. Kod sumber boleh dibuka sebagai projek Java sumber; skrip SDK ini ialah aliran binaan yang disediakan, bukan projek Gradle.
+Output `android/build/PNR-Digital-V2-Native-2.0.0.apk`. Skrip membersihkan kelas lama sebelum kompilasi supaya kelas WebView 1.0 tidak termasuk dalam keluaran 2.0.
 
-## Pengesahan
+## Batas pengesahan
 
-Kompilasi Java/DEX, pembungkusan manifest/resources dan pengesahan tandatangan APK dilakukan semasa binaan. Tiada emulator atau telefon sebenar tersedia untuk ujian hujung ke hujung. Uji login, semua peranan, GPS tepat/anggaran/ditolak, kamera/pemilih gambar, simpan/batal eksport setiap format, draf offline/sync, RPW, putaran skrin dan butang kembali sebelum pengedaran luas.
+Kompilasi Java/DEX, pembungkusan Android, sintaks backend dan tandatangan disemak. Tiada ujian login sebenar, emulator atau telefon dijalankan. Uji aliran borang, GPS (termasuk penolakan kebenaran), kamera, serahan, rangkaian terputus, pengesahan dan eksport sebelum penggunaan meluas. API serahan belum mempunyai idempotency; apabila respons terputus, semak Tugasan sebelum hantar semula. Tiada data bancian sebenar dimasukkan semasa pembangunan.

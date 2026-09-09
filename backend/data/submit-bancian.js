@@ -69,6 +69,7 @@ export default async function handler(req, res) {
         id: recordId, // Simpan RECORD_ID asal
         uid: userId,
         nama: data.namaPegawai || "N/A",
+        email: data.email || "",
         tarikh_bancian: data.tarikhBancian || new Date().toISOString().split('T')[0],
         negeri: data.negeri || "N/A",
         daerah: data.daerah || "N/A",
