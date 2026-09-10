@@ -15,7 +15,7 @@ export function scoped(query, scope) {
   if (!scope) return query;
   if (scope === 'CAMERON HIGHLANDS') return query.eq('daerah', scope);
   query = query.eq('negeri', scope);
-  return scope === 'PAHANG' ? query.neq('daerah', 'CAMERON HIGHLANDS') : query;
+  return scope === 'PAHANG' ? query.or('daerah.is.null,daerah.neq.CAMERON HIGHLANDS') : query;
 }
 export function validateMutation(body) {
   const action = body?.action;
