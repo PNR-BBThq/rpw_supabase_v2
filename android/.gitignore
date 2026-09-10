@@ -4,3 +4,7 @@ local.properties
 *.jks
 *.p12
 signing-password.txt
+
+*.jks
+
+__pycache__/

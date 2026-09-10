@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="my.pnr.digital.v2" android:versionCode="2" android:versionName="2.0.0">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="my.pnr.digital.v2" android:versionCode="3" android:versionName="2.1.0">
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="35" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <queries><intent><action android:name="android.media.action.IMAGE_CAPTURE" /></intent></queries>
     <application android:label="PNR Digital V2" android:icon="@drawable/app_icon" android:theme="@style/AppTheme" android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
-        <activity android:name=".MainActivity" android:exported="true" android:configChanges="orientation|screenSize|keyboardHidden" android:windowSoftInputMode="adjustResize" android:enableOnBackInvokedCallback="false">
+        <activity android:name="my.pnr.digital.v2.MainActivity" android:exported="true" android:configChanges="orientation|screenSize|keyboardHidden" android:windowSoftInputMode="adjustResize" android:enableOnBackInvokedCallback="false">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
         </activity>
     </application>
