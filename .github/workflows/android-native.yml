@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: native-${{ github.ref }}
+  group: native-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   build:
@@ -25,6 +25,7 @@ jobs:
           node-version: '22'
       - name: Test token and RPW policies
         run: node --test tests/native-backend.test.mjs
+      - uses: android-actions/setup-android@v3
       - name: Install pinned SDK components
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - name: Build isolated debug APK and verify release packaging

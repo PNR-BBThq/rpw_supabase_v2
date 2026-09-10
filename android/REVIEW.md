@@ -36,7 +36,7 @@ Reviewed baseline: `5112d252b63fde4f4e9e84d0d4f4dfc7875b16f5`, including native 
 - Charts show bounded groups (24), and detail history shows 100 most recent readings. Narrow filters for large histories. Paged downloads can still change during concurrent source updates: a server snapshot/cursor API remains the long-term fix.
 - RPW status thresholds are displayed from `status_rtd_rf`; the client does not invent a formula or sampling interval. Duplicate candidates can represent distinct traps sharing a location; confirmation is necessary.
 - PNR full-map analytics, PDF/Excel/KML/GeoJSON export, full user administration and account recovery remain external web functions. Adding images while correcting an existing PNR record remains a web function.
-- Large encrypted caches/draft photos still use SharedPreferences and can cause main-thread disk work. Move large payloads to transactional files/Room with a multi-draft outbox before scaling. Keystore/decryption failures must be surfaced and must not erase the original ciphertext.
+- Large encrypted caches/draft photos still use SharedPreferences and can cause main-thread disk work. Move large payloads to transactional files/Room with a multi-draft outbox before scaling. Keystore/decryption failures are now surfaced and the original ciphertext is protected from overwrite; recovery still requires support if the key is irretrievably lost.
 - One Activity still hosts the PNR views. Extracting screens, localized strings, repositories and lifecycle-aware state is a useful follow-up; the new RPW module/model is already separated. Predictive Back and full TalkBack/large-font acceptance remain pending.
 
 ## Deployment configuration
