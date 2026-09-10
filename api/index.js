@@ -1,3 +1,5 @@
+import rpwRecordsHandler from '../backend/rpw/records.js';
+import rpwMutateHandler from '../backend/rpw/mutate.js';
 import loginHandler from '../backend/auth/login.js';
 import registerHandler from '../backend/auth/register.js';
 import forgotPasswordHandler from '../backend/auth/forgot-password.js';
@@ -28,6 +30,8 @@ import usersUpdateHandler from '../backend/users/update.js';
 import { handleOptions } from '../backend/supabase-client.js';
 
 const routes = {
+  '/api/rpw/records': rpwRecordsHandler,
+  '/api/rpw/mutate': rpwMutateHandler,
   '/api/auth/login': loginHandler,
   '/api/auth/register': registerHandler,
   '/api/auth/forgot-password': forgotPasswordHandler,

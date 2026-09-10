@@ -4,6 +4,7 @@
 // =========================================================================
 
 import { getSupabase } from './supabase-client.js';
+import { issueToken, readToken } from './token-signing.js';
 
 // Senarai endpoint yang TIDAK perlu token (boleh akses tanpa login)
 const FREE_ROUTES = ['auth/login', 'auth/register', 'auth/forgot-password', 'auth/update-access'];
@@ -26,13 +27,8 @@ export async function verifyToken(token) {
   try {
     if (!token) return null;
 
-    // Decode token (format: base64 encoded JSON)
-    const decoded = JSON.parse(Buffer.from(token, 'base64').toString('utf-8'));
-    
-    if (!decoded.uid || !decoded.exp) return null;
-    
-    // Semak jika token sudah luput (24 jam)
-    if (Date.now() > decoded.exp) return null;
+    const decoded = readToken(token);
+    if (!decoded) return null;
 
     // Sahkan pengguna masih wujud dan aktif
     const supabase = getSupabase();
@@ -58,12 +54,7 @@ export async function verifyToken(token) {
  * @returns {string} Base64 encoded token
  */
 export function generateToken(uid) {
-  const payload = {
-    uid: uid,
-    exp: Date.now() + (24 * 60 * 60 * 1000), // Luput selepas 24 jam
-    iat: Date.now()
-  };
-  return Buffer.from(JSON.stringify(payload)).toString('base64');
+  return issueToken(uid);
 }
 
 /**
