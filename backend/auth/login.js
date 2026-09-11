@@ -63,6 +63,7 @@ export default async function handler(req, res) {
     // Return data dalam format yang frontend jangkakan
     return sendSuccess(res, {
       token: token,
+      uid: user.uid,
       name: user.nama,
       role: user.role,
       state: user.state || user.negeri || '',

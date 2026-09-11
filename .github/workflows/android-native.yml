@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: '22'
       - name: Test token and RPW policies
-        run: node --test tests/native*.test.mjs
+        run: node --experimental-test-module-mocks --test tests/native*.test.mjs
       - uses: android-actions/setup-android@v3
       - name: Install pinned SDK components
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'

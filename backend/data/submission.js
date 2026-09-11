@@ -30,6 +30,7 @@ export function prepareSubmission(body, user) {
   data.senaraiPerosak=Object.keys(data.luasSerangan).join(', ') || 'TIADA';
   data.images=validateImages(typeof body.images==='string'?JSON.parse(body.images):body.images||[]);
   data.namaPegawai=user.nama;
+  data.statusRekod=body.statusRekod==='DRAF'?'DRAF':'BARU';
   const submissionId=body.submissionId || randomUUID();
   if(typeof submissionId!=='string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(submissionId)) throw new Error('ID penghantaran tidak sah.');
   const hash=createHash('sha256').update(canonical(data)).digest('hex');

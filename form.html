@@ -1065,6 +1065,7 @@
 
             var payload = {
                 action: 'submitNew',
+                submissionId: crypto.randomUUID(),
                 statusRekod: mode,
                 namaPegawai: fd.get('namaPegawai'),
                 email: fd.get('email'),

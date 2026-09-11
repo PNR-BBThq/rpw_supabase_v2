@@ -10,9 +10,6 @@ import { uploadImages } from '../gdrive/storage.js';
 import { matchesScope, stateScope } from '../rpw/policy.js';
 import { getSupabase, handleOptions, sendSuccess, sendError } from '../supabase-client.js';
 
-// URL Proxy AppScript untuk muat naik gambar ke GDrive
-const GAS_UPLOAD_URL = "https://script.google.com/macros/s/AKfycbznIzUO_1G9vhSrD7I2JLAnPmFNbPK5plRjPwbnW9T9rFO-2X5nVAQk0utLSxjSffjY/exec";
-
 export default async function handler(req, res) {
   if (handleOptions(req, res)) return;
   if (req.method !== 'POST') return sendError(res, 'Method not allowed', 405);
@@ -62,7 +59,7 @@ export default async function handler(req, res) {
         syor_kawalan: data.syor || "TIADA",
         image_links: finalImageLinks,
         caption: data.captionGambar || "TIADA",
-        status: "BARU",
+        status: data.statusRekod,
         log: "",
         created_at: timestamp,
         timestamp: timestamp

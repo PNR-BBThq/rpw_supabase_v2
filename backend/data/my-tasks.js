@@ -1,3 +1,4 @@
+import {scoped,stateScope} from './access.js';
 // =========================================================================
 // FAIL: api/data/my-tasks.js
 // FUNGSI: GET /api/data/my-tasks — Ambil tugasan sendiri (DRAF/DITOLAK)
@@ -18,12 +19,13 @@ export default async function handler(req, res) {
     const supabase = getSupabase();
     const name = user.nama;
 
-    const { data: records, error } = await supabase
+    let query = supabase
       .from('Data')
       .select('*')
       .eq('uid', user.uid)
-      .in('status', ['BARU', 'DRAF', 'DITOLAK'])
+      .in('status', ['BARU', 'MENUNGGU', 'DRAF', 'DITOLAK'])
       .order('timestamp', { ascending: false });
+    const {data:records,error}=await scoped(query,stateScope(user));
 
     if (error) {
       console.error('My tasks error:', error);

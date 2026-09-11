@@ -1,3 +1,4 @@
+import {prepareSubmission,confirmedLinks} from './submission.js';
 import { requireRecord, stateScope } from './access.js';
 import { matchesScope } from '../rpw/policy.js';
 // =========================================================================
@@ -28,13 +29,22 @@ export default async function handler(req, res) {
     if (!permitted) return sendError(res, 'Rekod tidak dijumpai atau di luar kebenaran anda.', 403);
 
     if (!matchesScope({negeri:body.negeri,daerah:body.daerah}, stateScope(user))) return sendError(res, 'Lokasi di luar skop akaun.', 403);
+    try {
+      const normalized=prepareSubmission({...body,
+        namaTanaman:body.namaTanaman||body.tanaman,tarikhBancian:body.tarikhBancian||body.tarikh,
+        koordinat:body.koordinat||body.coord,email:body.email||permitted.email,
+        luasBertanam:body.luasBertanam||body.luasT,syor:body.syor||''
+      },user).data;
+      Object.assign(body,normalized);
+    } catch(e) {return sendError(res,e.message,400);}
     // Gabungkan retained images + new image links
     let finalImageLinks = '';
     const retained = body.retainedImages || [];
     let newLinks = body.newImageLinks || [];
 
+    if(!Array.isArray(retained)||!Array.isArray(newLinks)) return sendError(res,'Senarai gambar tidak sah.');
     const allLinks = [...retained.filter(l => l), ...newLinks.filter(l => l)];
-    finalImageLinks = allLinks.join(', ');
+    finalImageLinks = allLinks.length ? confirmedLinks(allLinks,allLinks.length) : 'TIADA GAMBAR';
 
     // Parse pest data (Pastikan sentiasa terima Object JSON, bukan comma separated)
     let luasSeranganObj = body.luasSerangan || {};

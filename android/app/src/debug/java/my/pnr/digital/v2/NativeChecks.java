@@ -25,6 +25,11 @@ public final class NativeChecks extends Instrumentation {
         NativeStore store=new NativeStore(getTargetContext());store.put("test_account_A","private A");store.put("test_account_B","private B");
         check(store.get("test_account_A").equals("private A"),"Encrypted store roundtrip");
         store.remove("test_account_A");check(store.get("test_account_B").equals("private B"),"Account storage isolation");store.remove("test_account_B");
+        List<JSONObject> pdfRows=new ArrayList<>();for(int i=0;i<17;i++)pdfRows.add(new JSONObject().put("t","2026-09-11").put("l","Sawah contoh "+i).put("tn","Padi").put("d","SEPANG").put("n","SELANGOR").put("lt",12.5));
+        byte[] pdf=ReportPdf.create(pdfRows,"Pegawai ujian","2026-09-11");
+        java.io.File pdfFile=new java.io.File(getTargetContext().getFilesDir(),"sample-report.pdf");
+        try(java.io.FileOutputStream out=new java.io.FileOutputStream(pdfFile)){out.write(pdf);}
+        try(android.graphics.pdf.PdfRenderer renderer=new android.graphics.pdf.PdfRenderer(android.os.ParcelFileDescriptor.open(pdfFile,android.os.ParcelFileDescriptor.MODE_READ_ONLY))){check(renderer.getPageCount()==2,"Native PDF pagination and readability");}
         result.putString("nativeChecks","passed");finish(-1,result);
     }catch(Throwable e){result.putString("nativeChecks","FAILED: "+e);finish(0,result);}}
 }
