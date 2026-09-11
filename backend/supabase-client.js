@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Ambil rahsia dari Vercel Environment Variables
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.RAHSIA_URL_SUPABASE;
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || process.env.RAHSIA_KEY_SUPABASE;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.RAHSIA_KEY_SUPABASE;
 
 /**
  * Cipta Supabase client dengan service_role key

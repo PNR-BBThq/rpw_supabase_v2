@@ -4,10 +4,10 @@
 // =========================================================================
 
 import { getSupabase } from './supabase-client.js';
-import { issueToken, readToken } from './token-signing.js';
+import { issueToken, readToken, credentialVersion } from './token-signing.js';
 
 // Senarai endpoint yang TIDAK perlu token (boleh akses tanpa login)
-const FREE_ROUTES = ['auth/login', 'auth/register', 'auth/forgot-password', 'auth/update-access'];
+const FREE_ROUTES = ['auth/login', 'auth/register', 'auth/forgot-password'];
 
 /**
  * Semak sama ada endpoint memerlukan pengesahan token
@@ -18,7 +18,7 @@ export function isPublicRoute(url) {
 
 /**
  * Sahkan token dan kembalikan data pengguna
- * Token format: Simple base64 encoded JSON {uid, exp}
+ * Token format: HMAC-SHA256 signed JSON {uid, exp}
  * 
  * @param {string} token - Token dari header Authorization
  * @returns {object|null} User data jika sah, null jika tidak
@@ -39,7 +39,7 @@ export async function verifyToken(token) {
       .eq('status', 'AKTIF')
       .single();
 
-    if (error || !user) return null;
+    if (error || !user || decoded.cv !== credentialVersion(user.pwd)) return null;
 
     return user;
   } catch (e) {
@@ -53,8 +53,8 @@ export async function verifyToken(token) {
  * @param {string} uid - User ID
  * @returns {string} Base64 encoded token
  */
-export function generateToken(uid) {
-  return issueToken(uid);
+export function generateToken(uid, pwd) {
+  return issueToken(uid, process.env.PNR_TOKEN_SECRET, Date.now(), credentialVersion(pwd));
 }
 
 /**

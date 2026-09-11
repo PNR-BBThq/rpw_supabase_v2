@@ -1,3 +1,4 @@
+import { stateScope, scoped, supervisor } from './access.js';
 // =========================================================================
 // FAIL: api/data/pending.js
 // FUNGSI: GET /api/data/pending — Ambil rekod menunggu pengesahan
@@ -14,9 +15,10 @@ export default async function handler(req, res) {
   const { user, error: authError } = await authMiddleware(req);
   if (authError) return sendError(res, authError, 401);
 
+  if (!supervisor(user)) return sendError(res, 'Kebenaran penyelia diperlukan.', 403);
   try {
     const supabase = getSupabase();
-    const state = req.query?.state || req.body?.state || user.state || 'ALL';
+    const state = stateScope(user);
 
     let allRecords = [];
     let from = 0;
@@ -29,12 +31,10 @@ export default async function handler(req, res) {
         .from('Data')
         .select('*')
         .or('status.eq.MENUNGGU,status.eq.BARU,status.is.null,status.eq.')
-        .order('timestamp', { ascending: false })
+        .order('timestamp', { ascending: false }).order('id', {ascending:false})
         .range(from, from + step - 1);
 
-      if (state && state !== 'ALL' && state !== 'SEMUA') {
-        query = query.eq('negeri', state.toUpperCase().trim());
-      }
+      query = scoped(query, state);
 
       const { data, error } = await query;
 

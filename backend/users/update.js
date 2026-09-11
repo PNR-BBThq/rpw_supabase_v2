@@ -1,3 +1,4 @@
+import { hashPassword, validPassword } from '../passwords.js';
 // =========================================================================
 // FAIL: api/users/update.js
 // FUNGSI: POST /api/users/update — Kemas kini pengguna
@@ -24,6 +25,10 @@ export default async function handler(req, res) {
 
     if (!row) return sendError(res, 'ID pengguna diperlukan.');
 
+    if (body.role && !['STAFF','PENYELIA','ADMIN'].includes(body.role)) return sendError(res, 'Peranan tidak sah.');
+    const status = field === 'status' ? body.value : body.status;
+    if (status && !['AKTIF','MENUNGGU','DITOLAK','DIGANTUNG'].includes(status)) return sendError(res, 'Status tidak sah.');
+    if (body.pwd && !validPassword(body.pwd)) return sendError(res, 'Kata laluan mesti sekurang-kurangnya 12 aksara.');
     const supabase = getSupabase();
 
     // Mod 1: Kemas kini satu field (status sahaja)
@@ -41,7 +46,7 @@ export default async function handler(req, res) {
     if (field === 'full_edit') {
       const updateData = {};
       if (body.uid) updateData.uid = body.uid.toLowerCase().trim();
-      if (body.pwd) updateData.pwd = body.pwd;
+      if (body.pwd) updateData.pwd = await hashPassword(body.pwd);
       if (body.nama) updateData.nama = body.nama.toUpperCase().trim();
       if (body.ic) updateData.ic = body.ic.trim();
       if (body.jawatan) updateData.jawatan = body.jawatan.toUpperCase().trim();

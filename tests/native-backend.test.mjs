@@ -14,11 +14,9 @@ test('signed token rejects tampering, wrong keys, expiry and legacy sessions', (
   assert.equal(readToken(payload,key,2000),null);
   assert.equal(signingReady('short'),false);
 });
-test('legacy deployment remains readable but cannot enable signed mutation configuration', () => {
-  const legacy=issueToken('officer','',1000);
-  assert.equal(readToken(legacy,'',2000).uid,'officer');
-  assert.equal(readToken(legacy,key,2000),null);
-  assert.equal(signingReady(''),false);
+test('missing signing secret fails closed', () => {
+  assert.throws(()=>issueToken('officer','',1000));
+  assert.equal(readToken(Buffer.from(JSON.stringify({uid:'admin',exp:900000000})).toString('base64'),'',2000),null);
 });
 test('RPW scope handles Cameron Highlands separately and refuses missing scope', () => {
   assert.throws(()=>stateScope({role:'ADMIN'}));

@@ -1,3 +1,5 @@
+import { requireRecord, stateScope } from './access.js';
+import { matchesScope } from '../rpw/policy.js';
 // =========================================================================
 // FAIL: api/data/update-entry.js
 // FUNGSI: POST /api/data/update-entry — Kemas kini rekod bancian
@@ -22,7 +24,10 @@ export default async function handler(req, res) {
     if (!rowID) return sendError(res, 'ID rekod diperlukan.');
 
     const supabase = getSupabase();
+    const permitted = await requireRecord(supabase, user, rowID, 'edit');
+    if (!permitted) return sendError(res, 'Rekod tidak dijumpai atau di luar kebenaran anda.', 403);
 
+    if (!matchesScope({negeri:body.negeri,daerah:body.daerah}, stateScope(user))) return sendError(res, 'Lokasi di luar skop akaun.', 403);
     // Gabungkan retained images + new image links
     let finalImageLinks = '';
     const retained = body.retainedImages || [];
@@ -52,14 +57,14 @@ export default async function handler(req, res) {
     
     const now = new Date();
     const ts = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-    const kemaskiniName = body.namaPegawai || body.pegawai || user.nama || 'Pengguna';
+    const kemaskiniName = user.nama;
     const newLogMsg = `[${ts}] DIKEMASKINI oleh ${kemaskiniName}`;
     const combinedLog = oldLog ? `${oldLog}\n\n${newLogMsg}` : newLogMsg;
 
     // Kemas kini rekod
     const updateData = {
       tarikh_bancian: body.tarikhBancian || body.tarikh || null,
-      nama: body.namaPegawai || body.pegawai || user.nama,
+      nama: permitted.nama,
       negeri: body.negeri || '',
       daerah: body.daerah || '',
       lokasi: body.lokasi || '',

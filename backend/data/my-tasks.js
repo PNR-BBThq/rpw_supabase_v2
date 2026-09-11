@@ -16,12 +16,12 @@ export default async function handler(req, res) {
 
   try {
     const supabase = getSupabase();
-    const name = req.query?.name || req.body?.name || user.nama;
+    const name = user.nama;
 
     const { data: records, error } = await supabase
       .from('Data')
       .select('*')
-      .eq('nama', name.toUpperCase().trim())
+      .eq('uid', user.uid)
       .in('status', ['BARU', 'DRAF', 'DITOLAK'])
       .order('timestamp', { ascending: false });
 

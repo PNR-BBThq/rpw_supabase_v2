@@ -1,3 +1,5 @@
+import { requireRecord, stateScope } from './access.js';
+import { matchesScope } from '../rpw/policy.js';
 // =========================================================================
 // FAIL: api/data/single-record.js
 // FUNGSI: GET /api/data/single-record — Ambil satu rekod untuk edit
@@ -19,6 +21,8 @@ export default async function handler(req, res) {
     if (!row) return sendError(res, 'ID rekod diperlukan.');
 
     const supabase = getSupabase();
+    const permitted = await requireRecord(supabase, user, row, 'read');
+    if (!permitted) return sendError(res, 'Rekod tidak dijumpai atau di luar kebenaran anda.', 403);
 
     const { data: record, error } = await supabase
       .from('Data')

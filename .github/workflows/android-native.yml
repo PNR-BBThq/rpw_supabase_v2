@@ -1,9 +1,9 @@
 name: Android native checks
 on:
   push:
-    paths: ['android/**', 'backend/rpw/**', 'backend/token-signing.js', 'tests/native*', '.github/workflows/android-native.yml']
+    paths: ['android/**', 'backend/**', 'api/**', 'sql/**', 'tests/native*', '.github/workflows/android-native.yml']
   pull_request:
-    paths: ['android/**', 'backend/rpw/**', 'backend/token-signing.js', 'tests/native*', '.github/workflows/android-native.yml']
+    paths: ['android/**', 'backend/**', 'api/**', 'sql/**', 'tests/native*', '.github/workflows/android-native.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: '22'
       - name: Test token and RPW policies
-        run: node --test tests/native-backend.test.mjs
+        run: node --test tests/native*.test.mjs
       - uses: android-actions/setup-android@v3
       - name: Install pinned SDK components
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
@@ -32,14 +32,19 @@ jobs:
         run: |
           python3 android/build.py --debug
           python3 android/build.py --unsigned
+      - name: Package public Android signing verifier
+        run: |
+          mkdir -p android/build/signing-tools
+          cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" android/build/signing-tools/
       - uses: actions/upload-artifact@v4
         with:
-          name: PNR-native-2.1-debug-and-unsigned
+          name: PNR-native-2.2-debug-and-unsigned
           path: |
             android/build/debug/PNR-*.apk
             android/build/debug/*.sha256
             android/build/release/PNR-*.apk
             android/build/release/*.sha256
+            android/build/signing-tools/apksigner.jar
           retention-days: 14
       - name: Enable emulator acceleration
         run: |

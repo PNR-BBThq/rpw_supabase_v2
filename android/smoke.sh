@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 mkdir -p android/build/screenshots
-adb install -r android/build/debug/PNR-Digital-V2-2.1.0-debug.apk
+adb install -r android/build/debug/PNR-Digital-V2-2.2.0-debug.apk
 adb logcat -c
 adb shell am instrument -w my.pnr.digital.v2.debug/my.pnr.digital.v2.NativeChecks > android/build/screenshots/native-checks.txt
 grep -q 'nativeChecks=passed' android/build/screenshots/native-checks.txt
