@@ -4,7 +4,7 @@ export const supervisor = user => ['ADMIN','PENYELIA'].includes(normal(user.role
 export function canAccess(user, row, action = 'read') {
   if (!row || !matchesScope(row, stateScope(user))) return false;
   if (action === 'verify' || action === 'delete') return supervisor(user);
-  const owner = row.uid ? row.uid === user.uid : normal(row.nama) === normal(user.nama);
+  const owner = !!row.uid && row.uid === user.uid;
   if (action === 'edit') return supervisor(user) || (owner && ['BARU','DRAF','DITOLAK','MENUNGGU'].includes(normal(row.status)));
   return supervisor(user) || owner || normal(row.status) === 'DISAHKAN';
 }

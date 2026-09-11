@@ -17,6 +17,7 @@ test('state, ownership and supervisor authority enforced independently',()=>{
  const row={uid:user.uid,negeri:'SELANGOR',status:'BARU'};
  assert.equal(canAccess(user,row,'edit'),true);
  assert.equal(canAccess(user,{...row,uid:'other'},'edit'),false);
+ assert.equal(canAccess(user,{...row,uid:null,nama:user.nama},'edit'),false);
  assert.equal(canAccess(user,row,'verify'),false);
  assert.equal(canAccess({...user,role:'ADMIN'},{...row,negeri:'JOHOR'},'delete'),false);
  assert.equal(canAccess({...user,role:'PENYELIA'},row,'verify'),true);
