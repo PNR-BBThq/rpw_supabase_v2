@@ -32,6 +32,8 @@ export function getSupabase() {
  * Membenarkan frontend dari mana-mana origin (atau spesifik domain)
  */
 export function setCorsHeaders(res) {
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');

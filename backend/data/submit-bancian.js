@@ -53,7 +53,7 @@ export default async function handler(req, res) {
         umur_tanaman: data.umurTanaman || "N/A",
         luas_bertanam: parseFloat(data.luasBertanam) || 0,
         senarai_perosak: data.senaraiPerosak || "TIADA",
-        luas_serangan: data.luasSerangan || {},
+        luas_serangan: JSON.stringify(data.luasSerangan || {}),
         peratus_serangan: data.peratusSerangan || {},
         keterukan: data.keterukan || {},
         syor_kawalan: data.syor || "TIADA",

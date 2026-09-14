@@ -18,6 +18,7 @@ function call(handler,payload=body){const res={code:0,status(n){this.code=n;retu
 test('real submission handlers: unauthorized, concurrent retry, conflict, cross-state and missing migration',async()=>{
  const officer=user;user=null;assert.equal((await call(submit)).code,401);assert.equal(inserted.length,0);user=officer;
  const replies=await Promise.all([call(submit),call(submit)]);assert.ok(replies.every(r=>r.success));assert.equal(inserted.length,1);assert.equal(replies[0].rowId,replies[1].rowId);
+ assert.equal(typeof inserted[0].luas_serangan,'string'); assert.deepEqual(JSON.parse(inserted[0].luas_serangan),{});
  assert.equal((await call(submit,{...body,lokasi:'Changed'})).code,409);assert.equal(inserted.length,1);
  assert.equal((await call(submit,{...body,negeri:'JOHOR'})).code,403);
  assert.equal((await call(submit,{...body,luasBertanam:0})).code,400);

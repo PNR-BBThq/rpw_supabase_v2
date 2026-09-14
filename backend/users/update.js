@@ -45,14 +45,19 @@ export default async function handler(req, res) {
     // Mod 2: Kemas kini penuh (full_edit)
     if (field === 'full_edit') {
       const updateData = {};
-      if (body.uid) updateData.uid = body.uid.toLowerCase().trim();
+      // Stable identities own records and sessions.
+      if (body.uid) {
+        if (typeof body.uid !== 'string') return sendError(res,'ID pengguna tidak sah.');
+        const {data: target,error} = await supabase.from('user').select('uid').eq('id',row).maybeSingle();
+        if (error || !target) return sendError(res,'Pengguna tidak dijumpai.',404);
+        if (body.uid.trim().toLowerCase() !== target.uid.trim().toLowerCase()) return sendError(res,'ID pengguna dipautkan kepada rekod dan tidak boleh ditukar di sini.',409);
+      }
       if (body.pwd) updateData.pwd = await hashPassword(body.pwd);
       if (body.nama) updateData.nama = body.nama.toUpperCase().trim();
       if (body.ic) updateData.ic = body.ic.trim();
       if (body.jawatan) updateData.jawatan = body.jawatan.toUpperCase().trim();
       if (body.negeri) {
         updateData.negeri = body.negeri;
-        updateData.state = body.negeri; // Sync state with negeri
       }
       if (body.role) updateData.role = body.role;
       if (body.status) updateData.status = body.status;

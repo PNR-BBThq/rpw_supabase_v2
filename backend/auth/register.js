@@ -57,7 +57,6 @@ export default async function handler(req, res) {
         negeri: negeri,
         role: 'STAFF',
         status: 'MENUNGGU',
-        state: negeri,
         catatan: catatan || 'Didaftar melalui Web PNR'
       })
       .select()
