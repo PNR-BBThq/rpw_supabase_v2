@@ -22,6 +22,13 @@ public final class NativeChecks extends Instrumentation {
         JSONObject otherState=new JSONObject(current.toString()).put("negeri","PAHANG");
         List<JSONObject> duplicates=Arrays.asList(current,otherState);
         check(!RpwData.duplicate(current,RpwData.duplicates(duplicates)),"Cross-state locations are not duplicate traps");
+        JSONObject report=new JSONObject().put("tn","Padi").put("n","SELANGOR").put("l","Plot Utara").put("t","2026-09-01").put("ls",1.5).put("id","A").put("p",new JSONObject().put("Ulat batang",1.5));
+        check(RecordQuery.matches(report,"padi SELANGOR",""),"AND search across fields, case insensitive");
+        check(!RecordQuery.matches(report,"padi johor",""),"Every search term must match");
+        check(!RecordQuery.matches(report,"selangor","tn"),"Selected search field is enforced");
+        check(RecordQuery.matches(report,"ulat batang","p"),"Nested pest search");
+        JSONObject earlier=new JSONObject(report.toString()).put("id","B").put("t","2025-12-01").put("ls",3);
+        List<JSONObject> ordered=new ArrayList<>(Arrays.asList(earlier,report));ordered.sort(RecordQuery.order("Tarikh terkini"));check(ordered.get(0)==report,"Newest date sorting");ordered.sort(RecordQuery.order("Luas serangan"));check(ordered.get(0)==earlier,"Numeric attack-area sorting");
         NativeStore store=new NativeStore(getTargetContext());store.put("test_account_A","private A");store.put("test_account_B","private B");
         check(store.get("test_account_A").equals("private A"),"Encrypted store roundtrip");
         store.remove("test_account_A");check(store.get("test_account_B").equals("private B"),"Account storage isolation");store.remove("test_account_B");
