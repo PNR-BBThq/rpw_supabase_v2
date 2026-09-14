@@ -38,7 +38,7 @@ jobs:
           cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" android/build/signing-tools/
       - uses: actions/upload-artifact@v4
         with:
-          name: PNR-native-2.2-debug-and-unsigned
+          name: PNR-native-2.3-debug-and-unsigned
           path: |
             android/build/debug/PNR-*.apk
             android/build/debug/*.sha256
