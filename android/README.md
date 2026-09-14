@@ -1,3 +1,5 @@
+> **2.2 release candidate:** See [RELEASE-2.2.md](RELEASE-2.2.md) for deployment prerequisites, signing evidence and remaining acceptance work. APK installation alone does not deploy the backend.
+
 # PNR Digital Native 2.1
 
 Native Java / Android SDK application, navy–white–teal design. Android 10+ (min 29, target 35). Release package `my.pnr.digital.v2`, versionCode **3**. No WebView.

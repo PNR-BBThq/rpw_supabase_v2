@@ -38,6 +38,9 @@ const Workspace = {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('mobileOverlay')?.classList.toggle('active');
         });
+        const moduleHeading=document.createElement('section');
+        moduleHeading.id='moduleHeading'; moduleHeading.className='module-heading'; moduleHeading.hidden=true;
+        document.querySelector('.workspace-header')?.after(moduleHeading);
         this.setTab('overview');
     },
     onView(view) {
@@ -53,6 +56,23 @@ const Workspace = {
         document.body.classList.remove('filters-collapsed');
         document.getElementById('toggleWorkspaceFilters')?.setAttribute('aria-expanded', 'true');
         const names = {main:'Overview',form:'Bancian baharu',verify:'Pengesahan',tasks:'Tugasan saya',sku:'Pencapaian SKU',users:'Pengguna',efficiency:'Prestasi pengesahan',redundant:'Semakan pertindihan',tumpuan:'Analisis tumpuan'};
+        const descriptions={
+          tasks:'Semak laporan yang perlu tindakan dan kemas kini rekod anda.',
+          verify:'Teliti laporan sebelum meluluskan atau mengembalikannya untuk pembetulan.',
+          sku:'Bandingkan pencapaian bancian dengan sasaran yang ditetapkan.',
+          tumpuan:'Pantau tanaman dan perosak tumpuan mengikut skop negeri.',
+          efficiency:'Kenal pasti tempoh semakan dan laporan yang menunggu tindakan.',
+          redundant:'Bandingkan rekod berpotensi bertindih sebelum membuat keputusan.',
+          users:'Urus kelulusan akaun, peranan dan skop akses pegawai.'
+        };
+        const headingPanel=document.getElementById('moduleHeading');
+        if(headingPanel){
+          headingPanel.replaceChildren(); headingPanel.hidden=!descriptions[view];
+          if(descriptions[view]){
+            const title=document.createElement('h1'),detail=document.createElement('p');
+            title.textContent=names[view];detail.textContent=descriptions[view];headingPanel.append(title,detail);
+          }
+        }
         const label = document.getElementById('workspaceViewLabel');
         if (label) label.textContent = names[view] || 'Ruang kerja';
         document.querySelectorAll('.sidebar [data-view]').forEach(item => {
@@ -118,7 +138,7 @@ const Workspace = {
         canvas.setAttribute('aria-label', months.length ? months.map((m,i)=>`${labels[i]}: ${counts.get(m)} rekod`).join('; ') : 'Tiada rekod bertarikh');
         if (typeof Chart === 'undefined') return;
         if (!this.trend) this.trend = new Chart(canvas, {
-            type:'bar', data:{labels, datasets:[{label:'Rekod disahkan',data:months.map(m=>counts.get(m)),backgroundColor:'#71864c',hoverBackgroundColor:'#273d31',borderRadius:5,maxBarThickness:34}]},
+            type:'bar', data:{labels, datasets:[{label:'Rekod disahkan',data:months.map(m=>counts.get(m)),backgroundColor:'#0d9488',hoverBackgroundColor:'#102a43',borderRadius:5,maxBarThickness:34}]},
             options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:9,color:'#67736f'}},y:{beginAtZero:true,ticks:{precision:0,color:'#67736f'},border:{display:false},grid:{color:'#edf0ec'}}}}
         });
         else { this.trend.data.labels=labels; this.trend.data.datasets[0].data=months.map(m=>counts.get(m)); this.trend.update('none'); }

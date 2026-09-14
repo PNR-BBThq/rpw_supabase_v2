@@ -4,71 +4,43 @@
 // NOTA: Imej akan dihantar ke GAS (GDrive) untuk penjimatan storan
 // ==========================================
 
+import { authMiddleware } from '../middleware.js';
+import { prepareSubmission } from './submission.js';
+import { uploadImages } from '../gdrive/storage.js';
+import { matchesScope, stateScope } from '../rpw/policy.js';
 import { getSupabase, handleOptions, sendSuccess, sendError } from '../supabase-client.js';
-
-// URL Proxy AppScript untuk muat naik gambar ke GDrive
-const GAS_UPLOAD_URL = "https://script.google.com/macros/s/AKfycbznIzUO_1G9vhSrD7I2JLAnPmFNbPK5plRjPwbnW9T9rFO-2X5nVAQk0utLSxjSffjY/exec";
 
 export default async function handler(req, res) {
   if (handleOptions(req, res)) return;
   if (req.method !== 'POST') return sendError(res, 'Method not allowed', 405);
 
+  const {user,error:authError}=await authMiddleware(req);
+  if(authError) return sendError(res,authError,401);
   try {
     const supabase = getSupabase();
-    const data = req.body;
+    const data = {...req.body};
     
-    // 1. Dapatkan uid berdasarkan namaPegawai jika boleh, atau default kepada 'N/A'
-    // form.html hanya menghantar namaPegawai. Kita cuba match dengan pengguna berdaftar.
-    let userId = 'N/A';
-    if (data.namaPegawai) {
-        const { data: userData } = await supabase
-            .from('user')
-            .select('uid')
-            .ilike('nama', data.namaPegawai.trim())
-            .single();
-        if (userData) userId = userData.uid;
+    let prepared;
+    try { prepared=prepareSubmission(data,user); } catch(e) { return sendError(res,e.message,400); }
+    const {data: form, submissionId, hash, recordId} = prepared;
+    if (!matchesScope({negeri:form.negeri,daerah:form.daerah}, stateScope(user))) return sendError(res,'Lokasi di luar skop akaun.',403);
+    const previous = await supabase.from('Data').select('id,submission_hash').eq('uid',user.uid).eq('submission_id',submissionId).maybeSingle();
+    if (previous.error) return sendError(res,'Penghantaran belum tersedia. Pentadbir perlu semak migrasi pangkalan data.',503);
+    if (previous.data) {
+      if(previous.data.submission_hash!==hash) return sendError(res,'ID penghantaran telah digunakan dengan kandungan lain.',409);
+      return sendSuccess(res,{rowId:previous.data.id},'Laporan telah diterima sebelum ini.');
     }
-
-    // 2. Upload imej ke Google Drive (Hybrid Storage)
-    let finalImageLinks = "TIADA GAMBAR";
-    if (data.images && data.images !== "[]") {
-        try {
-            const imagesArray = JSON.parse(data.images);
-            if (imagesArray.length > 0) {
-                // Hantar ke proxy GAS (uploadImageOnly)
-                const gasRes = await fetch(GAS_UPLOAD_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'uploadImageOnly',
-                        images: imagesArray,
-                        id: `NEW_BANCIAN_${Date.now()}`
-                    })
-                });
-                
-                const gasText = await gasRes.text();
-                try {
-                    const gasJson = JSON.parse(gasText);
-                    if (gasJson.success) finalImageLinks = gasJson.links;
-                    else finalImageLinks = gasText;
-                } catch(e) {
-                    finalImageLinks = gasText; // fallback jika bukan JSON (return string link terus)
-                }
-            }
-        } catch(e) {
-            console.error("Gagal muat naik gambar:", e);
-            finalImageLinks = "RALAT_GAMBAR";
-        }
-    }
-
-    // 3. Simpan ke Supabase
-    // Cipta ID Unik (contoh R-timestamp)
-    const recordId = `R-${Date.now()}`;
+    const finalImageLinks = await uploadImages(form.images, recordId);
+    Object.assign(data,form);
+    const userId = user.uid;
     const timestamp = new Date().toISOString();
 
     const insertPayload = {
-        id: recordId, // Simpan RECORD_ID asal
+        id: recordId,
+        submission_id: submissionId,
+        submission_hash: hash,
         uid: userId,
-        nama: data.namaPegawai || "N/A",
+        nama: user.nama,
         email: data.email || "",
         tarikh_bancian: data.tarikhBancian || new Date().toISOString().split('T')[0],
         negeri: data.negeri || "N/A",
@@ -81,19 +53,24 @@ export default async function handler(req, res) {
         umur_tanaman: data.umurTanaman || "N/A",
         luas_bertanam: parseFloat(data.luasBertanam) || 0,
         senarai_perosak: data.senaraiPerosak || "TIADA",
-        luas_serangan: data.luasSerangan || {},
+        luas_serangan: JSON.stringify(data.luasSerangan || {}),
         peratus_serangan: data.peratusSerangan || {},
         keterukan: data.keterukan || {},
         syor_kawalan: data.syor || "TIADA",
         image_links: finalImageLinks,
         caption: data.captionGambar || "TIADA",
-        status: data.statusRekod || "MENUNGGU",
+        status: data.statusRekod,
         log: "",
         created_at: timestamp,
         timestamp: timestamp
     };
 
     const { error } = await supabase.from('Data').insert([insertPayload]);
+    if (error?.code === '23505') {
+      const retry = await supabase.from('Data').select('id,submission_hash').eq('uid',user.uid).eq('submission_id',submissionId).maybeSingle();
+      if(!retry.error && retry.data?.submission_hash===hash) return sendSuccess(res,{rowId:retry.data.id},'Laporan telah diterima.');
+      return sendError(res,'Konflik penghantaran. Draf dikekalkan.',409);
+    }
     if (error) throw error;
 
     return sendSuccess(res, { rowId: recordId }, 'Laporan berjaya dihantar ke Supabase.');

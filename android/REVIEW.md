@@ -1,3 +1,5 @@
+> Updated release assessment: see [RELEASE-2.2.md](RELEASE-2.2.md). The findings below are the historical 2.1 review; several are fixed in 2.2 code but await coordinated deployment.
+
 # Android 2.1 review and release status
 
 Reviewed baseline: `5112d252b63fde4f4e9e84d0d4f4dfc7875b16f5`, including native replacement `e822e9c` and original Android shell `c836d10`.

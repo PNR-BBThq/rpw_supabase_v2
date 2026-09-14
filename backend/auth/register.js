@@ -1,3 +1,5 @@
+import {allowAttempt} from '../rate-limit.js';
+import { hashPassword, validPassword } from '../passwords.js';
 // =========================================================================
 // FAIL: api/auth/register.js
 // FUNGSI: POST /api/auth/register — Daftar pengguna baru
@@ -16,6 +18,9 @@ export default async function handler(req, res) {
       return sendError(res, 'Sila isi semua maklumat yang diwajibkan.');
     }
 
+    if (![nama,ic,jawatan,negeri,uid].every(v=>typeof v==='string' && v.trim().length>0 && v.length<=250) || !/^[a-z0-9._@-]{1,100}$/i.test(uid) || !validPassword(pwd)) return sendError(res, 'Maklumat tidak sah. Kata laluan mesti sekurang-kurangnya 12 aksara.');
+    if (['ALL','SEMUA'].includes(negeri.trim().toUpperCase())) return sendError(res, 'Pilih negeri sebenar.');
+    if (!(await allowAttempt(req,uid))) return sendError(res,'Terlalu banyak cubaan. Cuba semula selepas 15 minit.',429);
     const supabase = getSupabase();
 
     // Semak jika username sudah wujud
@@ -45,14 +50,13 @@ export default async function handler(req, res) {
       .from('user')
       .insert({
         uid: uid.toLowerCase().trim(),
-        pwd: pwd,
+        pwd: await hashPassword(pwd),
         nama: nama.toUpperCase().trim(),
         ic: ic.trim(),
         jawatan: jawatan.toUpperCase().trim(),
         negeri: negeri,
-        role: role || 'STAFF',
-        status: status || 'MENUNGGU',
-        state: negeri,
+        role: 'STAFF',
+        status: 'MENUNGGU',
         catatan: catatan || 'Didaftar melalui Web PNR'
       })
       .select()

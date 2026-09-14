@@ -133,60 +133,6 @@ const AuthManager = {
     },
     
     lupaKatalaluan: async function() {
-        const { value: formValues } = await Swal.fire({
-            title: 'Lupa Akses Log Masuk?',
-            html: `
-                <div class="text-start mt-3">
-                    <label class="small fw-bold">Nama Penuh</label>
-                    <input id="swal-nama" class="form-control mb-3 text-uppercase" placeholder="Sama seperti dalam sistem">
-                    <label class="small fw-bold">No. K/P (Tanpa Sengkang)</label>
-                    <input id="swal-ic" type="number" class="form-control" placeholder="Cth: 900101011234">
-                </div>
-            `,
-            focusConfirm: false, showCancelButton: true, confirmButtonText: 'Semak Data', cancelButtonText: 'Batal',
-            preConfirm: () => {
-                const nama = document.getElementById('swal-nama').value.trim();
-                const ic = document.getElementById('swal-ic').value.trim();
-                if(!nama || !ic) { Swal.showValidationMessage('Sila isi kedua-dua maklumat!'); return false; }
-                return { nama, ic };
-            }
-        });
-
-        if (formValues) {
-            Swal.fire({ title: 'Menyemak Data...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
-            const r = await API.postData('verifyForgotPwd', formValues);
-
-            if (r.success) {
-                const { value: updateValues } = await Swal.fire({
-                    title: 'Rekod Dijumpai!',
-                    html: `
-                        <div class="alert alert-success small mb-3">Kekalkan atau tukar kata laluan baru di sini.</div>
-                        <div class="text-start">
-                            <label class="small fw-bold text-success">Username</label>
-                            <input id="upd-uid" class="form-control mb-3" value="${r.uid}">
-                            <label class="small fw-bold text-success">Kata Laluan</label>
-                            <input id="upd-pwd" class="form-control" value="${r.pwd}">
-                        </div>
-                    `,
-                    showCancelButton: true, confirmButtonText: '<i class="bi bi-save"></i> Simpan & Log Masuk', cancelButtonText: 'Tutup',
-                    preConfirm: () => {
-                        const uid = document.getElementById('upd-uid').value.trim();
-                        const pwd = document.getElementById('upd-pwd').value.trim();
-                        if(!uid || !pwd) { Swal.showValidationMessage('Tidak boleh kosong!'); return false; }
-                        return { uid, pwd, row: r.row };
-                    }
-                });
-
-                if (updateValues) {
-                    Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
-                    const u = await API.postData('updateMyAccess', updateValues);
-                    if (u.success) {
-                        Swal.fire('Berjaya!', 'Akses telah dikemaskini.', 'success');
-                        document.getElementById('uid').value = updateValues.uid;
-                        document.getElementById('pwd').value = updateValues.pwd;
-                    } else { Swal.fire('Ralat', u.message, 'error'); }
-                }
-            } else { Swal.fire('Tidak Dijumpai', r.message, 'error'); }
-        }
+        await Swal.fire('Pemulihan akses', 'Hubungi pentadbir PNR untuk pengesahan identiti dan penetapan kata laluan baharu.', 'info');
     }
 };

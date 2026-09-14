@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Ambil rahsia dari Vercel Environment Variables
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.RAHSIA_URL_SUPABASE;
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || process.env.RAHSIA_KEY_SUPABASE;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.RAHSIA_KEY_SUPABASE;
 
 /**
  * Cipta Supabase client dengan service_role key
@@ -32,6 +32,8 @@ export function getSupabase() {
  * Membenarkan frontend dari mana-mana origin (atau spesifik domain)
  */
 export function setCorsHeaders(res) {
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');

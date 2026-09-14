@@ -1,0 +1,31 @@
+package my.pnr.digital.v2;
+import android.view.*;
+import android.widget.*;
+import android.text.*;
+import org.json.*;
+import java.util.*;
+
+final class RecordExplorer {
+    final MainActivity a; String searchField="",sort="Tarikh terkini";boolean table=true;
+    RecordExplorer(MainActivity activity){a=activity;}
+    void cell(LinearLayout row,String value,int width,boolean head,int color){TextView t=a.text(value,head?11:13,color,head);t.setPadding(a.dp(12),a.dp(14),a.dp(12),a.dp(14));t.setMaxLines(head?1:2);t.setEllipsize(android.text.TextUtils.TruncateAt.END);row.addView(t,new LinearLayout.LayoutParams(a.dp(width),-2));}
+    String fieldLabel(){switch(searchField){case "l":return "Lokasi";case "tn":return "Tanaman";case "p":return "Perosak";case "pg":return "Pegawai";case "d":return "Daerah";case "id":return "ID";default:return "Semua medan";}}
+    void show(){
+        a.heading("PNR / DAFTAR REKOD","Pusat rekod","Cari, bandingkan dan eksport laporan disahkan.");LinearLayout c=a.scroller();a.syncNote(c);
+        LinearLayout search=a.card(c,a.WHITE);EditText input=a.input(search,"Carian rekod",a.query,false);input.setHint("Contoh: padi selangor");input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});input.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_search,0,0,0);input.setCompoundDrawablePadding(a.dp(8));a.gap(search,8);search.addView(a.text("Semua kata kunci mesti sepadan. Pilih medan untuk carian lebih khusus.",12,a.MUTED,false));
+        LinearLayout controls=a.row();Button fields=a.button(fieldLabel()+" ▾",false,()->{String[] labels={"Semua medan","Lokasi","Tanaman","Perosak","Pegawai","Daerah","ID rekod"},keys={"","l","tn","p","pg","d","id"};new android.app.AlertDialog.Builder(a).setTitle("Cari mengikut").setItems(labels,(d,i)->{searchField=keys[i];a.page=0;a.show("records");}).show();});controls.addView(fields,new LinearLayout.LayoutParams(0,-2,1));Button sorting=a.button("Susun ▾",false,()->new android.app.AlertDialog.Builder(a).setTitle("Susunan rekod").setItems(new String[]{"Tarikh terkini","Tarikh terawal","Luas serangan","Tanaman A–Z"},(d,i)->{sort=new String[]{"Tarikh terkini","Tarikh terawal","Luas serangan","Tanaman A–Z"}[i];a.page=0;a.show("records");}).show());controls.addView(sorting,new LinearLayout.LayoutParams(0,-2,1));a.gap(search,12);search.addView(controls);
+        a.filters(c);LinearLayout switcher=a.row();Button mode=a.button(table?"▤ Jadual":"▣ Kad",true,()->{table=!table;a.show("records");});switcher.addView(mode,new LinearLayout.LayoutParams(0,-2,1));Button clear=a.button("Reset carian",false,()->{a.query="";searchField="";a.page=0;a.show("records");});switcher.addView(clear,new LinearLayout.LayoutParams(0,-2,1));c.addView(switcher);a.gap(c,14);LinearLayout list=a.column();c.addView(list);render(list);
+        input.addTextChangedListener(new TextWatcher(){Runnable pending;public void beforeTextChanged(CharSequence s,int st,int count,int after){}public void afterTextChanged(Editable e){}public void onTextChanged(CharSequence s,int st,int before,int count){a.query=s.toString();a.page=0;if(pending!=null)a.handler.removeCallbacks(pending);pending=()->{if(a.screen.equals("records")&&list.isAttachedToWindow())render(list);};a.handler.postDelayed(pending,180);}});
+        a.addButton(c,"Eksport PDF pilihan",true,a::exportPdf);a.addButton(c,"Eksport CSV pilihan",false,a::exportCsv);a.addButton(c,"Segerakkan rekod",false,a::loadData);
+    }
+    void render(LinearLayout list){
+        list.removeAllViews();List<JSONObject> rows=a.filtered();a.page=Math.min(a.page,Math.max(0,(rows.size()-1)/20));list.addView(a.text(rows.size()+" REKOD  ·  "+sort,12,a.TEAL,true));a.gap(list,10);
+        if(rows.isEmpty()){LinearLayout empty=a.card(list,a.WHITE);empty.addView(a.text("Tiada padanan",22,a.INK,true));empty.addView(a.text("Ubah kata kunci, medan carian atau penapis. Data sedia ada tidak dipadam.",14,a.MUTED,false));return;}
+        int start=a.page*20,end=Math.min(start+20,rows.size());
+        if(table){
+            list.addView(a.text("Leret ke sisi untuk semua lajur · ketik baris untuk butiran",12,a.MUTED,false));a.gap(list,8);HorizontalScrollView scroll=new HorizontalScrollView(a);LinearLayout sheet=a.column();sheet.setBackground(a.shape(a.WHITE,16));scroll.addView(sheet);LinearLayout header=a.row();header.setBackgroundColor(a.INK);String[] titles={"TANAMAN / LOKASI","TARIKH","DAERAH","BERTANAM","SERANGAN","STATUS"};int[] widths={220,110,170,110,110,115};for(int i=0;i<titles.length;i++)cell(header,titles[i],widths[i],true,a.WHITE);sheet.addView(header);
+            for(int i=start;i<end;i++){JSONObject r=rows.get(i);LinearLayout row=a.row();row.setBackgroundColor(i%2==0?a.WHITE:a.BG);cell(row,r.optString("tn")+"\n"+r.optString("l"),220,false,a.INK);cell(row,r.optString("t"),110,false,a.MUTED);cell(row,r.optString("d"),170,false,a.INK);cell(row,a.number(r.optDouble("lt",0))+" ha",110,false,a.TEAL);cell(row,a.number(r.optDouble("ls",0))+" ha",110,false,a.RED);cell(row,"Disahkan",115,false,a.TEAL);row.setMinimumHeight(a.dp(66));row.setFocusable(true);row.setContentDescription(r.optString("tn")+", "+r.optString("l")+", "+r.optString("t")+". Buka butiran");row.setOnClickListener(v->a.detail(r,null,false));sheet.addView(row);}list.addView(scroll,new LinearLayout.LayoutParams(-1,-2));
+        }else{for(int i=start;i<end;i++){JSONObject r=rows.get(i);LinearLayout card=a.card(list,a.WHITE);card.addView(a.text(r.optString("t")+"  /  "+r.optString("d"),11,a.MUTED,true));a.gap(card,6);card.addView(a.text(r.optString("tn"),21,a.INK,true));card.addView(a.text(r.optString("l"),14,a.MUTED,false));a.gap(card,10);card.addView(a.text(a.number(r.optDouble("ls",0))+" ha serangan  ·  DISAHKAN",13,a.TEAL,true));card.setFocusable(true);card.setOnClickListener(v->a.detail(r,null,false));}}
+        a.gap(list,12);list.addView(a.text((start+1)+"–"+end+" daripada "+rows.size(),12,a.MUTED,false));LinearLayout pages=a.row();Button prev=a.button("‹ Sebelum",false,()->{a.page--;render(list);});prev.setEnabled(a.page>0);pages.addView(prev,new LinearLayout.LayoutParams(0,-2,1));Button next=a.button("Seterusnya ›",false,()->{a.page++;render(list);});next.setEnabled(end<rows.size());pages.addView(next,new LinearLayout.LayoutParams(0,-2,1));list.addView(pages);
+    }
+}

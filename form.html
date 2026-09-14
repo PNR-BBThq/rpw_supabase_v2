@@ -247,7 +247,7 @@
             }
         }
     </style>
-<link rel="stylesheet" href="./css/upgrade.css?v=202609101942-285cde8">
+<link rel="stylesheet" href="./css/upgrade.css?v=20260914-professional">
 </head>
 
 <body class="survey-workspace">
@@ -1065,6 +1065,7 @@
 
             var payload = {
                 action: 'submitNew',
+                submissionId: crypto.randomUUID(),
                 statusRekod: mode,
                 namaPegawai: fd.get('namaPegawai'),
                 email: fd.get('email'),
