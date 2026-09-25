@@ -1,3 +1,5 @@
+import { requireRecord, stateScope } from './access.js';
+import { matchesScope } from '../rpw/policy.js';
 // =========================================================================
 // FAIL: api/data/verify.js
 // FUNGSI: POST /api/data/verify — Sahkan atau tolak rekod
@@ -22,8 +24,10 @@ export default async function handler(req, res) {
     }
 
     const supabase = getSupabase();
+    const permitted = await requireRecord(supabase, user, row, 'verify');
+    if (!permitted) return sendError(res, 'Rekod tidak dijumpai atau di luar kebenaran anda.', 403);
     const now = new Date().toISOString();
-    const verifierName = name || user.nama;
+    const verifierName = user.nama;
 
     if (act === 'APPROVE') {
       // Sahkan rekod
@@ -32,7 +36,7 @@ export default async function handler(req, res) {
         .from('Data')
         .update({
           status: 'DISAHKAN',
-          log: logMsg
+          log: [permitted.log, logMsg].filter(Boolean).join('\n')
         })
         .eq('id', row);
 
@@ -50,7 +54,7 @@ export default async function handler(req, res) {
         .from('Data')
         .update({
           status: 'DITOLAK',
-          log: logMsg
+          log: [permitted.log, logMsg].filter(Boolean).join('\n')
         })
         .eq('id', row)
         .select('email, lokasi');

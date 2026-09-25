@@ -1,3 +1,4 @@
+import {scoped,stateScope} from './access.js';
 // =========================================================================
 // FAIL: api/data/my-tasks.js
 // FUNGSI: GET /api/data/my-tasks — Ambil tugasan sendiri (DRAF/DITOLAK)
@@ -16,14 +17,15 @@ export default async function handler(req, res) {
 
   try {
     const supabase = getSupabase();
-    const name = req.query?.name || req.body?.name || user.nama;
+    const name = user.nama;
 
-    const { data: records, error } = await supabase
+    let query = supabase
       .from('Data')
       .select('*')
-      .eq('nama', name.toUpperCase().trim())
-      .in('status', ['BARU', 'DRAF', 'DITOLAK'])
+      .eq('uid', user.uid)
+      .in('status', ['BARU', 'MENUNGGU', 'DRAF', 'DITOLAK'])
       .order('timestamp', { ascending: false });
+    const {data:records,error}=await scoped(query,stateScope(user));
 
     if (error) {
       console.error('My tasks error:', error);
@@ -35,7 +37,7 @@ export default async function handler(req, res) {
       'Timestamp', 'Nama', 'Email', 'Tarikh Bancian', 'Negeri', 'Daerah',
       'Lokasi', 'Koordinat', 'Kategori Tanaman', 'Nama Tanaman', 'Varieti',
       'Umur Tanaman', 'Luas Bertanam', 'Luas Serangan', 'Peratus', 'Keterukan',
-      'Syor Kawalan', 'IMAGE LINKS (COMMA SEPARATED)', 'Caption', 'Status', 'Log'
+      'Syor Kawalan', 'Catatan', 'IMAGE LINKS (COMMA SEPARATED)', 'Caption', 'Status', 'Log'
     ];
 
     const rows = (records || []).map(r => ({
@@ -58,6 +60,7 @@ export default async function handler(req, res) {
         r.peratus_serangan || {},
         r.keterukan || {},
         r.syor_kawalan || '',
+        r.catatan || '',
         r.image_links || '',
         r.caption || '',
         r.status || '',

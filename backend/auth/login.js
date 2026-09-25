@@ -1,9 +1,12 @@
+import {allowAttempt} from '../rate-limit.js';
 // =========================================================================
 // FAIL: api/auth/login.js
 // FUNGSI: POST /api/auth/login — Log masuk pengguna
 // =========================================================================
 
 import { getSupabase, handleOptions, sendSuccess, sendError, setCorsHeaders } from '../supabase-client.js';
+import { verifyPassword, hashLegacy } from '../passwords.js';
+import { signingReady } from '../token-signing.js';
 import { generateToken } from '../middleware.js';
 
 export default async function handler(req, res) {
@@ -14,10 +17,12 @@ export default async function handler(req, res) {
   try {
     const { u, p } = req.body || {};
 
-    if (!u || !p) {
+    if (!signingReady()) return sendError(res, 'Log masuk belum diaktifkan oleh pentadbir pelayan.', 503);
+    if (typeof u !== 'string' || !/^[a-zA-Z0-9._@-]{1,100}$/.test(u.trim()) || typeof p !== 'string' || !p || Buffer.byteLength(p)>256) {
       return sendError(res, 'Sila isi ID dan Kata Laluan.');
     }
 
+    if (!(await allowAttempt(req,u))) return sendError(res,'Terlalu banyak cubaan. Cuba semula selepas 15 minit.',429);
     const supabase = getSupabase();
     const searchUid = u.trim();
 
@@ -29,15 +34,15 @@ export default async function handler(req, res) {
       .maybeSingle();
 
     if (error) {
-      return sendError(res, 'Ralat DB: ' + error.message + ' (Code: ' + error.code + ')');
+      return sendError(res, 'Log masuk tidak berjaya.');
     }
     if (!user) {
-      return sendError(res, 'ID Pengguna tidak dijumpai.');
+      return sendError(res, 'ID atau kata laluan tidak sah.');
     }
 
     // Semak kata laluan (plaintext comparison)
-    if (user.pwd !== p) {
-      return sendError(res, 'Kata laluan salah.');
+    if (!(await verifyPassword(p, user.pwd))) {
+      return sendError(res, 'ID atau kata laluan tidak sah.');
     }
 
     // Semak status akaun
@@ -45,21 +50,29 @@ export default async function handler(req, res) {
       return sendError(res, `Akaun anda masih berstatus "${user.status}". Sila hubungi pentadbir.`);
     }
 
+    if (!user.pwd.startsWith('scrypt$')) {
+      const hashed = await hashLegacy(p);
+      const { data: migrated, error: migrationError } = await supabase.from('user').update({pwd: hashed}).eq('uid', user.uid).eq('pwd', user.pwd).select('uid').maybeSingle();
+      if (migrationError || !migrated) return sendError(res, 'Sila cuba log masuk semula.', 503);
+      user.pwd = hashed;
+    }
+
     // Jana token
-    const token = generateToken(user.uid);
+    const token = generateToken(user.uid, user.pwd);
 
     // Return data dalam format yang frontend jangkakan
     return sendSuccess(res, {
       token: token,
+      uid: user.uid,
       name: user.nama,
       role: user.role,
-      state: user.state || user.negeri || 'ALL',
+      state: user.state || user.negeri || '',
       negeri: user.negeri,
       jawatan: user.jawatan
     }, 'Log masuk berjaya');
 
   } catch (e) {
     console.error('Login error:', e);
-    return sendError(res, 'Ralat: ' + (e.message || e.toString()), 500);
+    return sendError(res, 'Log masuk tidak berjaya.', 500);
   }
 }

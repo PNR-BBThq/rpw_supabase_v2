@@ -5,6 +5,22 @@
 
 const ExportManager = {
 
+    reportLogo: function() {
+        return new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+                    canvas.getContext('2d').drawImage(img, 0, 0);
+                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                } catch { resolve(null); }
+            };
+            img.onerror = () => resolve(null);
+            img.src = '/logo_doa.jpg';
+        });
+    },
+
     downloadDualExcel: async function() { 
         if (!AppState.fData.length) { alert("Tiada data!"); return; } 
         const workbook = new ExcelJS.Workbook(); 
@@ -18,7 +34,8 @@ const ExportManager = {
             { header: 'Tanaman', key: 'tn', width: 18 }, { header: 'Luas Bancian (Ha)', key: 'lt', width: 18 }, 
             { header: 'Perosak', key: 'p', width: 20 }, { header: 'Keterukan', key: 'k', width: 15 }, 
             { header: 'Luas Serangan (Ha)', key: 'ls', width: 18 }, { header: '% Serangan', key: 'pct', width: 15 }, 
-            { header: 'Syor Kawalan', key: 's', width: 50 }
+            { header: 'Syor Kawalan', key: 's', width: 50 },
+            { header: 'Catatan', key: 'catatan', width: 45 }
         ]; 
         
         worksheet.getRow(1).font = { bold: true }; 
@@ -34,7 +51,7 @@ const ExportManager = {
                 let luasSerang = parseFloat(pArea) || 0; 
                 let pctVal = (luasTanam > 0) ? ((luasSerang / luasTanam) * 100).toFixed(2) + '%' : "0%"; 
                 const row = worksheet.getRow(rowIndex); 
-                row.values = { id: d.id, pg: d.pg || "-", t: d.t, n: d.n, d: d.d, l: d.l, c: d.c || "-", kt: d.kt || "-", tn: d.tn, lt: luasTanam, p: pName, k: d.k, ls: luasSerang, pct: pctVal, s: d.s }; 
+                row.values = { id: d.id, pg: d.pg || "-", t: d.t, n: d.n, d: d.d, l: d.l, c: d.c || "-", kt: d.kt || "-", tn: d.tn, lt: luasTanam, p: pName, k: (d.pk && d.pk[pName]) || d.k, ls: luasSerang, pct: pctVal, s: d.s, catatan: d.catatan || '' };
                 
                 row.eachCell({ includeEmpty: true }, (cell) => { 
                     cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} }; 
@@ -46,6 +63,7 @@ const ExportManager = {
             if (pestEntries.length > 1) { 
                 for (let c = 1; c <= 10; c++) { worksheet.mergeCells(startRow, c, rowIndex - 1, c); } 
                 worksheet.mergeCells(startRow, 15, rowIndex - 1, 15); 
+                worksheet.mergeCells(startRow, 16, rowIndex - 1, 16);
             } 
         }); 
         
@@ -59,105 +77,79 @@ const ExportManager = {
 
     dlPDF: async function() { 
         if (!AppState.fData.length) { alert("Tiada data untuk dijana!"); return; }
-        
-        const btn = document.getElementById('btnDlPDF'); 
+        const btn = document.getElementById('btnDlPDF');
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Jana...'; 
-        btn.disabled = true; 
-        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Jana...';
         try {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('landscape');
-            
-            let dateLabel = "Terkini"; 
-            if (AppState.fData.length > 0) { 
-                const sortedDates = AppState.fData.map(d => d.t).sort(); 
-                const fmt = (d) => d.split('-').reverse().join('/'); 
-                dateLabel = fmt(sortedDates[0]) === fmt(sortedDates[sortedDates.length - 1]) ? fmt(sortedDates[0]) : `${fmt(sortedDates[0])} - ${fmt(sortedDates[sortedDates.length - 1])}`; 
-            } 
-            
-            let targetName = document.getElementById('selNegeri') ? document.getElementById('selNegeri').options[document.getElementById('selNegeri').selectedIndex].text : "SEMUA NEGERI"; 
-            if (AppState.uProf && AppState.uProf.state === "CAMERON HIGHLANDS") { targetName = "PAHANG (CAMERON HIGHLANDS)"; } 
-            else if (AppState.uProf && AppState.uProf.state !== "ALL") { targetName = AppState.uProf.state; } 
-            
-            if (!targetName || targetName.includes("Semua")) targetName = "SEMUA NEGERI"; 
-            
-            // Set document properties
-            doc.setProperties({
-                title: 'Laporan Bancian PNR',
-                subject: 'Laporan Penuh Data Spatial Individu',
-                author: AppState.uProf ? AppState.uProf.name : 'Sistem PNR',
-                keywords: 'PNR, Laporan, Bancian'
+            const doc = new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+            const rows = AppState.fData;
+            const number = n => (Number(n) || 0).toFixed(2);
+            const dates = rows.map(d=>String(d.t || '')).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+            const displayDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d)) ? d.split('-').reverse().join('/') : String(d || '-');
+            const dateLabel = dates.length ? `${displayDate(dates[0])} - ${displayDate(dates[dates.length-1])}` : '-';
+            const choice = document.getElementById('selNegeri');
+            let state = choice ? choice.options[choice.selectedIndex].text : 'SEMUA';
+            if (AppState.uProf?.state === 'CAMERON HIGHLANDS') state = 'PAHANG (CAMERON HIGHLANDS)';
+            else if (AppState.uProf?.state && AppState.uProf.state !== 'ALL') state = AppState.uProf.state;
+            if (!state || /semua/i.test(state)) state = 'SEMUA';
+            const author = AppState.uProf?.name || 'Sistem PNR';
+            const now = new Intl.DateTimeFormat('ms-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
+            doc.setProperties({title:'Laporan Pemantauan Perosak',author,subject:'Bahagian Biosekuriti Tumbuhan'});
+            const logo = await this.reportLogo();
+            if (logo) doc.addImage(logo,'JPEG',13,10,24,17);
+            doc.setTextColor(6,78,59);
+            doc.setFont('helvetica','bold'); doc.setFontSize(16);
+            doc.text('LAPORAN PEMANTAUAN PEROSAK',40,15);
+            doc.setTextColor(25,25,25); doc.setFont('helvetica','normal'); doc.setFontSize(9);
+            doc.text('Bahagian Biosekuriti Tumbuhan, Jabatan Pertanian',40,20);
+            doc.setFontSize(7.5);
+            doc.text(`Negeri: ${state}  |  Tarikh: ${dateLabel}  |  Dijana Oleh: ${author}`,40,25,{maxWidth:244});
+            doc.setDrawColor(6,78,59); doc.setLineWidth(0.8); doc.line(12,31,285,31);
+            const area = rows.reduce((total,r)=>total+(Number(r.lt)||0),0);
+            const attacked = rows.reduce((total,r)=>total+(Number(r.ls)||Object.values(r.p||{}).reduce((sum,value)=>sum+(Number(value)||0),0)),0);
+            const cards = [[`${number(area)} Ha`,'Jumlah Luas Bancian'],[`${number(attacked)} Ha`,'Jumlah Luas Serangan'],[`${number(area ? 100*attacked/area : 0)}%`,'Peratus Serangan'],[String(rows.length),'Bil. Rekod']];
+            cards.forEach(([value,label],i)=>{
+                const x=16+i*70;
+                doc.setDrawColor(16,185,129); doc.setLineWidth(0.25); doc.roundedRect(x,36,65,17,2,2,'S');
+                doc.setTextColor(i===1?220:6,i===1?38:78,i===1?38:59);
+                doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text(value,x+32.5,43,{align:'center'});
+                doc.setTextColor(45,45,45);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(label,x+32.5,49,{align:'center'});
             });
-
-            // Header
-            doc.setFontSize(14);
-            doc.setTextColor(40, 40, 40);
-            doc.text("LAPORAN BANCIAN PEROSAK & PENYAKIT TANAMAN (PNR)", 14, 15);
-            doc.setFontSize(10);
-            doc.setTextColor(100, 100, 100);
-            doc.text(`Negeri: ${targetName} | Tarikh: ${dateLabel} | Penjana: ${AppState.uProf ? AppState.uProf.name : 'Sistem PNR'}`, 14, 22);
-
-            // Table Data
-            const tableCols = ["Tarikh", "Negeri", "Daerah", "Lokasi", "Tanaman", "L.Tanam(Ha)", "Perosak", "L.Serang(Ha)", "% Serang", "Tahap"];
-            const tableRows = [];
-            
-            AppState.fData.forEach(d => {
-                let pestEntries = (d.p && Object.keys(d.p).length > 0) ? Object.entries(d.p) : [["TIADA", 0]]; 
-                let luasTanam = parseFloat(d.lt) || 0; 
-                
-                pestEntries.forEach(([pName, pArea]) => { 
-                    let luasSerang = parseFloat(pArea) || 0; 
-                    let pctVal = (luasTanam > 0) ? ((luasSerang / luasTanam) * 100).toFixed(1) + '%' : "0%"; 
-                    let sevVal = (d.pk && d.pk[pName]) ? d.pk[pName] : (d.k || 0);
-                    
-                    tableRows.push([
-                        d.t, d.n, d.d, d.l, d.tn, 
-                        luasTanam.toFixed(2), pName, luasSerang.toFixed(2), 
-                        pctVal, `T${sevVal}`
-                    ]);
-                }); 
+            const body=[];
+            rows.forEach((r,index)=>{
+                const pest=Object.entries(r.p||{});
+                const list=pest.length?pest:[['TIADA',0]];
+                const planted=Number(r.lt)||0;
+                body.push([String(index+1),displayDate(r.t),r.d||'-',r.l||'-',r.tn||'-',number(planted),
+                    list.map(([name])=>name).join('\n'),list.map(([,a])=>number(a)).join('\n'),
+                    list.map(([,a])=>`${number(planted?100*Number(a)/planted:0)}%`).join('\n')]);
+                body.push([{content:`SYOR: ${r.s && r.s!=='-'?r.s:'Tiada syor khusus.'}${r.catatan && r.catatan!=='-'?'\nCATATAN: '+r.catatan:''}`,
+                    colSpan:9,styles:{fillColor:[255,249,219],fontStyle:'italic',halign:'left',fontSize:7}}]);
             });
-
             doc.autoTable({
-                head: [tableCols],
-                body: tableRows,
-                startY: 28,
-                theme: 'grid',
-                styles: { fontSize: 8, cellPadding: 2 },
-                headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: 'center' },
-                columnStyles: {
-                    0: { halign: 'center', cellWidth: 20 }, // Tarikh
-                    1: { cellWidth: 25 }, // Negeri
-                    2: { cellWidth: 25 }, // Daerah
-                    3: { cellWidth: 'auto' }, // Lokasi
-                    4: { cellWidth: 30 }, // Tanaman
-                    5: { halign: 'center', cellWidth: 22 }, // L.Tanam
-                    6: { cellWidth: 35 }, // Perosak
-                    7: { halign: 'center', cellWidth: 22 }, // L.Serang
-                    8: { halign: 'center', cellWidth: 20 }, // % Serang
-                    9: { halign: 'center', cellWidth: 15 } // Tahap
-                },
-                didParseCell: function (data) {
-                    if (data.section === 'body' && data.column.index === 9) {
-                        let txt = data.cell.raw;
-                        if (txt === "T1" || txt === "T2") data.cell.styles.textColor = [39, 174, 96];
-                        else if (txt === "T3") data.cell.styles.textColor = [211, 84, 0];
-                        else if (txt === "T4" || txt === "T5") data.cell.styles.textColor = [192, 57, 43];
-                    }
+                head:[['Bil','Tarikh','Daerah','Lokasi','Tanaman','Luas Bancian (Ha)','Perosak','Luas Serangan (Ha)','Peratus Serangan']],
+                body,startY:59,margin:{top:17,left:12,right:12,bottom:15},showHead:'everyPage',
+                theme:'grid',rowPageBreak:'avoid',
+                styles:{font:'helvetica',fontSize:7.5,textColor:[25,25,25],lineWidth:0.2,lineColor:[30,30,30],cellPadding:2,overflow:'linebreak'},
+                headStyles:{fillColor:[247,248,250],textColor:[25,25,25],fontStyle:'bold',halign:'center'},
+                columnStyles:{0:{cellWidth:10,halign:'center'},1:{cellWidth:20,halign:'center'},2:{cellWidth:32},3:{cellWidth:43},4:{cellWidth:31},5:{cellWidth:22,halign:'center'},6:{cellWidth:63},7:{cellWidth:26,halign:'center'},8:{cellWidth:26,halign:'center'}},
+                didDrawPage: data=>{
+                    if(data.pageNumber>1){doc.setDrawColor(6,78,59);doc.setLineWidth(0.5);doc.line(12,13,285,13);}
+                    doc.setFontSize(7);doc.setTextColor(110,110,110);
+                    doc.text(`Dicetak pada: ${now}`,12,201);
+                    doc.text(`Halaman ${data.pageNumber}`,285,201,{align:'right'});
                 }
             });
-
-            const fileName = `PNR_Laporan_${targetName.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`;
-            doc.save(fileName);
-            
-        } catch (e) {
+            doc.save(`DATA PNR ${state.replace(/[^A-Za-z0-9 ()-]/g,'_')} - ${dateLabel.replace(/\//g,'-')}.pdf`);
+        } catch(e) {
             console.error(e);
-            alert("Ralat sistem semasa menjana PDF.");
+            alert('Ralat sistem semasa menjana PDF.');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
-        
-        btn.innerHTML = originalText; 
-        btn.disabled = false; 
     },
 
     klikJanaPDF: async function(btnElement) {

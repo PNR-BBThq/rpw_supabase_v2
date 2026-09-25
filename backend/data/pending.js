@@ -1,3 +1,4 @@
+import { stateScope, scoped, supervisor } from './access.js';
 // =========================================================================
 // FAIL: api/data/pending.js
 // FUNGSI: GET /api/data/pending — Ambil rekod menunggu pengesahan
@@ -14,9 +15,10 @@ export default async function handler(req, res) {
   const { user, error: authError } = await authMiddleware(req);
   if (authError) return sendError(res, authError, 401);
 
+  if (!supervisor(user)) return sendError(res, 'Kebenaran penyelia diperlukan.', 403);
   try {
     const supabase = getSupabase();
-    const state = req.query?.state || req.body?.state || user.state || 'ALL';
+    const state = stateScope(user);
 
     let allRecords = [];
     let from = 0;
@@ -29,12 +31,10 @@ export default async function handler(req, res) {
         .from('Data')
         .select('*')
         .or('status.eq.MENUNGGU,status.eq.BARU,status.is.null,status.eq.')
-        .order('timestamp', { ascending: false })
+        .order('timestamp', { ascending: false }).order('id', {ascending:false})
         .range(from, from + step - 1);
 
-      if (state && state !== 'ALL' && state !== 'SEMUA') {
-        query = query.eq('negeri', state.toUpperCase().trim());
-      }
+      query = scoped(query, state);
 
       const { data, error } = await query;
 
@@ -59,7 +59,7 @@ export default async function handler(req, res) {
       'Timestamp', 'Nama', 'Email', 'Tarikh Bancian', 'Negeri', 'Daerah',
       'Lokasi', 'Koordinat', 'Kategori Tanaman', 'Nama Tanaman', 'Varieti',
       'Umur Tanaman', 'Luas Bertanam', 'Luas Serangan', 'Peratus', 'Keterukan',
-      'Syor Kawalan', 'IMAGE LINKS (COMMA SEPARATED)', 'Caption', 'Status', 'Log'
+      'Syor Kawalan', 'Catatan', 'IMAGE LINKS (COMMA SEPARATED)', 'Caption', 'Status', 'Log'
     ];
 
     // Transform ke format row-based (compatible dengan frontend)
@@ -83,6 +83,7 @@ export default async function handler(req, res) {
         r.peratus_serangan || {},
         r.keterukan || {},
         r.syor_kawalan || '',
+        r.catatan || '',
         r.image_links || '',
         r.caption || '',
         r.status || '',

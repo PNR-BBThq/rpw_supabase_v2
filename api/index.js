@@ -1,3 +1,4 @@
+import submissionStatus from '../backend/data/submission-status.js';
 import rpwRecordsHandler from '../backend/rpw/records.js';
 import rpwMutateHandler from '../backend/rpw/mutate.js';
 import loginHandler from '../backend/auth/login.js';
@@ -30,6 +31,7 @@ import usersUpdateHandler from '../backend/users/update.js';
 import { handleOptions } from '../backend/supabase-client.js';
 
 const routes = {
+  '/api/data/submission-status': submissionStatus,
   '/api/rpw/records': rpwRecordsHandler,
   '/api/rpw/mutate': rpwMutateHandler,
   '/api/auth/login': loginHandler,

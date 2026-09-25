@@ -1,3 +1,4 @@
+import { supervisor, requireRecord } from './access.js';
 // =========================================================================
 // FAIL: api/data/redundant.js
 // FUNGSI: GET/POST /api/data/redundant — Urus rekod redundan
@@ -13,6 +14,7 @@ export default async function handler(req, res) {
   const { user, error: authError } = await authMiddleware(req);
   if (authError) return sendError(res, authError, 401);
 
+  if (!supervisor(user)) return sendError(res, 'Kebenaran penyelia diperlukan.', 403);
   const supabase = getSupabase();
 
   // GET — Ambil senarai rekod yang diabaikan
@@ -43,12 +45,13 @@ export default async function handler(req, res) {
     try {
       const { row, name } = req.body || {};
       if (!row) return sendError(res, 'ID rekod diperlukan.');
+      if (!(await requireRecord(supabase,user,row,'verify'))) return sendError(res,'Rekod di luar skop akaun.',403);
 
       const { error } = await supabase
         .from('ignored_redundant')
         .insert({
           record_id: row,
-          ignored_by: name || user.nama
+          ignored_by: user.nama
         });
 
       if (error) {
