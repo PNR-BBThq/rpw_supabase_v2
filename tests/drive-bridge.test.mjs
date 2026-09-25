@@ -18,8 +18,10 @@ test('only canonical Drive links can identify a file to trash',()=>{
 
 test('Drive bridge requires signed proof and exact deletion receipt',async()=>{
   const oldSecret=process.env.PNR_DRIVE_BRIDGE_SECRET;
+  const oldUrl=process.env.PNR_IMAGE_UPLOAD_URL;
   const oldFetch=globalThis.fetch;
   process.env.PNR_DRIVE_BRIDGE_SECRET='test-secret-with-at-least-32-bytes-long';
+  process.env.PNR_IMAGE_UPLOAD_URL='https://script.google.com/macros/s/TEST/exec';
   const calls=[];
   globalThis.fetch=async(_url,options)=>{
     const body=JSON.parse(options.body);
@@ -38,6 +40,8 @@ test('Drive bridge requires signed proof and exact deletion receipt',async()=>{
     globalThis.fetch=oldFetch;
     if(oldSecret===undefined) delete process.env.PNR_DRIVE_BRIDGE_SECRET;
     else process.env.PNR_DRIVE_BRIDGE_SECRET=oldSecret;
+    if(oldUrl===undefined) delete process.env.PNR_IMAGE_UPLOAD_URL;
+    else process.env.PNR_IMAGE_UPLOAD_URL=oldUrl;
   }
 });
 

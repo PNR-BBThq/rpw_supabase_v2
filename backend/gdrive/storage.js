@@ -2,7 +2,8 @@ import { confirmedLinks, validateImages } from '../data/submission.js';
 import { createHmac } from 'node:crypto';
 
 const driveUrl = () => {
-  const url = new URL(process.env.PNR_IMAGE_UPLOAD_URL || 'https://script.google.com/macros/s/AKfycbznIzUO_1G9vhSrD7I2JLAnPmFNbPK5plRjPwbnW9T9rFO-2X5nVAQk0utLSxjSffjY/exec');
+  if(!process.env.PNR_IMAGE_UPLOAD_URL) throw new Error('URL Apps Script belum disahkan.');
+  const url = new URL(process.env.PNR_IMAGE_UPLOAD_URL);
   if (url.protocol !== 'https:' || url.hostname !== 'script.google.com' || !url.pathname.endsWith('/exec')) throw new Error('Konfigurasi storan tidak sah.');
   return url;
 };
