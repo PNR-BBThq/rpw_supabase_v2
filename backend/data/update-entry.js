@@ -2,7 +2,7 @@ import {prepareSubmission,confirmedLinks} from './submission.js';
 import { requireRecord, stateScope } from './access.js';
 import { matchesScope } from '../rpw/policy.js';
 import { uploadImages } from '../gdrive/storage.js';
-import { scheduleDriveCleanup, runDriveCleanup } from '../gdrive/cleanup.js';
+import { scheduleDriveCleanup, runDriveCleanupJobs } from '../gdrive/cleanup.js';
 // =========================================================================
 // FAIL: api/data/update-entry.js
 // FUNGSI: POST /api/data/update-entry — Kemas kini rekod bancian
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
     if(retained.some(link => !existing.includes(link)) || newLinks.length) return sendError(res,'Senarai gambar tidak sepadan dengan rekod.',400);
     if(new Set(retained).size !== retained.length) return sendError(res,'Senarai gambar berulang.',400);
     const removed=existing.filter(link=>!retained.includes(link));
-    const cleanupJob=await scheduleDriveCleanup(supabase,rowID,removed,user.uid);
+    const cleanupJobs=await scheduleDriveCleanup(supabase,rowID,removed,user.uid);
     newLinks = body.images?.length ? (await uploadImages(body.images, rowID,{tanaman:body.namaTanaman,negeri:body.negeri})).split(',').map(link=>link.trim()) : [];
     const allLinks = [...retained.filter(l => l), ...newLinks.filter(l => l)];
     finalImageLinks = allLinks.length ? confirmedLinks(allLinks,allLinks.length) : 'TIADA GAMBAR';
@@ -118,7 +118,7 @@ export default async function handler(req, res) {
     }
     if(!updated) return sendError(res,'Rekod berubah semasa penyuntingan. Muat semula sebelum cuba lagi.',409);
 
-    const cleanup=await runDriveCleanup(supabase,cleanupJob);
+    const cleanup=await runDriveCleanupJobs(supabase,cleanupJobs);
     return sendSuccess(res, {status:'success',cleanupPending:cleanup.pending},cleanup.pending
       ? 'Rekod disimpan. Pemadaman fail Drive menunggu percubaan semula.'
       : 'Rekod berjaya dikemaskini dan gambar dibuang daripada Drive.');

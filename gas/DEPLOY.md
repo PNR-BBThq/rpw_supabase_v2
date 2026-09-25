@@ -26,7 +26,11 @@ deployment Apps Script yang **sama** dengan kod yang baru dikemas kini.
 
 Simpan projek dan terbitkan **versi baharu deployment Web App sedia ada** dengan
 hak pelaksanaan pemilik Drive. Akses mungkin memerlukan persetujuan skop Drive
-yang dikemas kini. Jika URL deployment berubah, kemas kini `PNR_IMAGE_UPLOAD_URL`
+yang dikemas kini. Pemadaman kekal memanggil Drive API v3 melalui
+`UrlFetchApp`/`ScriptApp.getOAuthToken`; jika projek menggunakan skop nyata dalam
+`appsscript.json`, pastikan `https://www.googleapis.com/auth/drive` dan
+`https://www.googleapis.com/auth/script.external_request` disenaraikan dan
+benarkan semula akses apabila diminta. Jika URL deployment berubah, kemas kini `PNR_IMAGE_UPLOAD_URL`
 di Vercel dan terbitkan deployment web yang menggunakan tetapan baharu.
 
 ## Turutan selamat untuk pelepasan
@@ -46,6 +50,7 @@ di Vercel dan terbitkan deployment web yang menggunakan tetapan baharu.
    semula maksimum 20 tugasan sekali panggil. Jadual tugasan ialah rekod audit
    sehingga `completed_at` diisi; rujukan yang masih digunakan tidak dipadam.
 
-**Penting:** fail dalam Trash masih boleh dipulihkan sebelum tempoh Trash Drive
-berakhir. Ini mengekalkan perilaku Apps Script sedia ada (`setTrashed(true)`).
+**Penting:** pilihan pemilik ialah **padam kekal** melalui Drive API `files.delete`.
+Fail yang telah dipadam tidak boleh dipulihkan daripada Trash. Uji dengan fail
+gambar khas untuk ujian sebelum menerima pakai sistem secara rasmi.
 Tiada rekod sebenar atau fail Drive produksi dipadam semasa penyediaan kod ini.

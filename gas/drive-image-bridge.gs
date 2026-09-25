@@ -30,8 +30,13 @@ function pnrDeleteStoredImages_(data) {
     if (mode==='probe') return {success:true,checked:ids.length};
     let deleted=0;
     ids.forEach(id => {
-      const file=DriveApp.getFileById(id);
-      if (!file.isTrashed()) file.setTrashed(true);
+      // DriveApp.setTrashed() masih menyimpan fail dalam Trash. Pemilik sistem
+      // memilih padam kekal; Drive API v3 files.delete memulangkan HTTP 204.
+      const response=UrlFetchApp.fetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(id),{
+        method:'delete',headers:{Authorization:'Bearer '+ScriptApp.getOAuthToken()},
+        muteHttpExceptions:true
+      });
+      if(response.getResponseCode()!==204) throw new Error('Drive tidak mengesahkan pemadaman kekal.');
       deleted++;
     });
     return {success:true,deleted};

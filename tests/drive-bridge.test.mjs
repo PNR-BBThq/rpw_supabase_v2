@@ -9,7 +9,7 @@ import {scheduleDriveCleanup,runDriveCleanup} from '../backend/gdrive/cleanup.js
 const fileId='A'.repeat(30);
 const link=`https://drive.google.com/file/d/${fileId}/view`;
 
-test('only canonical Drive links can identify a file to trash',()=>{
+test('only canonical Drive links can identify a file to delete',()=>{
   assert.equal(driveId(link),fileId);
   for(const url of ['https://evil.example/'+fileId,'javascript:alert(1)',
     'https://drive.google.com.evil.example/file/d/'+fileId+'/view',
@@ -65,27 +65,36 @@ test('a still-referenced file remains queued and is never sent to Drive',async()
   }
 });
 
-test('Apps Script checks the PNR folder before it trashes an image',()=>{
+test('Apps Script checks the PNR folder before permanently deleting an image',()=>{
   const secret='test-secret-with-at-least-32-bytes-long';
   const root='PNR_FOLDER';
   const one=folder=>{let left=true;return {hasNext:()=>left,next:()=>{left=false;return folder;}};};
-  const file={trashed:false,getParents:()=>one({getId:()=>root}),
-    isTrashed(){return this.trashed;},setTrashed(value){this.trashed=value;}};
+  const file={getParents:()=>one({getId:()=>root})};
+  let deleted=0;
   const ctx={PropertiesService:{getScriptProperties:()=>({getProperty:()=>secret})},
     Utilities:{computeHmacSha256Signature:(payload,key)=>[...createHmac('sha256',key).update(payload).digest()],
       base64EncodeWebSafe:bytes=>Buffer.from(bytes).toString('base64url')},
-    DriveApp:{getFileById:()=>file},UPLOAD_FOLDER_ID:root,Date,console:{error:()=>{}}};
+    DriveApp:{getFileById:()=>file},UPLOAD_FOLDER_ID:root,Date,console:{error:()=>{}},
+    ScriptApp:{getOAuthToken:()=> 'test-token'},
+    UrlFetchApp:{fetch:(url,options)=>{
+      assert.equal(url,`https://www.googleapis.com/drive/v3/files/${fileId}`);
+      assert.equal(options.method,'delete');
+      assert.equal(options.headers.Authorization,'Bearer test-token');
+      deleted++;
+      return {getResponseCode:()=>204};
+    }}};
   const source=readFileSync(new URL('../gas/drive-image-bridge.gs',import.meta.url),'utf8');
   runInNewContext(`${source};globalThis.bridge=pnrDeleteStoredImages_;`,ctx);
   const at=String(Date.now());
   const signature=createHmac('sha256',secret).update(`${at}\nR-123\ndelete\n${link}`).digest('base64url');
   const request={links:[link],at,recordId:'R-123',mode:'delete',signature};
   assert.equal(ctx.bridge(request).success,true);
-  assert.equal(file.trashed,true);
-  file.trashed=false;
+  assert.equal(deleted,1);
   assert.equal(ctx.bridge({...request,signature:'wrong'}).success,false);
-  assert.equal(file.trashed,false);
+  assert.equal(deleted,1);
+  ctx.UrlFetchApp.fetch=()=>({getResponseCode:()=>403});
+  assert.equal(ctx.bridge(request).success,false);
   file.getParents=()=>one({getId:()=> 'OTHER_FOLDER',getParents:()=>({hasNext:()=>false})});
   assert.equal(ctx.bridge(request).success,false);
-  assert.equal(file.trashed,false);
+  assert.equal(deleted,1);
 });

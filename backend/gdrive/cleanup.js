@@ -1,13 +1,19 @@
 import { deleteDriveImages, driveId } from './storage.js';
 
 export async function scheduleDriveCleanup(supabase, recordId, links, uid) {
-  if (!links.length) return null;
+  if (!links.length) return [];
   links.forEach(driveId);
   await deleteDriveImages(links,recordId,'probe');
   const {data,error}=await supabase.from('pnr_drive_cleanup_jobs')
-    .insert({record_id:recordId,links,requested_by:uid}).select('*').single();
-  if(error || !data) throw new Error('Gagal merekod tugasan pemadaman gambar. Rekod tidak diubah.');
+    .insert(links.map(link=>({record_id:recordId,links:[link],requested_by:uid}))).select('*');
+  if(error || data?.length!==links.length) throw new Error('Gagal merekod tugasan pemadaman gambar. Rekod tidak diubah.');
   return data;
+}
+
+export async function runDriveCleanupJobs(supabase,jobs) {
+  let pending=false;
+  for(const job of jobs) if((await runDriveCleanup(supabase,job)).pending) pending=true;
+  return {pending};
 }
 
 export async function runDriveCleanup(supabase,job) {
