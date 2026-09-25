@@ -424,6 +424,8 @@
                 <textarea class="form-control mt-2" id="syorTambahan" name="syor" rows="2"
                     placeholder="Taip syor kawalan tambahan di sini..."></textarea>
             </div>
+            <div class="mt-3"><label for="catatanBancian" class="form-label fw-bold">Catatan pemerhatian</label>
+                <textarea class="form-control" id="catatanBancian" name="catatan" rows="3" maxlength="2000" placeholder="Catatan lapangan tambahan (pilihan)"></textarea></div>
 
             </section><section class="survey-section" id="survey-section-4"><h5 class="text-primary mt-4">D. Gambar (Pilihan)</h5>
             <div class="form-grid-2">
@@ -1081,6 +1083,7 @@
                 luasBertanam: fd.get('luasBertanam'),
                 senaraiPerosak: names.join(', '),
                 syor: syors.join('. '),
+                catatan: fd.get('catatan'),
                 luasSerangan: luasS,
                 peratusSerangan: pctS,
                 keterukan: sevS,

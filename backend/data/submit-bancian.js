@@ -57,6 +57,7 @@ export default async function handler(req, res) {
         peratus_serangan: data.peratusSerangan || {},
         keterukan: data.keterukan || {},
         syor_kawalan: data.syor || "TIADA",
+        catatan: data.catatan || '',
         image_links: finalImageLinks,
         caption: data.captionGambar || "TIADA",
         status: data.statusRekod,

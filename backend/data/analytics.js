@@ -117,7 +117,7 @@ export default async function handler(req, res) {
         im: r.image_links || '',
         vb: r.log || '',
         st: r.status,
-        catatan: r.syor_kawalan || '-',
+        catatan: r.catatan || '-',
         timestamp: r.timestamp,
         created_at: r.created_at
       };

@@ -623,22 +623,26 @@ const TaskManager = {
         if (imgString && imgString.trim() !== "" && imgString !== "-") {
             const links = imgString.split(',').map(s => s.trim());
             links.forEach((link, index) => {
-                if(link) {
+                let url;
+                try { url = new URL(link); } catch { return; }
+                if (url.protocol === 'https:' && ['drive.google.com','lh3.googleusercontent.com','drive.usercontent.google.com'].includes(url.hostname)) {
                     this.retainedImagesGlobal.push(link);
-                    let imgSrc = link; 
-                    const matchId = link.match(/[-\w]{25,}/); 
-                    if (matchId && matchId[0]) {
-                        imgSrc = `https://drive.google.com/thumbnail?id=${matchId[0]}&sz=w150`;
-                    }
                     const div = document.createElement('div');
                     div.className = "position-relative";
                     div.style = "width: 75px; height: 75px; border: 1px solid #ccc; border-radius: 5px; overflow: hidden;";
-                    div.innerHTML = `
-                        <a href="${link}" target="_blank"><img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: cover;"></a>
-                        <button type="button" class="btn btn-danger position-absolute top-0 end-0 p-0" 
-                                style="width: 22px; height: 22px; line-height: 1; font-size:12px; font-weight:bold; border-radius:0; border-bottom-left-radius:5px;" 
-                                onclick="TaskManager.removeRetainedImage(${index}, this)">X</button>
-                    `;
+                    const anchor = document.createElement('a');
+                    anchor.href = link;
+                    anchor.target = '_blank'; anchor.rel = 'noopener noreferrer';
+                    const img = document.createElement('img');
+                    img.src = link; img.alt = 'Gambar laporan';
+                    img.style = 'width: 100%; height: 100%; object-fit: cover;';
+                    anchor.appendChild(img); div.appendChild(anchor);
+                    const remove = document.createElement('button');
+                    remove.type = 'button'; remove.textContent = '×';
+                    remove.className = 'btn btn-danger position-absolute top-0 end-0 p-0';
+                    remove.style = 'width: 22px; height: 22px; line-height: 1;';
+                    remove.addEventListener('click', () => this.removeRetainedImage(index, remove));
+                    div.appendChild(remove);
                     container.appendChild(div);
                 }
             });
@@ -712,11 +716,14 @@ const TaskManager = {
                 <label class="small fw-bold mb-1 mt-3">Kapsyen</label>
                 <input type="text" id="fe_caption" class="form-control form-control-sm mb-2" value="${valCaption}">
             </div>
-            <div class="mb-3"><label class="small fw-bold text-success">Syor Kawalan</label><textarea id="fe_syor" class="form-control" rows="3">${getV('SYOR KAWALAN')||getV('CATATAN')||getV('SYOR')}</textarea></div>
+            <div class="mb-3"><label class="small fw-bold text-success">Syor Kawalan</label><textarea id="fe_syor" class="form-control" rows="3"></textarea></div>
+            <div class="mb-3"><label class="small fw-bold">Catatan pemerhatian</label><textarea id="fe_catatan" class="form-control" rows="3" maxlength="2000"></textarea></div>
             <button class="btn btn-success w-100 py-2 fw-bold" onclick="TaskManager.saveFullEdit()">SIMPAN PERUBAHAN</button>
         </div>`;
 
         document.getElementById('detailBody').innerHTML = html;
+        document.getElementById('fe_syor').value = getV('SYOR KAWALAN') || getV('SYOR') || '';
+        document.getElementById('fe_catatan').value = getV('CATATAN') || '';
         
         this.setDropdownValue(document.getElementById('fe_negeri'), savedNegeri); this.updateDistricts('fe_negeri','fe_daerah'); 
         this.setDropdownValue(document.getElementById('fe_daerah'), savedDaerah);
@@ -893,38 +900,10 @@ const TaskManager = {
             newImagesArray = resolvedImages.filter(img => img !== null);
             console.log("📸 Base64 images ready:", newImagesArray.length, "files");
             
-            // Terus hantar ke Google Apps Script dari Frontend (Lebih laju & tiada isu Vercel limit)
-            try {
-                console.log("📤 Menghantar ke GAS:", CONFIG.GAS_URL);
-                const gasRes = await fetch(CONFIG.GAS_URL, {
-                    method: 'POST',
-                    redirect: 'follow', // ⬅️ KRITIKAL: GAS sentiasa redirect 302
-                    body: JSON.stringify({
-                        action: 'uploadImageOnly',
-                        images: newImagesArray,
-                        id: `EDIT_${rowID}_${Date.now()}`,
-                        tanaman: document.getElementById('fe_tanaman') ? document.getElementById('fe_tanaman').value : "",
-                        negeri: document.getElementById('fe_negeri') ? document.getElementById('fe_negeri').value : ""
-                    })
-                });
-                const gasText = await gasRes.text();
-                console.log("📥 GAS Response:", gasText);
-                try {
-                    const gasJson = JSON.parse(gasText);
-                    if (gasJson.success && gasJson.links) {
-                        newLinks = gasJson.links.split(',').map(l => l.trim()).filter(l => l);
-                        console.log("✅ Gambar berjaya dimuat naik:", newLinks);
-                    } else {
-                        console.warn("⚠️ GAS response tidak berjaya:", gasJson);
-                        newLinks = [];
-                    }
-                } catch(e) {
-                    console.error("❌ Gagal parse GAS response:", e, gasText);
-                    newLinks = [];
-                }
-            } catch (err) {
-                console.error("❌ Gagal muat naik gambar ke GAS:", err);
-                newLinks = [];
+            if (newImagesArray.length !== files.length) {
+                Swal.fire('Ralat gambar', 'Ada gambar gagal dibaca. Rekod belum disimpan.', 'error');
+                if (btn) { btn.innerHTML = 'SIMPAN PERUBAHAN'; btn.disabled = false; }
+                return;
             }
         } else {
             Swal.fire({ title: 'Menghantar Data...', showConfirmButton: false, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -934,8 +913,10 @@ const TaskManager = {
             action: 'updateEntry', 
             row: rowID, 
             syor: document.getElementById('fe_syor').value,
+            catatan: document.getElementById('fe_catatan').value,
             retainedImages: finalRetainedImages, 
             newImageLinks: newLinks,
+            images: newImagesArray.map(img => ({name:img.imgName,dataUrl:`data:${img.imgType};base64,${img.imgData}`})),
 
             tarikhBancian: document.getElementById('fe_tarikh').value,
             namaPegawai: document.getElementById('fe_pegawai').value,
@@ -970,15 +951,15 @@ const TaskManager = {
             const r = await API.postData('updateEntry', payload); 
             Swal.close(); 
             
-            alert("✅ Berjaya!"); 
-            
             if(r.success || r.status === 'success') {
+                alert('✅ Berjaya!');
                 bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
                 if(document.getElementById('view-tasks').style.display !== 'none') this.loadMyTasks(); 
                 else if(document.getElementById('view-verify').style.display !== 'none') VerifyManager.loadPend(); 
                 else DashboardManager.initDash();
                 VerifyManager.checkPendingCount();
             } else { 
+                Swal.fire('Tidak berjaya', r.message || 'Rekod belum disimpan. Sila cuba lagi.', 'error');
                 if (btn) { btn.innerHTML = "SIMPAN PERUBAHAN"; btn.disabled = false; }
             }
         } catch(err) {

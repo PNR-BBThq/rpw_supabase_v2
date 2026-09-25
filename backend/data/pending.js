@@ -59,7 +59,7 @@ export default async function handler(req, res) {
       'Timestamp', 'Nama', 'Email', 'Tarikh Bancian', 'Negeri', 'Daerah',
       'Lokasi', 'Koordinat', 'Kategori Tanaman', 'Nama Tanaman', 'Varieti',
       'Umur Tanaman', 'Luas Bertanam', 'Luas Serangan', 'Peratus', 'Keterukan',
-      'Syor Kawalan', 'IMAGE LINKS (COMMA SEPARATED)', 'Caption', 'Status', 'Log'
+      'Syor Kawalan', 'Catatan', 'IMAGE LINKS (COMMA SEPARATED)', 'Caption', 'Status', 'Log'
     ];
 
     // Transform ke format row-based (compatible dengan frontend)
@@ -83,6 +83,7 @@ export default async function handler(req, res) {
         r.peratus_serangan || {},
         r.keterukan || {},
         r.syor_kawalan || '',
+        r.catatan || '',
         r.image_links || '',
         r.caption || '',
         r.status || '',

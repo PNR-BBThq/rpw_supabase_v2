@@ -39,7 +39,7 @@ export default async function handler(req, res) {
       'Timestamp', 'Nama', 'Email', 'Tarikh Bancian', 'Negeri', 'Daerah',
       'Lokasi', 'Koordinat', 'Kategori Tanaman', 'Nama Tanaman', 'Varieti',
       'Umur Tanaman', 'Luas Bertanam', 'Luas Serangan', 'Peratus', 'Keterukan',
-      'Syor Kawalan', 'IMAGE LINKS (COMMA SEPARATED)', 'Caption', 'Status', 'Log'
+      'Syor Kawalan', 'Catatan', 'IMAGE LINKS (COMMA SEPARATED)', 'Caption', 'Status', 'Log'
     ];
 
     const rowData = [
@@ -60,6 +60,7 @@ export default async function handler(req, res) {
       record.peratus_serangan || {},
       record.keterukan || {},
       record.syor_kawalan || '',
+      record.catatan || '',
       record.image_links || '',
       record.caption || '',
       record.status || '',

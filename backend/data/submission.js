@@ -7,7 +7,7 @@ export function canonical(value) {
 export function prepareSubmission(body, user) {
   if (!body || typeof body !== 'object') throw new Error('Borang tidak sah.');
   const data = {};
-  for (const k of ['email','tarikhBancian','negeri','daerah','lokasi','koordinat','kategori','namaTanaman','varieti','umurTanaman','syor','captionGambar','senaraiPerosak']) {
+  for (const k of ['email','tarikhBancian','negeri','daerah','lokasi','koordinat','kategori','namaTanaman','varieti','umurTanaman','syor','catatan','captionGambar','senaraiPerosak']) {
     data[k] = String(body[k] || '').trim();
     if (data[k].length > 2000) throw new Error('Maklumat terlalu panjang.');
   }

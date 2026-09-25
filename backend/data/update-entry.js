@@ -1,6 +1,7 @@
 import {prepareSubmission,confirmedLinks} from './submission.js';
 import { requireRecord, stateScope } from './access.js';
 import { matchesScope } from '../rpw/policy.js';
+import { uploadImages } from '../gdrive/storage.js';
 // =========================================================================
 // FAIL: api/data/update-entry.js
 // FUNGSI: POST /api/data/update-entry — Kemas kini rekod bancian
@@ -43,6 +44,9 @@ export default async function handler(req, res) {
     let newLinks = body.newImageLinks || [];
 
     if(!Array.isArray(retained)||!Array.isArray(newLinks)) return sendError(res,'Senarai gambar tidak sah.');
+    const existing = String(permitted.image_links || '').split(',').map(link => link.trim()).filter(link => link && link !== 'TIADA GAMBAR');
+    if(retained.some(link => !existing.includes(link)) || newLinks.length) return sendError(res,'Senarai gambar tidak sepadan dengan rekod.',400);
+    newLinks = body.images?.length ? (await uploadImages(body.images, rowID)).split(',').map(link=>link.trim()) : [];
     const allLinks = [...retained.filter(l => l), ...newLinks.filter(l => l)];
     finalImageLinks = allLinks.length ? confirmedLinks(allLinks,allLinks.length) : 'TIADA GAMBAR';
 
@@ -89,6 +93,7 @@ export default async function handler(req, res) {
       peratus_serangan: peratusObj,
       keterukan: keterukanObj,
       syor_kawalan: body.syor || '',
+      catatan: body.catatan || '',
       image_links: finalImageLinks,
       caption: body.captionGambar || body.caption || '',
       status: 'BARU', // Selepas edit, status dikembalikan kepada BARU mengikut legasi asal

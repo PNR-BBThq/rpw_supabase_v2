@@ -18,7 +18,8 @@ const ExportManager = {
             { header: 'Tanaman', key: 'tn', width: 18 }, { header: 'Luas Bancian (Ha)', key: 'lt', width: 18 }, 
             { header: 'Perosak', key: 'p', width: 20 }, { header: 'Keterukan', key: 'k', width: 15 }, 
             { header: 'Luas Serangan (Ha)', key: 'ls', width: 18 }, { header: '% Serangan', key: 'pct', width: 15 }, 
-            { header: 'Syor Kawalan', key: 's', width: 50 }
+            { header: 'Syor Kawalan', key: 's', width: 50 },
+            { header: 'Catatan', key: 'catatan', width: 45 }
         ]; 
         
         worksheet.getRow(1).font = { bold: true }; 
@@ -34,7 +35,7 @@ const ExportManager = {
                 let luasSerang = parseFloat(pArea) || 0; 
                 let pctVal = (luasTanam > 0) ? ((luasSerang / luasTanam) * 100).toFixed(2) + '%' : "0%"; 
                 const row = worksheet.getRow(rowIndex); 
-                row.values = { id: d.id, pg: d.pg || "-", t: d.t, n: d.n, d: d.d, l: d.l, c: d.c || "-", kt: d.kt || "-", tn: d.tn, lt: luasTanam, p: pName, k: d.k, ls: luasSerang, pct: pctVal, s: d.s }; 
+                row.values = { id: d.id, pg: d.pg || "-", t: d.t, n: d.n, d: d.d, l: d.l, c: d.c || "-", kt: d.kt || "-", tn: d.tn, lt: luasTanam, p: pName, k: (d.pk && d.pk[pName]) || d.k, ls: luasSerang, pct: pctVal, s: d.s, catatan: d.catatan || '' };
                 
                 row.eachCell({ includeEmpty: true }, (cell) => { 
                     cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} }; 
@@ -46,6 +47,7 @@ const ExportManager = {
             if (pestEntries.length > 1) { 
                 for (let c = 1; c <= 10; c++) { worksheet.mergeCells(startRow, c, rowIndex - 1, c); } 
                 worksheet.mergeCells(startRow, 15, rowIndex - 1, 15); 
+                worksheet.mergeCells(startRow, 16, rowIndex - 1, 16);
             } 
         }); 
         
