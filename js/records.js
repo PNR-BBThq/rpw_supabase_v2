@@ -952,7 +952,7 @@ const TaskManager = {
             Swal.close(); 
             
             if(r.success || r.status === 'success') {
-                alert('✅ Berjaya!');
+                alert(r.cleanupPending ? '⚠️ Rekod disimpan tetapi gambar masih menunggu pemadaman daripada Drive.' : '✅ Berjaya!');
                 bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
                 if(document.getElementById('view-tasks').style.display !== 'none') this.loadMyTasks(); 
                 else if(document.getElementById('view-verify').style.display !== 'none') VerifyManager.loadPend(); 

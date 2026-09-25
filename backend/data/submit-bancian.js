@@ -30,7 +30,7 @@ export default async function handler(req, res) {
       if(previous.data.submission_hash!==hash) return sendError(res,'ID penghantaran telah digunakan dengan kandungan lain.',409);
       return sendSuccess(res,{rowId:previous.data.id},'Laporan telah diterima sebelum ini.');
     }
-    const finalImageLinks = await uploadImages(form.images, recordId);
+    const finalImageLinks = await uploadImages(form.images, recordId,{tanaman:form.namaTanaman,negeri:form.negeri});
     Object.assign(data,form);
     const userId = user.uid;
     const timestamp = new Date().toISOString();

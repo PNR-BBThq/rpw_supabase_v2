@@ -2,6 +2,7 @@ import {prepareSubmission,confirmedLinks} from './submission.js';
 import { requireRecord, stateScope } from './access.js';
 import { matchesScope } from '../rpw/policy.js';
 import { uploadImages } from '../gdrive/storage.js';
+import { scheduleDriveCleanup, runDriveCleanup } from '../gdrive/cleanup.js';
 // =========================================================================
 // FAIL: api/data/update-entry.js
 // FUNGSI: POST /api/data/update-entry — Kemas kini rekod bancian
@@ -46,7 +47,10 @@ export default async function handler(req, res) {
     if(!Array.isArray(retained)||!Array.isArray(newLinks)) return sendError(res,'Senarai gambar tidak sah.');
     const existing = String(permitted.image_links || '').split(',').map(link => link.trim()).filter(link => link && link !== 'TIADA GAMBAR');
     if(retained.some(link => !existing.includes(link)) || newLinks.length) return sendError(res,'Senarai gambar tidak sepadan dengan rekod.',400);
-    newLinks = body.images?.length ? (await uploadImages(body.images, rowID)).split(',').map(link=>link.trim()) : [];
+    if(new Set(retained).size !== retained.length) return sendError(res,'Senarai gambar berulang.',400);
+    const removed=existing.filter(link=>!retained.includes(link));
+    const cleanupJob=await scheduleDriveCleanup(supabase,rowID,removed,user.uid);
+    newLinks = body.images?.length ? (await uploadImages(body.images, rowID,{tanaman:body.namaTanaman,negeri:body.negeri})).split(',').map(link=>link.trim()) : [];
     const allLinks = [...retained.filter(l => l), ...newLinks.filter(l => l)];
     finalImageLinks = allLinks.length ? confirmedLinks(allLinks,allLinks.length) : 'TIADA GAMBAR';
 
@@ -100,17 +104,24 @@ export default async function handler(req, res) {
       log: combinedLog
     };
 
-    const { error } = await supabase
+    let updateQuery = supabase
       .from('Data')
       .update(updateData)
       .eq('id', rowID);
+    updateQuery = permitted.image_links == null
+      ? updateQuery.is('image_links',null) : updateQuery.eq('image_links',permitted.image_links);
+    const { data:updated,error } = await updateQuery.select('id').maybeSingle();
 
     if (error) {
       console.error('Update entry error:', error);
       return sendError(res, 'Gagal mengemaskini rekod: ' + error.message);
     }
+    if(!updated) return sendError(res,'Rekod berubah semasa penyuntingan. Muat semula sebelum cuba lagi.',409);
 
-    return sendSuccess(res, { status: 'success' }, '✅ Rekod berjaya dikemaskini dan dihantar untuk pengesahan.');
+    const cleanup=await runDriveCleanup(supabase,cleanupJob);
+    return sendSuccess(res, {status:'success',cleanupPending:cleanup.pending},cleanup.pending
+      ? 'Rekod disimpan. Pemadaman fail Drive menunggu percubaan semula.'
+      : 'Rekod berjaya dikemaskini dan gambar dibuang daripada Drive.');
 
   } catch (e) {
     console.error('Update entry error:', e);
