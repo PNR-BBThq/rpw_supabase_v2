@@ -1,6 +1,7 @@
 -- Reviewed against actual public.Data/public.user schema, 2026-09-14.
--- NOT YET APPLIED. Verify server service-role key and signing secret first.
--- Duplicate login identities must be resolved by the owner. No name-based ownership backfill.
+-- Applied to the existing PNR Supabase project on 2026-09-28. Verify the server
+-- service-role key and signing secret before routing application traffic here.
+-- Duplicate login identities were resolved by owner instruction; no name-based ownership backfill.
 BEGIN;
 DO $$ BEGIN
   IF to_regclass('public."Data"') IS NULL OR to_regclass('public."user"') IS NULL THEN
