@@ -18,7 +18,8 @@ export default async function handler(req, res) {
     const { u, p } = req.body || {};
 
     if (!signingReady()) return sendError(res, 'Log masuk belum diaktifkan oleh pentadbir pelayan.', 503);
-    if (typeof u !== 'string' || !/^[a-zA-Z0-9._@-]{1,100}$/.test(u.trim()) || typeof p !== 'string' || !p || Buffer.byteLength(p)>256) {
+    // Akaun import lama boleh mengandungi ruang di antara perkataan ID pengguna.
+    if (typeof u !== 'string' || u.trim().length > 100 || !/^[a-zA-Z0-9._@-]+(?: [a-zA-Z0-9._@-]+)*$/.test(u.trim()) || typeof p !== 'string' || !p || Buffer.byteLength(p)>256) {
       return sendError(res, 'Sila isi ID dan Kata Laluan.');
     }
 
