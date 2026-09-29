@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     const { data: users, error } = await supabase
       .from('user')
-      .select('*')
+      .select('id,nama,ic,jawatan,negeri,uid,role,status,created_at')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -40,7 +40,6 @@ export default async function handler(req, res) {
       jawatan: u.jawatan,
       negeri: u.negeri,
       uid: u.uid,
-      pwd: u.pwd, // Plaintext — Admin perlu lihat
       role: u.role,
       status: u.status
     }));

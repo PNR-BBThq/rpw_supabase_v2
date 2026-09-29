@@ -1,3 +1,4 @@
+import { authMiddleware } from '../middleware.js';
 // =========================================================================
 // FAIL: api/auth/log-session.js
 // FUNGSI: POST /api/auth/log-session — Log sesi masuk ke pangkalan data
@@ -9,6 +10,8 @@ export default async function handler(req, res) {
   if (handleOptions(req, res)) return;
   if (req.method !== 'POST') return sendError(res, 'Method not allowed', 405);
 
+  const {user,error:authError}=await authMiddleware(req);
+  if(authError)return sendError(res,authError,401);
   try {
     const { name, role } = req.body || {};
 
@@ -18,8 +21,8 @@ export default async function handler(req, res) {
     await supabase
       .from('session_logs')
       .insert({
-        user_name: name || 'Unknown',
-        user_role: role || 'STAFF',
+        user_name: user.nama || 'Unknown',
+        user_role: user.role || 'STAFF',
         ip_address: req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'Unknown'
       });
 

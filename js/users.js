@@ -69,12 +69,7 @@ const UserManager = {
                 <td>${this.maskIC(u.ic)}</td>
                 <td>
                     <span class="d-block small text-primary fw-bold"><i class="bi bi-person me-1"></i>${u.uid}</span>
-                    <div class="d-flex align-items-center gap-1 mt-1">
-                        <span class="small text-muted fw-bold font-monospace" id="pwd_${u.row}" data-pwd="${u.pwd}">••••••••</span>
-                        <button class="btn btn-link p-0 text-secondary border-0 bg-transparent shadow-none" onclick="UserManager.togglePasswordVisibility(${u.row})" title="Lihat/Sembunyi Kata Laluan">
-                            <i class="bi bi-eye" id="eye_${u.row}" style="font-size: 1rem; cursor: pointer;"></i>
-                        </button>
-                    </div>
+                    <small class="text-muted">Kata laluan dilindungi</small>
                 </td>
                 <td><span class="badge bg-light text-dark border">${u.role}</span></td>
                 <td class="text-center">${statusBadge}</td>
@@ -153,7 +148,7 @@ const UserManager = {
                         ${Object.keys(DISTRICT_DATA).map(n => `<option value="${n}" ${u.negeri===n?'selected':''}>${n}</option>`).join('')}
                     </select></div>
                     <div class="col-6 mt-3"><label class="small fw-bold text-primary">Username</label><input id="swal-uid" class="form-control form-control-sm" value="${u.uid}"></div>
-                    <div class="col-6 mt-3"><label class="small fw-bold text-danger">Password</label><input id="swal-pwd" class="form-control form-control-sm" value="${u.pwd}"></div>
+                    <div class="col-6 mt-3"><label class="small fw-bold text-danger">Password</label><input id="swal-pwd" class="form-control form-control-sm" type="password" autocomplete="new-password" placeholder="Kosongkan untuk kekalkan; minimum 12 aksara"></div>
                     <div class="col-6 mt-3"><label class="small fw-bold">Peranan</label><select id="swal-role" class="form-select form-select-sm"><option value="STAFF" ${u.role==='STAF'?'selected':''}>STAFF</option><option value="PENYELIA" ${u.role==='PENYELIA'?'selected':''}>PENYELIA</option><option value="ADMIN" ${u.role==='ADMIN'?'selected':''}>ADMIN</option></select></div>
                     <div class="col-6 mt-3"><label class="small fw-bold text-warning">Status Akaun</label><select id="swal-status" class="form-select form-select-sm"><option value="AKTIF" ${u.status.toUpperCase()==='AKTIF'?'selected':''}>AKTIF</option><option value="MENUNGGU" ${u.status.toUpperCase()==='MENUNGGU'?'selected':''}>MENUNGGU</option><option value="DITOLAK" ${u.status.toUpperCase()==='DITOLAK'?'selected':''}>DITOLAK</option><option value="DIGANTUNG" ${u.status.toUpperCase()==='DIGANTUNG'?'selected':''}>DIGANTUNG</option></select></div>
                 </div>

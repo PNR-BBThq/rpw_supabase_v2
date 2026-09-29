@@ -1,3 +1,5 @@
+import { requireRecord, stateScope } from './access.js';
+import { matchesScope } from '../rpw/policy.js';
 // =========================================================================
 // FAIL: api/data/single-record.js
 // FUNGSI: GET /api/data/single-record — Ambil satu rekod untuk edit
@@ -19,6 +21,8 @@ export default async function handler(req, res) {
     if (!row) return sendError(res, 'ID rekod diperlukan.');
 
     const supabase = getSupabase();
+    const permitted = await requireRecord(supabase, user, row, 'read');
+    if (!permitted) return sendError(res, 'Rekod tidak dijumpai atau di luar kebenaran anda.', 403);
 
     const { data: record, error } = await supabase
       .from('Data')
@@ -35,7 +39,7 @@ export default async function handler(req, res) {
       'Timestamp', 'Nama', 'Email', 'Tarikh Bancian', 'Negeri', 'Daerah',
       'Lokasi', 'Koordinat', 'Kategori Tanaman', 'Nama Tanaman', 'Varieti',
       'Umur Tanaman', 'Luas Bertanam', 'Luas Serangan', 'Peratus', 'Keterukan',
-      'Syor Kawalan', 'IMAGE LINKS (COMMA SEPARATED)', 'Caption', 'Status', 'Log'
+      'Syor Kawalan', 'Catatan', 'IMAGE LINKS (COMMA SEPARATED)', 'Caption', 'Status', 'Log'
     ];
 
     const rowData = [
@@ -56,6 +60,7 @@ export default async function handler(req, res) {
       record.peratus_serangan || {},
       record.keterukan || {},
       record.syor_kawalan || '',
+      record.catatan || '',
       record.image_links || '',
       record.caption || '',
       record.status || '',

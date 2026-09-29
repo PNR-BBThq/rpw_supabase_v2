@@ -1,3 +1,4 @@
+import { stateScope, scoped, supervisor } from './access.js';
 // =========================================================================
 // FAIL: api/data/analytics.js
 // FUNGSI: GET /api/data/analytics — Ambil semua data bancian DISAHKAN
@@ -17,7 +18,7 @@ export default async function handler(req, res) {
 
   try {
     const supabase = getSupabase();
-    const state = req.query?.state || req.body?.state || user.state || 'ALL';
+    const state = stateScope(user);
 
     let allRecords = [];
     let from = 0;
@@ -29,13 +30,11 @@ export default async function handler(req, res) {
         .from('Data')
         .select('*')
         .eq('status', 'DISAHKAN')
-        .order('tarikh_bancian', { ascending: false })
+        .order('tarikh_bancian', { ascending: false }).order('id', {ascending:false})
         .range(from, from + step - 1);
 
       // Filter mengikut negeri (jika bukan ALL)
-      if (state && state !== 'ALL' && state !== 'SEMUA') {
-        query = query.eq('negeri', state.toUpperCase().trim());
-      }
+      query = scoped(query, state);
 
       const { data, error } = await query;
 
@@ -118,7 +117,7 @@ export default async function handler(req, res) {
         im: r.image_links || '',
         vb: r.log || '',
         st: r.status,
-        catatan: r.syor_kawalan || '-',
+        catatan: r.catatan || '-',
         timestamp: r.timestamp,
         created_at: r.created_at
       };
