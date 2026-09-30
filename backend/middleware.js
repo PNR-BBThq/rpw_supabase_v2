@@ -3,6 +3,7 @@
 // FUNGSI: Auth middleware — semak token untuk endpoint yang memerlukan login
 // =========================================================================
 
+import {checkSession,sessionKey} from './audit.js';
 import { getSupabase } from './supabase-client.js';
 import { issueToken, readToken, credentialVersion } from './token-signing.js';
 
@@ -27,6 +28,15 @@ export async function verifyToken(token) {
   try {
     if (!token) return null;
 
+    if (typeof token !== 'string' || token.length > 8192) return null;
+    if (token.split('.').length === 3) {
+      const db=getSupabase();
+      const {data:identity,error}=await db.auth.getUser(token);
+      if(error || !identity.user?.email_confirmed_at)return null;
+      const {data:user,error:profileError}=await db.from('user').select('*').eq('auth_user_id',identity.user.id).eq('status','AKTIF').maybeSingle();
+      if(profileError || !user || !(await checkSession(token,user)))return null;
+      return user;
+    }
     const decoded = readToken(token);
     if (!decoded) return null;
 
@@ -39,7 +49,7 @@ export async function verifyToken(token) {
       .eq('status', 'AKTIF')
       .single();
 
-    if (error || !user || decoded.cv !== credentialVersion(user.pwd)) return null;
+    if (error || !user || user.auth_user_id || decoded.cv !== credentialVersion(user.pwd) || !(await checkSession(token,user))) return null;
 
     return user;
   } catch (e) {
@@ -73,5 +83,6 @@ export async function authMiddleware(req) {
     return { user: null, error: 'Sesi tamat. Sila log masuk semula.' };
   }
 
+  req.auditUser=user;req.auditSession=sessionKey(token);
   return { user, error: null };
 }

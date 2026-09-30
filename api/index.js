@@ -1,3 +1,8 @@
+import activityHandler from '../backend/auth/activity.js';
+import logoutHandler from '../backend/auth/logout.js';
+import refreshHandler from '../backend/auth/refresh.js';
+import auditHandler from '../backend/users/audit.js';
+import {recordActivity} from '../backend/audit.js';
 import submissionStatus from '../backend/data/submission-status.js';
 import rpwRecordsHandler from '../backend/rpw/records.js';
 import rpwMutateHandler from '../backend/rpw/mutate.js';
@@ -31,6 +36,10 @@ import usersUpdateHandler from '../backend/users/update.js';
 import { handleOptions } from '../backend/supabase-client.js';
 
 const routes = {
+  '/api/auth/activity': activityHandler,
+  '/api/auth/logout': logoutHandler,
+  '/api/auth/refresh': refreshHandler,
+  '/api/users/audit': auditHandler,
   '/api/data/submission-status': submissionStatus,
   '/api/rpw/records': rpwRecordsHandler,
   '/api/rpw/mutate': rpwMutateHandler,
@@ -77,6 +86,16 @@ export default async function handler(req, res) {
   const routeHandler = routes[pathname];
 
   if (routeHandler) {
+    // Capture the actual response, then await audit before finishing the function.
+    const json=res.json.bind(res);
+    res.json=async value=>{
+      req.auditRecord=value?.rowId;
+      try{await recordActivity(req,pathname,res.statusCode||200);}catch{
+        console.error('PNR activity audit unavailable',pathname);
+        value={...value,auditRecorded:false};
+      }
+      return json(value);
+    };
     return routeHandler(req, res);
   }
 

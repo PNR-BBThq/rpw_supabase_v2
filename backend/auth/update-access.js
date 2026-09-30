@@ -21,6 +21,17 @@ export default async function handler(req, res) {
     }
 
     if (String(row) !== String(user.id) || uid.toLowerCase().trim() !== user.uid.toLowerCase()) return sendError(res, 'Akses hanya untuk akaun sendiri; ID tidak boleh ditukar di sini.', 403);
+    if(user.auth_user_id){
+      if(!validPassword(pwd))return sendError(res,'Kata laluan baharu mesti 12–256 aksara.');
+      const {data:identity,error}=await getSupabase().auth.signInWithPassword({email:user.email,password:req.body.currentPassword||''});
+      if(error||identity.user?.id!==user.auth_user_id)return sendError(res,'Kata laluan semasa tidak sah.',403);
+      const {error:updateError}=await getSupabase().auth.admin.updateUserById(user.auth_user_id,{password:pwd});
+      // Revoke application sessions following a password change.
+      if(updateError)return sendError(res,'Kata laluan belum berjaya dikemaskini.',503);
+      const {error:revokeError}=await getSupabase().from('session_logs').update({logout_at:new Date().toISOString()}).eq('user_id',user.id).is('logout_at',null);
+      if(revokeError)return sendError(res,'Kata laluan telah dikemaskini tetapi sesi belum dapat ditamatkan. Hubungi admin.',503);
+      return sendSuccess(res,{},'Kata laluan dikemaskini. Sila log masuk semula.');
+    }
     if (!(await verifyPassword(req.body.currentPassword, user.pwd))) return sendError(res, 'Kata laluan semasa tidak sah.', 403);
     if (!validPassword(pwd)) return sendError(res, 'Kata laluan baharu mesti 12–256 aksara.');
     const supabase = getSupabase();

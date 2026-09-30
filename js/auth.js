@@ -69,6 +69,8 @@ const AuthManager = {
     },
 
     checkSession: async function() {
+        // Email verification is complete at Supabase; do not leave access tokens in the URL.
+        if(location.hash.includes('access_token='))history.replaceState(null,'',location.pathname+location.search);
         const saved = localStorage.getItem('pnr_session');
         if (saved) {
             try {
@@ -91,9 +93,10 @@ const AuthManager = {
         }
     },
 
-    doLogout: function() { 
-        localStorage.removeItem('pnr_session'); 
-        location.reload(); 
+    doLogout: async function() {
+        try {if(AppState.userToken) await fetch(CONFIG.API_URL+'/auth/logout',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+AppState.userToken},body:'{}',signal:AbortSignal.timeout(5000)});} catch {}
+        localStorage.removeItem('pnr_session');
+        location.reload();
     },
 
   toggleDaftar: async function() {
@@ -103,16 +106,17 @@ const AuthManager = {
         const jawatan = document.getElementById('reg-jawatan').value.trim();
         const negeri = document.getElementById('reg-negeri').value;
         const uid = document.getElementById('reg-uid').value.trim();
-        const pwd = document.getElementById('reg-pwd').value.trim();
+        const pwd = document.getElementById('reg-pwd').value;
+        const email = document.getElementById('reg-email').value.trim();
 
-        if(!nama || !ic || !jawatan || !negeri || !uid || !pwd) {
+        if(!nama || !ic || !jawatan || !negeri || !uid || !pwd || !email) {
             Swal.fire('Maklumat Tidak Lengkap', 'Sila isi SEMUA maklumat yang diwajibkan!', 'warning');
             return;
         }
 
         const formValues = { 
             nama: nama.toUpperCase(), ic: ic, jawatan: jawatan.toUpperCase(), 
-            negeri: negeri, uid: uid.toLowerCase(), pwd: pwd,
+            negeri: negeri, uid: uid.toLowerCase(), pwd: pwd, email,
             role: "STAFF", status: "MENUNGGU", catatan: "Didaftar melalui Web PNR"
         };
 
@@ -125,7 +129,7 @@ const AuthManager = {
                 document.getElementById('formDaftar').style.display = 'none';
                 document.getElementById('formLogin').style.display = 'block';
                 // Kosongkan form
-                ['reg-nama','reg-ic','reg-jawatan','reg-negeri','reg-uid','reg-pwd'].forEach(id => document.getElementById(id).value = '');
+                ['reg-email','reg-nama','reg-ic','reg-jawatan','reg-negeri','reg-uid','reg-pwd'].forEach(id => document.getElementById(id).value = '');
             });
         } else {
             Swal.fire('Gagal Mendaftar', r.message, 'error');

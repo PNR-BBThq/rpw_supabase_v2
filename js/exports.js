@@ -21,61 +21,63 @@ const ExportManager = {
         });
     },
 
-    downloadDualExcel: async function() { 
-        if (!AppState.fData.length) { alert("Tiada data!"); return; } 
-        const workbook = new ExcelJS.Workbook(); 
-        const worksheet = workbook.addWorksheet('Laporan Penuh'); 
-        
+    downloadDualExcel: async function() {
+        if(typeof API!=='undefined' && typeof navigator!=='undefined' && navigator.onLine)API.postData('trackActivity',{event:'EXPORT_EXCEL',module:'main'}).catch(()=>{});
+        if (!AppState.fData.length) { alert("Tiada data!"); return; }
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Laporan Penuh');
+
         worksheet.columns = [
-            { header: 'ID', key: 'id', width: 6 }, { header: 'Nama Pegawai', key: 'pg', width: 25 }, 
-            { header: 'Tarikh', key: 't', width: 12 }, { header: 'Negeri', key: 'n', width: 15 }, 
-            { header: 'Daerah', key: 'd', width: 15 }, { header: 'Lokasi', key: 'l', width: 22 }, 
-            { header: 'Koordinat', key: 'c', width: 22 }, { header: 'Kategori', key: 'kt', width: 18 }, 
-            { header: 'Tanaman', key: 'tn', width: 18 }, { header: 'Luas Bancian (Ha)', key: 'lt', width: 18 }, 
-            { header: 'Perosak', key: 'p', width: 20 }, { header: 'Keterukan', key: 'k', width: 15 }, 
-            { header: 'Luas Serangan (Ha)', key: 'ls', width: 18 }, { header: '% Serangan', key: 'pct', width: 15 }, 
+            { header: 'ID', key: 'id', width: 6 }, { header: 'Nama Pegawai', key: 'pg', width: 25 },
+            { header: 'Tarikh', key: 't', width: 12 }, { header: 'Negeri', key: 'n', width: 15 },
+            { header: 'Daerah', key: 'd', width: 15 }, { header: 'Lokasi', key: 'l', width: 22 },
+            { header: 'Koordinat', key: 'c', width: 22 }, { header: 'Kategori', key: 'kt', width: 18 },
+            { header: 'Tanaman', key: 'tn', width: 18 }, { header: 'Luas Bancian (Ha)', key: 'lt', width: 18 },
+            { header: 'Perosak', key: 'p', width: 20 }, { header: 'Keterukan', key: 'k', width: 15 },
+            { header: 'Luas Serangan (Ha)', key: 'ls', width: 18 }, { header: '% Serangan', key: 'pct', width: 15 },
             { header: 'Syor Kawalan', key: 's', width: 50 },
             { header: 'Catatan', key: 'catatan', width: 45 }
-        ]; 
-        
-        worksheet.getRow(1).font = { bold: true }; 
-        worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' }; 
-        let rowIndex = 2; 
-        
-        AppState.fData.forEach(d => { 
-            let pestEntries = (d.p && Object.keys(d.p).length > 0) ? Object.entries(d.p) : [["TIADA", 0]]; 
-            let startRow = rowIndex; 
-            let luasTanam = parseFloat(d.lt) || 0; 
-            
-            pestEntries.forEach(([pName, pArea]) => { 
-                let luasSerang = parseFloat(pArea) || 0; 
-                let pctVal = (luasTanam > 0) ? ((luasSerang / luasTanam) * 100).toFixed(2) + '%' : "0%"; 
-                const row = worksheet.getRow(rowIndex); 
+        ];
+
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+        let rowIndex = 2;
+
+        AppState.fData.forEach(d => {
+            let pestEntries = (d.p && Object.keys(d.p).length > 0) ? Object.entries(d.p) : [["TIADA", 0]];
+            let startRow = rowIndex;
+            let luasTanam = parseFloat(d.lt) || 0;
+
+            pestEntries.forEach(([pName, pArea]) => {
+                let luasSerang = parseFloat(pArea) || 0;
+                let pctVal = (luasTanam > 0) ? ((luasSerang / luasTanam) * 100).toFixed(2) + '%' : "0%";
+                const row = worksheet.getRow(rowIndex);
                 row.values = { id: d.id, pg: d.pg || "-", t: d.t, n: d.n, d: d.d, l: d.l, c: d.c || "-", kt: d.kt || "-", tn: d.tn, lt: luasTanam, p: pName, k: (d.pk && d.pk[pName]) || d.k, ls: luasSerang, pct: pctVal, s: d.s, catatan: d.catatan || '' };
-                
-                row.eachCell({ includeEmpty: true }, (cell) => { 
-                    cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} }; 
-                    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }; 
-                }); 
-                rowIndex++; 
-            }); 
-            
-            if (pestEntries.length > 1) { 
-                for (let c = 1; c <= 10; c++) { worksheet.mergeCells(startRow, c, rowIndex - 1, c); } 
-                worksheet.mergeCells(startRow, 15, rowIndex - 1, 15); 
+
+                row.eachCell({ includeEmpty: true }, (cell) => {
+                    cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+                    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                });
+                rowIndex++;
+            });
+
+            if (pestEntries.length > 1) {
+                for (let c = 1; c <= 10; c++) { worksheet.mergeCells(startRow, c, rowIndex - 1, c); }
+                worksheet.mergeCells(startRow, 15, rowIndex - 1, 15);
                 worksheet.mergeCells(startRow, 16, rowIndex - 1, 16);
-            } 
-        }); 
-        
-        const buffer = await workbook.xlsx.writeBuffer(); 
-        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }); 
-        const url = window.URL.createObjectURL(blob); 
-        const anchor = document.createElement('a'); 
-        anchor.href = url; anchor.download = 'PNR_Laporan_Lengkap.xlsx'; 
-        anchor.click(); window.URL.revokeObjectURL(url); 
+            }
+        });
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url; anchor.download = 'PNR_Laporan_Lengkap.xlsx';
+        anchor.click(); window.URL.revokeObjectURL(url);
     },
 
-    dlPDF: async function() { 
+    dlPDF: async function() {
+        if(typeof API!=='undefined' && typeof navigator!=='undefined' && navigator.onLine)API.postData('trackActivity',{event:'EXPORT_PDF',module:'main'}).catch(()=>{});
         if (!AppState.fData.length) { alert("Tiada data untuk dijana!"); return; }
         const btn = document.getElementById('btnDlPDF');
         const originalText = btn.innerHTML;
@@ -160,9 +162,9 @@ const ExportManager = {
 
         const lokasiStr = btnElement.getAttribute('data-lokasi');
         const pegawaiStr = btnElement.getAttribute('data-pegawai');
-        const coordStr = btnElement.getAttribute('data-coord');      
-        const tarikhStr = btnElement.getAttribute('data-tarikh');   
-        
+        const coordStr = btnElement.getAttribute('data-coord');
+        const tarikhStr = btnElement.getAttribute('data-tarikh');
+
         const rec = AppState.mData.find(d => d.l === lokasiStr && d.pg === pegawaiStr && d.c === coordStr && d.t === tarikhStr);
         if (!rec) {
             Swal.fire('Ralat', 'Gagal mencari rekod.', 'error');
@@ -184,7 +186,7 @@ const ExportManager = {
             doc.setFontSize(16);
             doc.setFont("helvetica", "bold");
             doc.text("Laporan Bancian Perosak Tanaman", 105, 20, null, null, "center");
-            
+
             doc.setFontSize(11);
             doc.setFont("helvetica", "normal");
             doc.text(`Tarikh: ${rec.t}`, 20, 35);
@@ -194,20 +196,20 @@ const ExportManager = {
             doc.text(`Negeri: ${rec.n}   Daerah: ${rec.d}`, 20, 63);
 
             // Table details
-            let pestEntries = (rec.p && Object.keys(rec.p).length > 0) ? Object.entries(rec.p) : [["TIADA", 0]]; 
-            let luasTanam = parseFloat(rec.lt) || 0; 
-            
+            let pestEntries = (rec.p && Object.keys(rec.p).length > 0) ? Object.entries(rec.p) : [["TIADA", 0]];
+            let luasTanam = parseFloat(rec.lt) || 0;
+
             const tableRows = [];
-            pestEntries.forEach(([pName, pArea]) => { 
-                let luasSerang = parseFloat(pArea) || 0; 
-                let pctVal = (luasTanam > 0) ? ((luasSerang / luasTanam) * 100).toFixed(1) + '%' : "0%"; 
+            pestEntries.forEach(([pName, pArea]) => {
+                let luasSerang = parseFloat(pArea) || 0;
+                let pctVal = (luasTanam > 0) ? ((luasSerang / luasTanam) * 100).toFixed(1) + '%' : "0%";
                 let sevVal = (rec.pk && rec.pk[pName]) ? rec.pk[pName] : (rec.k || 0);
                 tableRows.push([
-                    rec.tn, 
-                    luasTanam.toFixed(2), 
-                    pName, 
-                    luasSerang.toFixed(2), 
-                    pctVal, 
+                    rec.tn,
+                    luasTanam.toFixed(2),
+                    pName,
+                    luasSerang.toFixed(2),
+                    pctVal,
                     `T${sevVal}`
                 ]);
             });
@@ -228,7 +230,7 @@ const ExportManager = {
 
             const fileName = `Laporan_${rec.l.replace(/[^a-zA-Z0-9]/g, "_")}_${rec.t}.pdf`;
             doc.save(fileName);
-            
+
             Swal.close();
         } catch (err) {
             console.error(err);
@@ -257,8 +259,8 @@ const ExportManager = {
                     "geometry": { "type": "Point", "coordinates": [coord[1], coord[0]] },
                     "properties": {
                         "ID": d.id, "Tarikh": d.t, "Negeri": d.n, "Daerah": d.d,
-                        "Lokasi": d.l, "Tanaman": d.tn, "Perosak": pestName,          
-                        "Luas_Tanam_Ha": luasT, "Luas_Serangan_Ha": luasS,             
+                        "Lokasi": d.l, "Tanaman": d.tn, "Perosak": pestName,
+                        "Luas_Tanam_Ha": luasT, "Luas_Serangan_Ha": luasS,
                         "Peratus_Serangan": parseFloat(peratus), "Keterukan": "T" + sevVal, "Pegawai": d.pg
                     }
                 });
@@ -277,7 +279,7 @@ const ExportManager = {
 
     downloadKML: function() {
         if (!AppState.fData.length) { alert("Tiada data!"); return; }
-        
+
         const colorMap = {
             "JOHOR": "ff0000ff", "KEDAH": "ff00ff00", "KELANTAN": "ff00a5ff",
             "MELAKA": "ffff00ff", "NEGERI SEMBILAN": "ff13458b", "PAHANG": "ff00ffff",
@@ -299,7 +301,7 @@ const ExportManager = {
                 const luasS = parseFloat(luasSerangPerosak) || 0;
                 const luasT = parseFloat(d.lt) || 0;
                 const peratus = luasT > 0 ? ((luasS / luasT) * 100) : 0;
-                
+
                 const namaNegeri = (d.n || "").toUpperCase();
                 const warna = colorMap[namaNegeri] || "ffffffff";
                 const skala = Math.max(0.5, (peratus / 100) * 2.5).toFixed(1);
@@ -330,7 +332,7 @@ const ExportManager = {
         });
 
         kml += `\n</Document></kml>`;
-        
+
         const blob = new Blob([kml], {type: 'application/vnd.google-earth.kml+xml'});
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');

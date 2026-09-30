@@ -1,3 +1,4 @@
+import {openSession} from '../audit.js';
 import {allowAttempt} from '../rate-limit.js';
 // =========================================================================
 // FAIL: api/auth/login.js
@@ -26,6 +27,14 @@ export default async function handler(req, res) {
     if (!(await allowAttempt(req,u))) return sendError(res,'Terlalu banyak cubaan. Cuba semula selepas 15 minit.',429);
     const supabase = getSupabase();
     const searchUid = u.trim();
+    if(searchUid.includes('@')) {
+      const {data:auth,error:authError}=await getSupabase().auth.signInWithPassword({email:searchUid.toLowerCase(),password:p});
+      if(authError || !auth.session || !auth.user?.email_confirmed_at)return sendError(res,'E-mel atau kata laluan tidak sah, atau e-mel belum disahkan.');
+      const {data:profile,error:profileError}=await supabase.from('user').select('*').eq('auth_user_id',auth.user.id).maybeSingle();
+      if(profileError || !profile || profile.status!=='AKTIF')return sendError(res,'Akaun belum diluluskan atau telah digantung. Sila hubungi pentadbir.',403);
+      await openSession(req,profile,auth.session.access_token,'supabase');
+      return sendSuccess(res,{token:auth.session.access_token,refreshToken:auth.session.refresh_token,expiresAt:auth.session.expires_at,authProvider:'supabase',uid:profile.uid,name:profile.nama,role:profile.role,state:profile.negeri,negeri:profile.negeri,jawatan:profile.jawatan},'Log masuk berjaya');
+    }
 
     // Cari pengguna berdasarkan username (case-insensitive)
     const { data: user, error } = await supabase
@@ -37,7 +46,7 @@ export default async function handler(req, res) {
     if (error) {
       return sendError(res, 'Log masuk tidak berjaya.');
     }
-    if (!user) {
+    if (!user || user.auth_user_id) {
       return sendError(res, 'ID atau kata laluan tidak sah.');
     }
 
@@ -60,6 +69,8 @@ export default async function handler(req, res) {
 
     // Jana token
     const token = generateToken(user.uid, user.pwd);
+
+    await openSession(req,user,token,'legacy');
 
     // Return data dalam format yang frontend jangkakan
     return sendSuccess(res, {

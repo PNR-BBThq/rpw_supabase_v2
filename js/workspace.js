@@ -44,6 +44,7 @@ const Workspace = {
         this.setTab('overview');
     },
     onView(view) {
+        if(typeof AppState!=='undefined' && AppState.userToken && navigator.onLine)API.postData('trackActivity',{event:'VIEW_MODULE',module:view}).catch(()=>{});
         document.body.dataset.workspaceView = view;
         const heading = document.getElementById('workspaceDashboardHeader');
         // Move shared filters back out when using another module.

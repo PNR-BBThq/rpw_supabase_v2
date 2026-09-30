@@ -13,24 +13,14 @@ export default async function handler(req, res) {
   const {user,error:authError}=await authMiddleware(req);
   if(authError)return sendError(res,authError,401);
   try {
-    const { name, role } = req.body || {};
-
-    const supabase = getSupabase();
-
-    // Masukkan log sesi
-    await supabase
-      .from('session_logs')
-      .insert({
-        user_name: user.nama || 'Unknown',
-        user_role: user.role || 'STAFF',
-        ip_address: req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'Unknown'
-      });
+    const {error}=await getSupabase().from('session_logs').update({last_seen_at:new Date().toISOString()}).eq('session_key',req.auditSession);
+    if(error)return sendError(res,'Log sesi belum berjaya direkod.',503);
 
     return sendSuccess(res, {}, 'Sesi dilog.');
 
   } catch (e) {
     // Tidak perlu error handling kritikal untuk logging
     console.error('Log session error:', e);
-    return sendSuccess(res, {}, 'OK');
+    return sendError(res, 'Log sesi belum berjaya direkod.',503);
   }
 }

@@ -5,6 +5,24 @@
 
 const UserManager = {
     allUsersData: [],
+    auditPage: 0,
+    escape: function(value) {return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));},
+    loadAudit: async function(page=0) {
+        if(page<0)return;
+        const kind=document.getElementById('auditKind').value;
+        const r=await API.postData('auditLogs',{page,kind,uid:document.getElementById('auditUid').value.trim(),from:document.getElementById('auditFrom').value});
+        const message=document.getElementById('auditMessage');
+        if(!r.success){message.textContent=r.message;return;}
+        this.auditPage=page;
+        message.textContent=`${r.total} rekod · Halaman ${page+1}`;
+        const head=document.getElementById('auditHead'),body=document.getElementById('auditBody');head.replaceChildren();body.replaceChildren();
+        const labels=kind==='sessions'?['Log masuk','Pengguna','Nama','Kaedah','Aktiviti terakhir','Log keluar']:['Masa','Pengguna','Tindakan','Modul / API','Keputusan','Rekod'];
+        const tr=document.createElement('tr');labels.forEach(label=>{const th=document.createElement('th');th.textContent=label;tr.append(th);});head.append(tr);
+        const date=v=>v?new Date(v).toLocaleString('ms-MY',{timeZone:'Asia/Kuala_Lumpur'}):'—';
+        for(const item of r.entries){const row=document.createElement('tr');const values=kind==='sessions'?[date(item.login_at),item.actor_uid,item.user_name,item.auth_provider,date(item.last_seen_at),date(item.logout_at)]:[date(item.occurred_at),item.actor_uid,item.event,item.route,item.outcome,item.record_id||'—'];values.forEach(value=>{const td=document.createElement('td');td.textContent=value||'—';row.append(td);});body.append(row);}
+        document.getElementById('auditPrev').disabled=page===0;
+        document.getElementById('auditNext').disabled=(page+1)*r.pageSize>=r.total;
+    },
 
     loadUsers: async function() {
         const tbody = document.getElementById('userTableBody');
@@ -54,7 +72,8 @@ const UserManager = {
             return; 
         }
         
-        tbody.innerHTML = dataList.map(u => {
+        tbody.innerHTML = dataList.map(raw => {
+            const u=Object.fromEntries(Object.entries(raw).map(([k,v])=>[k,k==='row'?Number(v):this.escape(v)]));
             let statusBadge = u.status.toUpperCase() === 'AKTIF' ? '<span class="badge bg-success">AKTIF</span>' : 
                               u.status.toUpperCase() === 'MENUNGGU' ? '<span class="badge bg-warning text-dark">MENUNGGU</span>' :
                               '<span class="badge bg-danger">' + u.status.toUpperCase() + '</span>';
@@ -69,7 +88,7 @@ const UserManager = {
                 <td>${this.maskIC(u.ic)}</td>
                 <td>
                     <span class="d-block small text-primary fw-bold"><i class="bi bi-person me-1"></i>${u.uid}</span>
-                    <small class="text-muted">Kata laluan dilindungi</small>
+                    <small class="text-muted">${u.email || "E-mel belum dipautkan"}</small><br><small class="text-muted">${u.authProvider === "supabase" ? "Supabase Auth" : "Akaun lama"}</small>
                 </td>
                 <td><span class="badge bg-light text-dark border">${u.role}</span></td>
                 <td class="text-center">${statusBadge}</td>
@@ -107,7 +126,7 @@ const UserManager = {
         const filtered = this.allUsersData.filter(u => 
             (u.nama && u.nama.toLowerCase().includes(term)) || 
             (u.ic && String(u.ic).includes(term)) || 
-            (u.uid && u.uid.toLowerCase().includes(term))
+            (u.uid && u.uid.toLowerCase().includes(term)) || (u.email && u.email.toLowerCase().includes(term))
         );
         this.renderUsers(filtered);
     },
@@ -133,7 +152,8 @@ const UserManager = {
     },
 
     editUser: async function(row) {
-        const u = this.allUsersData.find(x => x.row === row);
+        const raw = this.allUsersData.find(x => x.row === row);
+        const u=raw?Object.fromEntries(Object.entries(raw).map(([k,v])=>[k,k==='row'?Number(v):this.escape(v)])):null;
         if(!u) return;
         
         const { value: formValues } = await Swal.fire({
@@ -149,7 +169,7 @@ const UserManager = {
                     </select></div>
                     <div class="col-6 mt-3"><label class="small fw-bold text-primary">Username</label><input id="swal-uid" class="form-control form-control-sm" value="${u.uid}"></div>
                     <div class="col-6 mt-3"><label class="small fw-bold text-danger">Password</label><input id="swal-pwd" class="form-control form-control-sm" type="password" autocomplete="new-password" placeholder="Kosongkan untuk kekalkan; minimum 12 aksara"></div>
-                    <div class="col-6 mt-3"><label class="small fw-bold">Peranan</label><select id="swal-role" class="form-select form-select-sm"><option value="STAFF" ${u.role==='STAF'?'selected':''}>STAFF</option><option value="PENYELIA" ${u.role==='PENYELIA'?'selected':''}>PENYELIA</option><option value="ADMIN" ${u.role==='ADMIN'?'selected':''}>ADMIN</option></select></div>
+                    <div class="col-6 mt-3"><label class="small fw-bold">Peranan</label><select id="swal-role" class="form-select form-select-sm"><option value="STAFF" ${u.role==='STAFF'?'selected':''}>STAFF</option><option value="PENYELIA" ${u.role==='PENYELIA'?'selected':''}>PENYELIA</option><option value="ADMIN" ${u.role==='ADMIN'?'selected':''}>ADMIN</option></select></div>
                     <div class="col-6 mt-3"><label class="small fw-bold text-warning">Status Akaun</label><select id="swal-status" class="form-select form-select-sm"><option value="AKTIF" ${u.status.toUpperCase()==='AKTIF'?'selected':''}>AKTIF</option><option value="MENUNGGU" ${u.status.toUpperCase()==='MENUNGGU'?'selected':''}>MENUNGGU</option><option value="DITOLAK" ${u.status.toUpperCase()==='DITOLAK'?'selected':''}>DITOLAK</option><option value="DIGANTUNG" ${u.status.toUpperCase()==='DIGANTUNG'?'selected':''}>DIGANTUNG</option></select></div>
                 </div>
             `,

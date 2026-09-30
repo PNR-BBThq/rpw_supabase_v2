@@ -31,11 +31,20 @@ export default async function handler(req, res) {
     if (body.pwd && !validPassword(body.pwd)) return sendError(res, 'Kata laluan mesti sekurang-kurangnya 12 aksara.');
     const supabase = getSupabase();
 
+    const {data:target,error:targetError}=await supabase.from('user').select('id,auth_user_id').eq('id',row).maybeSingle();
+    if(targetError||!target)return sendError(res,'Pengguna tidak dijumpai.',404);
+    if(target.auth_user_id&&body.pwd)return sendError(res,'Kata laluan akaun Supabase perlu ditukar oleh pemilik akaun.',409);
+    if(status==='AKTIF'&&target.auth_user_id){
+      const {data:identity,error}=await supabase.auth.admin.getUserById(target.auth_user_id);
+      if(error||!identity.user?.email_confirmed_at)return sendError(res,'Pengguna belum mengesahkan e-mel. Minta mereka semak peti masuk dahulu.',409);
+    }
+    const review=status?{reviewed_by:user.id,reviewed_at:new Date().toISOString()}:{};
+
     // Mod 1: Kemas kini satu field (status sahaja)
     if (field === 'status') {
       const { error } = await supabase
         .from('user')
-        .update({ status: body.value })
+        .update({ status: body.value,...review })
         .eq('id', row);
 
       if (error) return sendError(res, 'Gagal mengemaskini status.');
@@ -44,7 +53,7 @@ export default async function handler(req, res) {
 
     // Mod 2: Kemas kini penuh (full_edit)
     if (field === 'full_edit') {
-      const updateData = {};
+      const updateData = {...review};
       // Stable identities own records and sessions.
       if (body.uid) {
         if (typeof body.uid !== 'string') return sendError(res,'ID pengguna tidak sah.');

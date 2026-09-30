@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     const { data: users, error } = await supabase
       .from('user')
-      .select('id,nama,ic,jawatan,negeri,uid,role,status,created_at')
+      .select('id,nama,ic,jawatan,negeri,uid,role,status,email,auth_user_id,reviewed_at,created_at')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -35,6 +35,9 @@ export default async function handler(req, res) {
     // Transform ke format yang frontend jangkakan
     const userList = (users || []).map(u => ({
       row: u.id,
+      email:u.email,
+      authProvider:u.auth_user_id?"supabase":"legacy",
+      reviewedAt:u.reviewed_at,
       nama: u.nama,
       ic: u.ic,
       jawatan: u.jawatan,

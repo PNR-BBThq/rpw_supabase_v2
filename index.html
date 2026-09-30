@@ -15,7 +15,7 @@
     <!-- WAJIB inline — JANGAN pindah ke fail .js luaran (akan kena intercept oleh SW lama) -->
     <script>
     (function() {
-        var APP_VERSION = '202609290051-6fab24c';
+        var APP_VERSION = '202609301000-authlog';
         var STORED = localStorage.getItem('PNR_APP_VERSION');
         if (STORED !== APP_VERSION) {
             localStorage.setItem('PNR_APP_VERSION', APP_VERSION);
@@ -44,8 +44,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 
-    <link rel="stylesheet" href="./css/style.css?v=202609290051-6fab24c">
-    <link rel="stylesheet" href="./css/upgrade.css?v=202609290051-6fab24c">
+    <link rel="stylesheet" href="./css/style.css?v=202609301000-authlog">
+    <link rel="stylesheet" href="./css/upgrade.css?v=202609301000-authlog">
 </head>
 
 <body class="workspace-app">
@@ -55,7 +55,7 @@
         <div class="login-box" id="formLogin">
             <div class="brand justify-content-center mb-4 login-form-brand"><i class="bi bi-flower1"></i> PNR DIGITAL</div>
             <h2 class="login-title">Selamat kembali.</h2><p class="text-muted mb-4">Log masuk untuk meneruskan bancian anda.</p>
-            <input type="text" id="uid" aria-label="ID pengguna" autocomplete="username" class="form-control mb-3 p-3" placeholder="ID Pengguna">
+            <input type="text" id="uid" aria-label="ID pengguna" autocomplete="username" class="form-control mb-3 p-3" placeholder="E-mel / ID pengguna lama">
             <input type="password" id="pwd" aria-label="Kata laluan" autocomplete="current-password" class="form-control mb-4 p-3" placeholder="Kata Laluan">
             <button type="button" class="btn btn-success w-100 fw-bold p-3" id="btnLogin">MASUK</button>
 
@@ -74,11 +74,12 @@
         <div class="login-box" id="formDaftar" style="display:none; max-width: 450px;">
             <div class="brand justify-content-center mb-2"><i class="bi bi-person-badge me-2"></i> DAFTAR PENGGUNA</div>
             <p class="text-muted small mb-4" style="line-height:1.2;">Isi maklumat di bawah. Akaun perlu diaktifkan oleh
-                Admin sebelum boleh digunakan.</p>
+                Admin sebelum boleh digunakan. Sahkan e-mel anda selepas mendaftar.</p>
 
             <div class="row g-2 text-start">
                 <div class="col-12"><label class="small fw-bold">Nama Penuh</label><input type="text" id="reg-nama"
                         class="form-control form-control-sm text-uppercase"></div>
+                <div class="col-12"><label class="small fw-bold" for="reg-email">E-mel</label><input type="email" id="reg-email" class="form-control form-control-sm" autocomplete="email" required placeholder="nama@contoh.gov.my"></div>
                 <div class="col-6"><label class="small fw-bold">No. K/P (Tanpa Sengkang)</label><input type="number"
                         id="reg-ic" class="form-control form-control-sm" placeholder="Cth: 900101011234"></div>
                 <div class="col-6"><label class="small fw-bold">Jawatan</label><input type="text" id="reg-jawatan"
@@ -110,7 +111,7 @@
                 <div class="col-6 mt-3"><label class="small fw-bold text-success">Username Pilihan</label><input
                         type="text" id="reg-uid" class="form-control form-control-sm"></div>
                 <div class="col-6 mt-3"><label class="small fw-bold text-success">Kata Laluan</label><input
-                        type="password" id="reg-pwd" class="form-control form-control-sm"></div>
+                        type="password" id="reg-pwd" class="form-control form-control-sm" minlength="12" autocomplete="new-password" placeholder="Minimum 12 aksara"></div>
             </div>
 
             <button type="button" class="btn btn-primary w-100 fw-bold p-2 mt-4 shadow-sm" id="btnSubmitDaftar">HANTAR
@@ -322,10 +323,25 @@
                 <button class="btn btn-primary btn-sm px-3 shadow-sm" id="btnRefreshUsers"><i
                         class="bi bi-arrow-clockwise me-1"></i> Refresh</button>
             </div>
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+              <div class="card-body p-4">
+                <h5 class="fw-bold">Jejak aktiviti &amp; sesi</h5>
+                <p class="small text-muted">Log masuk, penggunaan modul dan tindakan melalui API. Log tidak menyimpan kata laluan, No. K/P atau kandungan gambar.</p>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                  <select id="auditKind" class="form-select w-auto" aria-label="Jenis log"><option value="activities">Aktiviti sistem</option><option value="sessions">Sesi log masuk</option></select>
+                  <input id="auditUid" class="form-control w-auto" placeholder="ID pengguna tepat" aria-label="Tapis ID pengguna">
+                  <input id="auditFrom" type="date" class="form-control w-auto" aria-label="Dari tarikh">
+                  <button class="btn btn-primary" onclick="UserManager.loadAudit(0)">Muat log</button>
+                </div>
+                <p id="auditMessage" class="small text-muted" aria-live="polite">Pilih Muat log untuk melihat rekod terkini.</p>
+                <div class="table-responsive"><table class="table table-hover table-sm align-middle"><thead id="auditHead"></thead><tbody id="auditBody"></tbody></table></div>
+                <div class="d-flex gap-2"><button id="auditPrev" class="btn btn-sm btn-outline-primary" onclick="UserManager.loadAudit(UserManager.auditPage-1)" disabled>Sebelum</button><button id="auditNext" class="btn btn-sm btn-outline-primary" onclick="UserManager.loadAudit(UserManager.auditPage+1)" disabled>Seterusnya</button></div>
+              </div>
+            </div>
             <div class="card border-0 shadow-sm rounded-3">
                 <div class="card-body p-4">
                     <input type="text" id="searchUser" class="form-control form-control-lg mb-4 bg-light border-0"
-                        placeholder="Cari Nama / No K/P / Username...">
+                        placeholder="Cari nama / e-mel / ID pengguna...">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle" style="font-size: 0.85rem;">
                             <thead class="table-light">
@@ -735,24 +751,24 @@
         <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-        <script src="js/efficiency.js?v=202609290051-6fab24c"></script>
+        <script src="js/efficiency.js?v=202609301000-authlog"></script>
 
-        <script src="./js/config.js?v=202609290051-6fab24c"></script>
-        <script src="./js/api.js?v=202609290051-6fab24c"></script>
-        <script src="./js/auth.js?v=202609290051-6fab24c"></script>
-        <script src="./js/map.js?v=202609290051-6fab24c"></script>
-        <script src="./js/filter.js?v=202609290051-6fab24c"></script>
-        <script src="./js/charts.js?v=202609290051-6fab24c"></script>
-        <script src="./js/exports.js?v=202609290051-6fab24c"></script>
-        <script src="./js/users.js?v=202609290051-6fab24c"></script>
-        <script src="./js/records.js?v=202609290051-6fab24c"></script>
-        <script src="./js/dashboard.js?v=202609290051-6fab24c"></script>
-        <script src="./js/redundant.js?v=202609290051-6fab24c"></script>
-        <script src="./js/kpi.js?v=202609290051-6fab24c"></script>
-        <script src="./js/main.js?v=202609290051-6fab24c"></script>
-        <script src="./js/nlp-bot.js?v=202609290051-6fab24c"></script>
-        <script src="./js/tumpuan.js?v=202609290051-6fab24c"></script>
-<script src="./js/workspace.js?v=202609290051-6fab24c"></script>
+        <script src="./js/config.js?v=202609301000-authlog"></script>
+        <script src="./js/api.js?v=202609301000-authlog"></script>
+        <script src="./js/auth.js?v=202609301000-authlog"></script>
+        <script src="./js/map.js?v=202609301000-authlog"></script>
+        <script src="./js/filter.js?v=202609301000-authlog"></script>
+        <script src="./js/charts.js?v=202609301000-authlog"></script>
+        <script src="./js/exports.js?v=202609301000-authlog"></script>
+        <script src="./js/users.js?v=202609301000-authlog"></script>
+        <script src="./js/records.js?v=202609301000-authlog"></script>
+        <script src="./js/dashboard.js?v=202609301000-authlog"></script>
+        <script src="./js/redundant.js?v=202609301000-authlog"></script>
+        <script src="./js/kpi.js?v=202609301000-authlog"></script>
+        <script src="./js/main.js?v=202609301000-authlog"></script>
+        <script src="./js/nlp-bot.js?v=202609301000-authlog"></script>
+        <script src="./js/tumpuan.js?v=202609301000-authlog"></script>
+<script src="./js/workspace.js?v=202609301000-authlog"></script>
 </body>
 
 </html>

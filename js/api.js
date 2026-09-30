@@ -10,6 +10,8 @@ const API = {
         'registerUser': '/auth/register',
         'verifyForgotPwd': '/auth/forgot-password',
         'updateMyAccess': '/auth/update-access',
+        'trackActivity': '/auth/activity',
+        'auditLogs': '/users/audit',
         'logSession': '/auth/log-session',
         'getAnalytics': '/data/analytics',
         'getTanamanList': '/data/master-tanaman',
@@ -29,8 +31,24 @@ const API = {
         'uploadImageOnly': '/gdrive/upload'
     },
 
+    refreshPromise: null,
+    refreshSession: async function() {
+        if(this.refreshPromise)return this.refreshPromise;
+        const session=JSON.parse(localStorage.getItem('pnr_session')||'null');
+        if(!session?.uProf?.refreshToken || session.uProf.expiresAt*1000>Date.now()+60000)return;
+        this.refreshPromise=(async()=>{
+            const res=await fetch(CONFIG.API_URL+'/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:session.uProf.refreshToken})});
+            const data=await res.json();
+            if(!data.success)throw new Error(data.message||'Sesi tamat.');
+            Object.assign(session.uProf,data);session.userToken=data.token;
+            localStorage.setItem('pnr_session',JSON.stringify(session));
+            AppState.userToken=data.token;Object.assign(AppState.uProf,data);
+        })();
+        try{await this.refreshPromise;}finally{this.refreshPromise=null;}
+    },
     postData: async function(action, payloadData = {}) {
         try {
+            if(!['login','registerUser','verifyForgotPwd'].includes(action)&&navigator.onLine)await this.refreshSession();
             let payload = { ...payloadData };
             let headers = {
                 "Content-Type": "application/json"
@@ -66,7 +84,7 @@ const API = {
             // Tangkap ralat jika sesi tamat (Token Expired/Unauthorized)
             if (res.status === 401) {
                 alert("⛔ Sesi tamat. Sila log masuk semula."); 
-                if (window.AuthManager) AuthManager.doLogout();
+                if (typeof AuthManager!=='undefined' && action!=='login') AuthManager.doLogout();
                 return { success: false, message: responseData.message || "Sesi tamat." }; 
             }
             
