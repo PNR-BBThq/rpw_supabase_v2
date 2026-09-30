@@ -1,3 +1,4 @@
+import linkEmailHandler from '../backend/auth/link-email.js';
 import activityHandler from '../backend/auth/activity.js';
 import logoutHandler from '../backend/auth/logout.js';
 import refreshHandler from '../backend/auth/refresh.js';
@@ -36,6 +37,7 @@ import usersUpdateHandler from '../backend/users/update.js';
 import { handleOptions } from '../backend/supabase-client.js';
 
 const routes = {
+  '/api/auth/link-email': linkEmailHandler,
   '/api/auth/activity': activityHandler,
   '/api/auth/logout': logoutHandler,
   '/api/auth/refresh': refreshHandler,

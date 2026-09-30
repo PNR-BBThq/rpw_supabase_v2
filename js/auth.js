@@ -34,6 +34,8 @@ const AuthManager = {
         AppState.uProf = r; 
         AppState.userToken = token; 
         AppState.currentUserID = uid;
+        const linkButton=document.getElementById('btnLinkEmail');
+        if(linkButton)linkButton.hidden=r.authProvider==='supabase';
         
         document.getElementById('uDisp').innerText = r.name; 
         document.getElementById('loginOverlay').style.display = 'none';
@@ -136,6 +138,17 @@ const AuthManager = {
         }
     },
     
+    linkEmail: async function() {
+        const choice=await Swal.fire({title:'Pautkan akaun kepada e-mel',text:'Mulakan pengesahan jika belum dibuat. Selepas e-mel disahkan, pilih Selesaikan pautan. ID, peranan dan rekod akaun lama dikekalkan.',showDenyButton:true,showCancelButton:true,confirmButtonText:'Mulakan pengesahan',denyButtonText:'Selesaikan pautan',cancelButtonText:'Batal'});
+        if(!choice.isConfirmed&&!choice.isDenied)return;
+        const phase=choice.isConfirmed?'start':'complete';
+        const form=await Swal.fire({title:phase==='start'?'Sahkan e-mel anda':'Selesaikan pautan akaun',html:'<label class="d-block text-start mb-1" for="linkEmail">E-mel sendiri</label><input id="linkEmail" type="email" class="form-control mb-3" autocomplete="email"><label class="d-block text-start mb-1" for="linkOldPassword">Kata laluan akaun lama</label><input id="linkOldPassword" type="password" class="form-control mb-3" autocomplete="current-password"><label class="d-block text-start mb-1" for="linkNewPassword">Kata laluan Supabase (minimum 12 aksara)</label><input id="linkNewPassword" type="password" class="form-control" autocomplete="new-password">',showCancelButton:true,confirmButtonText:'Teruskan',preConfirm:()=>({email:document.getElementById('linkEmail').value.trim(),currentPassword:document.getElementById('linkOldPassword').value,password:document.getElementById('linkNewPassword').value})});
+        if(!form.value)return;
+        Swal.fire({title:'Memproses...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+        const r=await API.postData('linkEmail',{...form.value,phase});
+        if(r.success&&r.token){const session={uProf:r,userToken:r.token,currentUserID:r.uid};localStorage.setItem('pnr_session',JSON.stringify(session));await AuthManager.applyLogin(r,r.token,r.uid);}
+        Swal.fire(r.success?'Berjaya':'Belum berjaya',r.message,r.success?'success':'warning');
+    },
     lupaKatalaluan: async function() {
         await Swal.fire('Pemulihan akses', 'Hubungi pentadbir PNR untuk pengesahan identiti dan penetapan kata laluan baharu.', 'info');
     }

@@ -1,0 +1,23 @@
+import {test,mock} from 'node:test';
+import assert from 'node:assert/strict';
+const legacy={id:7,uid:'lama',nama:'Nama',role:'ADMIN',status:'AKTIF',pwd:'legacy-hash',negeri:'Selangor',auth_user_id:null,pending_auth_user_id:null};
+let current={...legacy},identity={id:'auth-new',email:'pegawai@example.com',email_confirmed_at:'now'},updates=[],signup=null;
+const db={auth:{signUp:async v=>{signup=v;return {data:{user:{id:'auth-new'}},error:null};},signInWithPassword:async()=>({data:{user:identity,session:{access_token:'newtoken',refresh_token:'refresh',expires_at:9999999999}},error:null})},from(table){let data,filters=[];const q={select(){return q;},eq(k,v){filters.push([k,v]);return q;},is(k,v){filters.push([k,v]);return q;},update(v){data=v;updates.push(v);return q;},insert(){return q;},async maybeSingle(){if(filters.some(([k])=>k==='email'))return {data:null,error:null};return {data:{...current,...data},error:null};},then(resolve){resolve({error:null});}};return q;}};
+mock.module('../backend/supabase-client.js',{namedExports:{getSupabase:()=>db,handleOptions:()=>false,sendSuccess:(res,data={},message='OK')=>res.status(200).json({success:true,...data,message}),sendError:(res,message,status=400)=>res.status(status).json({success:false,message})}});
+mock.module('../backend/middleware.js',{namedExports:{authMiddleware:async()=>({user:current,error:null})}});
+mock.module('../backend/rate-limit.js',{namedExports:{allowAttempt:async()=>true}});
+mock.module('../backend/passwords.js',{namedExports:{verifyPassword:async p=>p==='old-password',validPassword:p=>typeof p==='string'&&p.length>=12}});
+const handler=(await import('../backend/auth/link-email.js')).default;
+const body={phase:'start',email:'pegawai@example.com',currentPassword:'old-password',password:'new-password-long'};
+const call=async b=>{const res={statusCode:200,status(n){this.statusCode=n;return this;},json(v){return {...v,status:this.statusCode};}};return handler({method:'POST',headers:{},body:b},res);};
+test('existing identity linking requires control of old account and verified matching Auth identity',async()=>{
+ assert.equal((await call({...body,currentPassword:'wrong'})).status,403);assert.equal(signup,null);
+ assert.equal((await call(body)).success,true);assert.equal(signup.options.data,undefined);
+ assert.deepEqual(updates[0],{pending_auth_user_id:'auth-new'});
+ current={...legacy,pending_auth_user_id:'auth-new'};
+ identity={...identity,email_confirmed_at:null};assert.equal((await call({...body,phase:'complete'})).status,403);
+ identity={...identity,id:'someone-else',email_confirmed_at:'now'};assert.equal((await call({...body,phase:'complete'})).status,403);
+ identity={...identity,id:'auth-new'};const result=await call({...body,phase:'complete'});
+ assert.equal(result.success,true);assert.equal(result.role,'ADMIN');assert.equal(result.uid,'lama');
+ const linked=updates.find(v=>v.auth_user_id);assert.equal(linked.pwd,null);assert.equal(linked.email,'pegawai@example.com');assert.equal(linked.role,undefined);assert.equal(linked.status,undefined);
+});

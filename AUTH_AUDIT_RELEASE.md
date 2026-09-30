@@ -15,7 +15,7 @@
 - JWT Supabase diperbaharui secara automatik pada web. APK 2.2 lama boleh menggunakan endpoint login yang sama; selepas JWT tamat ia meminta log masuk semula. Pendaftaran APK lama membuka borang web. APK lama belum menghantar log pertukaran skrin/log keluar kepada API.
 
 ## Migrasi pengguna lama
-Semakan awal mendapati 135 pengguna sedia ada, 0 e-mel profil dan 0 akaun Supabase Auth. Akaun lama kekal boleh log masuk bagi mengelakkan semua pengguna terkunci. Peralihan kepada Supabase Auth sahaja belum lengkap sehingga e-mel/identiti pengguna lama disahkan dan akaun mereka dipautkan. Jangan memadankan e-mel berdasarkan nama sahaja atau mengesahkan e-mel secara automatik.
+Semakan awal mendapati 135 pengguna sedia ada, 0 e-mel profil dan 0 akaun Supabase Auth. Akaun lama mempunyai butang **Pautkan e-mel · Supabase Auth**. Mereka perlu memasukkan kata laluan lama, mendaftarkan e-mel sendiri, mengesahkan e-mel dan menyelesaikan pautan dengan kata laluan baharu. Bukti kedua-dua akaun diperlukan; tiada pemadanan berdasarkan nama. Profil, peranan, status dan ID sedia ada dikekalkan. Selepas pautan, kata laluan lama dibuang daripada profil dan token lama disekat. Akaun lama kekal boleh log masuk bagi mengelakkan semua pengguna terkunci. Peralihan kepada Supabase Auth sahaja belum lengkap sehingga e-mel/identiti pengguna lama disahkan dan akaun mereka dipautkan. Jangan memadankan e-mel berdasarkan nama sahaja atau mengesahkan e-mel secara automatik.
 
 ## Konfigurasi e-mel yang perlu disahkan
 - Supabase Auth: pengesahan e-mel perlu dihidupkan.

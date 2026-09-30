@@ -11,6 +11,7 @@ const API = {
         'verifyForgotPwd': '/auth/forgot-password',
         'updateMyAccess': '/auth/update-access',
         'trackActivity': '/auth/activity',
+        'linkEmail': '/auth/link-email',
         'auditLogs': '/users/audit',
         'logSession': '/auth/log-session',
         'getAnalytics': '/data/analytics',
